@@ -71,7 +71,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         </div>
 
         {/* Layout — stack on mobile, side by side on desktop */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "32px" }} className="md:grid-cols-2-custom">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "32px" }}>
           <style>{`@media (min-width: 768px) { .product-grid { grid-template-columns: 1fr 1fr !important; gap: 56px !important; } }`}</style>
 
           <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "32px" }}>
@@ -168,7 +168,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         {/* More Products */}
         <div style={{ marginTop: "60px", borderTop: "1px solid var(--border)", paddingTop: "40px" }}>
           <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--fg-muted)", marginBottom: "24px", textAlign: "center" }}>More from 2Z</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
             {[1, 2, 3].map((i) => (
               <Link href="/products" key={i} style={{ textDecoration: "none" }}>
                 <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "var(--card)", marginBottom: "8px" }}>

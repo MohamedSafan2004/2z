@@ -50,7 +50,7 @@ export default function CartPage() {
                   <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--fg-muted)", marginBottom: "12px" }}>
                     {item.color} — {item.size}
                   </p>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
                     <div style={{ display: "flex", alignItems: "center" }}>
                       <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} style={{ width: "28px", height: "28px", border: "1px solid var(--border)", color: "var(--fg-muted)", background: "none", cursor: "pointer", fontFamily: "Space Mono, monospace", fontSize: "14px" }}>−</button>
                       <span style={{ width: "32px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "var(--fg)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>{item.quantity}</span>

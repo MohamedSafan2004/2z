@@ -50,7 +50,7 @@ export default function OrdersPage() {
           <div>
             {orders.map((order: any) => (
               <div key={order.id} style={{ border: "1px solid rgba(240,237,230,0.08)", padding: "24px", marginBottom: "16px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "16px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "16px", gap: "12px", flexWrap: "wrap" }}>
                   <div>
                     <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "4px" }}>Order</p>
                     <p style={{ fontSize: "11px", color: "#f0ede6" }}>{order.id.slice(0, 8).toUpperCase()}</p>
@@ -67,7 +67,7 @@ export default function OrdersPage() {
 
                 <div style={{ borderTop: "1px solid rgba(240,237,230,0.06)", paddingTop: "16px" }}>
                   {order.items.map((item: any) => (
-                    <div key={item.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                    <div key={item.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", gap: "8px", flexWrap: "wrap" }}>
                       <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.6)" }}>
                         {item.productNameSnapshot} — {item.colorSnapshot} / {item.sizeSnapshot} × {item.quantity}
                       </p>

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { redirect } from "next/navigation"
+// import { redirect } from "next/navigation"
 
 const products = [
   { id: "1", name: "Essential Tee", price: 350, color: "Black", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=60" },
@@ -9,7 +9,7 @@ const products = [
 ]
 
 export default function Home() {
-  redirect("/coming-soon")
+  // redirect("/coming-soon")
   return (
     
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh" }}>
@@ -28,10 +28,10 @@ export default function Home() {
           <p className="text-xs tracking-[0.3em] uppercase mb-3" style={{ color: "rgba(240,237,230,0.7)" }}>
             6th of October — 2026
           </p>
-          <h1 className="font-serif font-light leading-none" style={{ fontSize: "clamp(56px, 12vw, 100px)", letterSpacing: "-0.02em", color: "#f0ede6" }}>
+          <h1 className="font-serif font-light leading-none" style={{ fontSize: "clamp(40px, 10vw, 100px)", letterSpacing: "-0.02em", color: "#f0ede6" }}>
             Wear<br /><em style={{ color: "rgba(240,237,230,0.7)" }}>Nothing</em><br />Extra.
           </h1>
-          <div className="flex justify-between items-end mt-6">
+          <div className="flex flex-col gap-4 mt-6 md:flex-row md:justify-between md:items-end">
             <p className="text-xs tracking-widest uppercase leading-loose" style={{ color: "rgba(240,237,230,0.7)" }}>
               Oversized T-shirts.<br />Black & white.<br />That's it.
             </p>

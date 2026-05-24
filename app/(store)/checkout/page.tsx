@@ -110,7 +110,8 @@ export default function CheckoutPage() {
         <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "6px" }}>Almost there</p>
         <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "40px", fontWeight: 300, color: "#f0ede6", marginBottom: "48px" }}>Checkout</h1>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: "64px", alignItems: "start" }}>
+        <style>{`@media (min-width: 768px) { .checkout-grid { grid-template-columns: 1fr 360px !important; gap: 64px !important; } }`}</style>
+        <div className="checkout-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", alignItems: "start" }}>
 
           {/* Left - Form */}
           <div>

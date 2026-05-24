@@ -31,7 +31,7 @@ export default function ProductsPage() {
         <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "36px", fontWeight: 300, color: "var(--fg)", marginBottom: "32px" }}>All Products</h1>
 
         {/* Filters */}
-        <div style={{ display: "flex", gap: "24px", marginBottom: "40px" }}>
+        <div style={{ display: "flex", gap: "16px", marginBottom: "40px", flexWrap: "wrap"}}>
           {["all", "t-shirts", "sweatpants"].map((f) => (
             <button
               key={f}
