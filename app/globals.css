@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Space+Mono&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg: #080808;
+  --fg: #f0ede6;
+  --fg-muted: rgba(240,237,230,0.5);
+  --fg-dim: rgba(240,237,230,0.2);
+  --border: rgba(240,237,230,0.08);
+  --card: #111;
+}
+
+body {
+  background: #080808;
+  color: #f0ede6;
+  font-family: 'Space Mono', monospace;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn-outline {
+  border: 1px solid #f0ede6;
+  color: #f0ede6;
+  transition: all 0.3s;
+}
+
+.btn-outline:hover {
+  background: #f0ede6;
+  color: #080808;
+}

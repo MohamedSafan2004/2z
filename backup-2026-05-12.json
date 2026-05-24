@@ -1,0 +1,147 @@
+{
+  "User": [
+    {
+      "id": "cmozbzlsj0000hcu30vrzuhzb",
+      "name": "Mohamed safaan",
+      "email": "super20.mh2004@gmail.com",
+      "password": "$2b$12$gfs9EAEu.KRw8rCQ7GLoGe0fAS8obJijKJ9CmD9qRAbMjmqOGNM7y",
+      "phone": "01553594689",
+      "address": null,
+      "role": "ADMIN",
+      "createdAt": "2026-05-10T02:27:19.315Z"
+    }
+  ],
+  "Category": [
+    {
+      "id": "cmp0ri8880000oou3cv9ad2qv",
+      "name": "T-Shirts",
+      "slug": "t-shirts"
+    }
+  ],
+  "Product": [
+    {
+      "id": "cmp0ri8b50001oou367c2j4v8",
+      "categoryId": "cmp0ri8880000oou3cv9ad2qv",
+      "name": "Essential Tee — Black",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "350.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-05-11T02:29:28.721Z"
+    },
+    {
+      "id": "cmp0ri8m60005oou3wsqv3si7",
+      "categoryId": "cmp0ri8880000oou3cv9ad2qv",
+      "name": "Essential Tee — White",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "350.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-05-11T02:29:29.118Z"
+    },
+    {
+      "id": "cmp0ri8yj0009oou3at4rai9w",
+      "categoryId": "cmp0ri8880000oou3cv9ad2qv",
+      "name": "Essential Tee — Navy",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "350.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-05-11T02:29:29.563Z"
+    },
+    {
+      "id": "cmp0ri99v000doou3nfyyr47o",
+      "categoryId": "cmp0ri8880000oou3cv9ad2qv",
+      "name": "Essential Tee — Grey",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "350.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-05-11T02:29:29.971Z"
+    }
+  ],
+  "ProductVariant": [
+    {
+      "id": "cmp0ri8e10002oou3rmme4l52",
+      "productId": "cmp0ri8b50001oou367c2j4v8",
+      "color": "BLACK",
+      "size": "S",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp0ri8gt0003oou3vg1zwfpb",
+      "productId": "cmp0ri8b50001oou367c2j4v8",
+      "color": "BLACK",
+      "size": "M",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp0ri8jh0004oou3wmvbky0m",
+      "productId": "cmp0ri8b50001oou367c2j4v8",
+      "color": "BLACK",
+      "size": "L",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp0ri8pd0006oou331zsk9ns",
+      "productId": "cmp0ri8m60005oou3wsqv3si7",
+      "color": "WHITE",
+      "size": "S",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp0ri8t30007oou3eftkoku8",
+      "productId": "cmp0ri8m60005oou3wsqv3si7",
+      "color": "WHITE",
+      "size": "M",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp0ri8vs0008oou38t7g9x5x",
+      "productId": "cmp0ri8m60005oou3wsqv3si7",
+      "color": "WHITE",
+      "size": "L",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp0ri91c000aoou3mp6lo3bp",
+      "productId": "cmp0ri8yj0009oou3at4rai9w",
+      "color": "NAVY",
+      "size": "S",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp0ri94b000boou346fu578j",
+      "productId": "cmp0ri8yj0009oou3at4rai9w",
+      "color": "NAVY",
+      "size": "M",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp0ri971000coou33wxwijnq",
+      "productId": "cmp0ri8yj0009oou3at4rai9w",
+      "color": "NAVY",
+      "size": "L",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp0ri9cn000eoou3km1rft4r",
+      "productId": "cmp0ri99v000doou3nfyyr47o",
+      "color": "GREY",
+      "size": "S",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp0ri9fd000foou31bmnjkcz",
+      "productId": "cmp0ri99v000doou3nfyyr47o",
+      "color": "GREY",
+      "size": "M",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp0ri9i4000goou3gf1q30vw",
+      "productId": "cmp0ri99v000doou3nfyyr47o",
+      "color": "GREY",
+      "size": "L",
+      "stockQuantity": 20
+    }
+  ],
+  "Order": [],
+  "OrderItem": []
+}

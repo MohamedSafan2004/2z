@@ -1,0 +1,149 @@
+{
+  "User": [
+    {
+      "id": "cmozbzlsj0000hcu30vrzuhzb",
+      "name": "Mohamed safaan",
+      "email": "super20.mh2004@gmail.com",
+      "password": "$2b$12$gfs9EAEu.KRw8rCQ7GLoGe0fAS8obJijKJ9CmD9qRAbMjmqOGNM7y",
+      "phone": "01553594689",
+      "address": null,
+      "role": "ADMIN",
+      "createdAt": "2026-05-10T02:27:19.315Z",
+      "emailVerified": false,
+      "verificationCode": null
+    }
+  ],
+  "Category": [
+    {
+      "id": "cmp3pt4690000iou3li0v1zob",
+      "name": "T-Shirts",
+      "slug": "t-shirts"
+    }
+  ],
+  "Product": [
+    {
+      "id": "cmp3pt48t0001iou3j0c6yus8",
+      "categoryId": "cmp3pt4690000iou3li0v1zob",
+      "name": "Essential Tee — Black",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "350.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-05-13T04:05:15.965Z"
+    },
+    {
+      "id": "cmp3pt4jr0005iou3x4oi9c2e",
+      "categoryId": "cmp3pt4690000iou3li0v1zob",
+      "name": "Essential Tee — White",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "350.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-05-13T04:05:16.359Z"
+    },
+    {
+      "id": "cmp3pt4ur0009iou3oi1j42yq",
+      "categoryId": "cmp3pt4690000iou3li0v1zob",
+      "name": "Essential Tee — Navy",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "350.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-05-13T04:05:16.755Z"
+    },
+    {
+      "id": "cmp3pt56x000diou3spkjg8am",
+      "categoryId": "cmp3pt4690000iou3li0v1zob",
+      "name": "Essential Tee — Grey",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "350.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-05-13T04:05:17.193Z"
+    }
+  ],
+  "ProductVariant": [
+    {
+      "id": "cmp3pt4b70002iou379rkmd2n",
+      "productId": "cmp3pt48t0001iou3j0c6yus8",
+      "color": "BLACK",
+      "size": "S",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp3pt4f30003iou3duhvqjis",
+      "productId": "cmp3pt48t0001iou3j0c6yus8",
+      "color": "BLACK",
+      "size": "M",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp3pt4hh0004iou3rt7qou2r",
+      "productId": "cmp3pt48t0001iou3j0c6yus8",
+      "color": "BLACK",
+      "size": "L",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp3pt4nv0006iou3k1mb9085",
+      "productId": "cmp3pt4jr0005iou3x4oi9c2e",
+      "color": "WHITE",
+      "size": "S",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp3pt4q70007iou3f07r0tc4",
+      "productId": "cmp3pt4jr0005iou3x4oi9c2e",
+      "color": "WHITE",
+      "size": "M",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp3pt4sh0008iou3xpxgqa30",
+      "productId": "cmp3pt4jr0005iou3x4oi9c2e",
+      "color": "WHITE",
+      "size": "L",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp3pt4y0000aiou3ol2lnf1r",
+      "productId": "cmp3pt4ur0009iou3oi1j42yq",
+      "color": "NAVY",
+      "size": "S",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp3pt50a000biou3oep4u7r8",
+      "productId": "cmp3pt4ur0009iou3oi1j42yq",
+      "color": "NAVY",
+      "size": "M",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp3pt54n000ciou3y08z4wfh",
+      "productId": "cmp3pt4ur0009iou3oi1j42yq",
+      "color": "NAVY",
+      "size": "L",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp3pt59m000eiou3e58p39oj",
+      "productId": "cmp3pt56x000diou3spkjg8am",
+      "color": "GREY",
+      "size": "S",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp3pt5iu000fiou318x3c5ds",
+      "productId": "cmp3pt56x000diou3spkjg8am",
+      "color": "GREY",
+      "size": "M",
+      "stockQuantity": 20
+    },
+    {
+      "id": "cmp3pt5vu000giou3qth9f2jq",
+      "productId": "cmp3pt56x000diou3spkjg8am",
+      "color": "GREY",
+      "size": "L",
+      "stockQuantity": 20
+    }
+  ],
+  "Order": [],
+  "OrderItem": []
+}

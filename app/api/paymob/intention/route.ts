@@ -1,0 +1,162 @@
+// app/api/paymob/intention/route.ts
+import { NextRequest, NextResponse } from "next/server"
+import { db } from "@/lib/db"
+import { optionalAuth } from "@/lib/middleware"
+import { orderRatelimit } from "@/lib/ratelimit"
+import { sanitize } from "@/lib/validation"
+
+export async function POST(req: NextRequest) {
+  try {
+    const auth = optionalAuth(req)
+
+    const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1"
+    const { success } = await orderRatelimit.limit(ip)
+    if (!success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 })
+    }
+
+    const { items, address, phone, email, paymentMethod } = await req.json()
+
+    if (!items || items.length === 0) {
+      return NextResponse.json({ error: "No items in order" }, { status: 400 })
+    }
+    if (!email || !phone || !address) {
+      return NextResponse.json({ error: "Email, phone, and address are required" }, { status: 400 })
+    }
+    if (!["card", "vodafone"].includes(paymentMethod)) {
+      return NextResponse.json({ error: "Invalid payment method" }, { status: 400 })
+    }
+
+    for (const item of items) {
+      if (!item.variantId || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 10) {
+        return NextResponse.json({ error: "Invalid item quantity" }, { status: 400 })
+      }
+    }
+
+    const variantIds = items.map((item: any) => item.variantId)
+    const variants = await db.productVariant.findMany({
+      where: { id: { in: variantIds } },
+      include: { product: true },
+    })
+
+    for (const item of items) {
+      const variant = variants.find((v: any) => v.id === item.variantId)
+      if (!variant) return NextResponse.json({ error: "Product not found" }, { status: 404 })
+      if (variant.stockQuantity < item.quantity) {
+        return NextResponse.json({ error: `Not enough stock for ${variant.product.name}` }, { status: 400 })
+      }
+    }
+
+    const totalAmount = items.reduce((total: number, item: any) => {
+      const variant = variants.find((v: any) => v.id === item.variantId)!
+      return total + Number(variant.product.price) * item.quantity
+    }, 0)
+
+    // عمل الـ order في الـ DB بحالة PENDING
+    const user = auth.userId ? await db.user.findUnique({ where: { id: auth.userId } }) : null
+
+    const order = await db.$transaction(async (tx: any) => {
+      const newOrder = await tx.order.create({
+        data: {
+          userId: auth.userId || undefined,
+          totalAmount,
+          guestEmail: email || null,
+          address: sanitize(address),
+          phone: sanitize(phone),
+          status: "PENDING",
+          paymentStatus: "PENDING",
+          items: {
+            create: items.map((item: any) => {
+              const variant = variants.find((v: any) => v.id === item.variantId)!
+              return {
+                variantId: item.variantId,
+                quantity: item.quantity,
+                productNameSnapshot: variant.product.name,
+                priceSnapshot: variant.product.price,
+                colorSnapshot: variant.color,
+                sizeSnapshot: variant.size,
+              }
+            }),
+          },
+        },
+        include: { items: true },
+      })
+
+      for (const item of items) {
+        await tx.productVariant.update({
+          where: { id: item.variantId },
+          data: { stockQuantity: { decrement: item.quantity } },
+        })
+      }
+
+      return newOrder
+    })
+
+    // Paymob integration ID حسب طريقة الدفع
+    const integrationId = paymentMethod === "card"
+      ? process.env.PAYMOB_INTEGRATION_ID_CARD
+      : process.env.PAYMOB_INTEGRATION_ID_VODAFONE
+
+    // بعت الـ intention لـ Paymob
+    const intentionRes = await fetch("https://accept.paymob.com/v1/intention/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${process.env.PAYMOB_SECRET_KEY}`,
+      },
+      body: JSON.stringify({
+        amount: totalAmount * 100, // Paymob بياخد بالقروش
+        currency: "EGP",
+        payment_methods: [Number(integrationId)],
+        items: order.items.map((item: any) => ({
+          name: item.productNameSnapshot,
+          amount: Number(item.priceSnapshot) * 100,
+          description: `${item.colorSnapshot} / ${item.sizeSnapshot}`,
+          quantity: item.quantity,
+        })),
+        billing_data: {
+          first_name: user?.name || sanitize(email.split("@")[0]),
+          last_name: ".",
+          email: email,
+          phone_number: phone,
+          country: "EG",
+          city: "Cairo",
+          street: sanitize(address),
+          building: ".",
+          floor: ".",
+          apartment: ".",
+        },
+        customer: {
+          first_name: user?.name || sanitize(email.split("@")[0]),
+          last_name: ".",
+          email: email,
+        },
+        extras: {
+          order_id: order.id,
+        },
+      }),
+    })
+
+    if (!intentionRes.ok) {
+      const err = await intentionRes.json()
+      console.error("Paymob intention error:", err)
+      return NextResponse.json({ error: "Payment initialization failed" }, { status: 500 })
+    }
+
+    const intention = await intentionRes.json()
+
+    // حفظ الـ payment ID في الـ order
+    await db.order.update({
+      where: { id: order.id },
+      data: { paymentId: intention.id },
+    })
+
+    return NextResponse.json({
+      clientSecret: intention.client_secret,
+      orderId: order.id,
+    })
+  } catch (error) {
+    console.error("Intention error:", error)
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
+  }
+}
