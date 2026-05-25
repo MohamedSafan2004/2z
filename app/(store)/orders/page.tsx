@@ -4,6 +4,28 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
+import { SkeletonBlock, SkeletonLine } from "@/components/Skeleton"
+
+function OrderSkeleton() {
+  return (
+    <div style={{ border: "1px solid rgba(240,237,230,0.08)", padding: "24px", marginBottom: "16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
+        <div style={{ width: "40%" }}>
+          <SkeletonLine width="60%" height="10px" />
+          <SkeletonLine width="80%" height="14px" />
+        </div>
+        <div style={{ width: "30%" }}>
+          <SkeletonLine width="100%" height="10px" />
+          <SkeletonLine width="70%" height="20px" />
+        </div>
+      </div>
+      <div style={{ borderTop: "1px solid rgba(240,237,230,0.06)", paddingTop: "16px" }}>
+        <SkeletonLine width="100%" height="12px" />
+        <SkeletonLine width="80%" height="12px" />
+      </div>
+    </div>
+  )
+}
 
 export default function OrdersPage() {
   const { user, token } = useAuth()
@@ -12,28 +34,33 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user) {
-      router.push("/login")
-      return
-    }
-    fetch("/api/orders", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    if (!user) { router.push("/login"); return }
+    fetch("/api/orders", { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
-      .then((data) => {
-        setOrders(data)
-        setLoading(false)
-      })
+      .then((data) => { setOrders(data); setLoading(false) })
   }, [user])
 
   if (loading) return (
-    <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace" }}>
-      <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)" }}>Loading...</p>
+    <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>
+      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "80px 24px 60px" }}>
+        <SkeletonLine width="80px" height="10px" />
+        <SkeletonLine width="200px" height="40px" />
+        <div style={{ marginTop: "48px" }}>
+          {[1, 2, 3].map((i) => <OrderSkeleton key={i} />)}
+        </div>
+      </div>
     </div>
   )
 
   return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .order-card { animation: fadeUp 0.5s ease both; }
+      `}</style>
       <div style={{ maxWidth: "800px", margin: "0 auto", padding: "80px 24px 60px" }}>
 
         <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "6px" }}>Your</p>
@@ -48,8 +75,8 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div>
-            {orders.map((order: any) => (
-              <div key={order.id} style={{ border: "1px solid rgba(240,237,230,0.08)", padding: "24px", marginBottom: "16px" }}>
+            {orders.map((order: any, i: number) => (
+              <div key={order.id} className="order-card" style={{ border: "1px solid rgba(240,237,230,0.08)", padding: "24px", marginBottom: "16px", animationDelay: `${i * 80}ms` }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "16px", gap: "12px", flexWrap: "wrap" }}>
                   <div>
                     <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "4px" }}>Order</p>
@@ -64,7 +91,6 @@ export default function OrdersPage() {
                     </p>
                   </div>
                 </div>
-
                 <div style={{ borderTop: "1px solid rgba(240,237,230,0.06)", paddingTop: "16px" }}>
                   {order.items.map((item: any) => (
                     <div key={item.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", gap: "8px", flexWrap: "wrap" }}>
@@ -77,7 +103,6 @@ export default function OrdersPage() {
                     </div>
                   ))}
                 </div>
-
                 <p style={{ fontSize: "9px", letterSpacing: "0.1em", color: "rgba(240,237,230,0.2)", marginTop: "16px" }}>
                   {new Date(order.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
                 </p>
@@ -85,7 +110,6 @@ export default function OrdersPage() {
             ))}
           </div>
         )}
-
       </div>
     </div>
   )

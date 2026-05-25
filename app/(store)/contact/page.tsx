@@ -30,13 +30,13 @@ export default function ContactPage() {
         {/* Email */}
         <a href="mailto:2z.eg2004@gmail.com" style={{ textDecoration: "none" }}>
           <div style={{ background: "#0f0f0f", padding: "32px", marginBottom: "2px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+              <div style={{ minWidth: 0 }}>
                 <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "10px" }}>Email</p>
-                <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "26px", fontWeight: 300, color: "#f0ede6", marginBottom: "8px", wordBreak: "break-all"}}>2z.eg2004@gmail.com</p>
+                <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "22px", fontWeight: 300, color: "#f0ede6", marginBottom: "8px", wordBreak: "break-word" }}>2z.eg2004@gmail.com</p>
                 <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)", letterSpacing: "0.1em", lineHeight: 1.8 }}>We reply within 24 hours</p>
               </div>
-              <div style={{ fontSize: "40px", color: "rgba(240,237,230,0.2)" }}>↗</div>
+              <div style={{ fontSize: "24px", color: "rgba(240,237,230,0.2)", flexShrink: 0 }}>↗</div>
             </div>
           </div>
         </a>
