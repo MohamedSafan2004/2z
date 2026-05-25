@@ -3,9 +3,10 @@ import Link from "next/link"
 export default function Footer() {
   return (
     <footer style={{ background: "#080808", borderTop: "1px solid rgba(240,237,230,0.06)", padding: "48px 24px 32px", fontFamily: "Space Mono, monospace" }}>
+      <style>{`@media (min-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr 1fr !important; } }`}</style>
       <div style={{ maxWidth: "1450px", margin: "0 auto" }}>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "32px", marginBottom: "40px" }}>
+        <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px", marginBottom: "40px" }}>
 
           {/* Brand */}
           <div>
@@ -86,7 +87,7 @@ export default function Footer() {
         {/* Bottom */}
         <div style={{ borderTop: "1px solid rgba(240,237,230,0.08)", paddingTop: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
           <p style={{ fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#b0aea8" }}>© 2026 2Z. All rights reserved.</p>
-          <p style={{ fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#b0aea8" }}>6th of Octobrt, Egypt</p>
+          <p style={{ fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#b0aea8" }}>6th of October, Egypt</p>
         </div>
 
       </div>

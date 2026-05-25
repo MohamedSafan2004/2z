@@ -74,7 +74,7 @@ export default function AdminPage() {
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "80px 16px 60px" }}>
 
         {/* Header + Export */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "32px" }}>
+        <div style={{display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
           <div>
             <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "6px" }}>Dashboard</p>
             <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "36px", fontWeight: 300, color: "#f0ede6" }}>Admin</h1>
