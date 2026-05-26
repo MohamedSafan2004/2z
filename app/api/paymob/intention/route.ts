@@ -7,6 +7,7 @@ import { sanitize } from "@/lib/validation"
 
 export async function POST(req: NextRequest) {
   try {
+    console.log("Intention API called")
     const auth = optionalAuth(req)
 
     const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1"
@@ -16,6 +17,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { items, address, phone, email, paymentMethod } = await req.json()
+
+    console.log("Payment method received:", paymentMethod)
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No items in order" }, { status: 400 })
@@ -52,7 +55,6 @@ export async function POST(req: NextRequest) {
       return total + Number(variant.product.price) * item.quantity
     }, 0)
 
-    // عمل الـ order في الـ DB بحالة PENDING
     const user = auth.userId ? await db.user.findUnique({ where: { id: auth.userId } }) : null
 
     const order = await db.$transaction(async (tx: any) => {
@@ -92,14 +94,12 @@ export async function POST(req: NextRequest) {
       return newOrder
     })
 
-    // Paymob integration ID حسب طريقة الدفع
     const integrationId = paymentMethod === "card"
-    ? process.env.PAYMOB_INTEGRATION_ID_CARD
-    : process.env.PAYMOB_INTEGRATION_ID_VODAFONE
+      ? process.env.PAYMOB_INTEGRATION_ID_CARD
+      : process.env.PAYMOB_INTEGRATION_ID_VODAFONE
 
     console.log("Integration ID:", integrationId, "Payment method:", paymentMethod)
 
-    // بعت الـ intention لـ Paymob
     const intentionRes = await fetch("https://accept.paymob.com/v1/intention/", {
       method: "POST",
       headers: {
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
         Authorization: `Token ${process.env.PAYMOB_SECRET_KEY}`,
       },
       body: JSON.stringify({
-        amount: totalAmount * 100, // Paymob بياخد بالقروش
+        amount: totalAmount * 100,
         currency: "EGP",
         payment_methods: [Number(integrationId)],
         items: order.items.map((item: any) => ({
@@ -147,7 +147,6 @@ export async function POST(req: NextRequest) {
 
     const intention = await intentionRes.json()
 
-    // حفظ الـ payment ID في الـ order
     await db.order.update({
       where: { id: order.id },
       data: { paymentId: intention.id },
