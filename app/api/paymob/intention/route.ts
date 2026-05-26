@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
 
       return newOrder
     })
+    console.log("Order created:", order.id)
 
     const integrationId = paymentMethod === "card"
       ? process.env.PAYMOB_INTEGRATION_ID_CARD
