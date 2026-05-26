@@ -94,8 +94,10 @@ export async function POST(req: NextRequest) {
 
     // Paymob integration ID حسب طريقة الدفع
     const integrationId = paymentMethod === "card"
-      ? process.env.PAYMOB_INTEGRATION_ID_CARD
-      : process.env.PAYMOB_INTEGRATION_ID_VODAFONE
+    ? process.env.PAYMOB_INTEGRATION_ID_CARD
+    : process.env.PAYMOB_INTEGRATION_ID_VODAFONE
+
+    console.log("Integration ID:", integrationId, "Payment method:", paymentMethod)
 
     // بعت الـ intention لـ Paymob
     const intentionRes = await fetch("https://accept.paymob.com/v1/intention/", {
