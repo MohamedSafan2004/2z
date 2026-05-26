@@ -100,7 +100,8 @@ export async function POST(req: NextRequest) {
       : process.env.PAYMOB_INTEGRATION_ID_VODAFONE
 
     console.log("Integration ID:", integrationId, "Payment method:", paymentMethod)
-
+    console.log("Secret key starts with:", process.env.PAYMOB_SECRET_KEY?.slice(0, 10))
+    
     const intentionRes = await fetch("https://accept.paymob.com/v1/intention/", {
       method: "POST",
       headers: {
