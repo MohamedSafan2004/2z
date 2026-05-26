@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         amount: totalAmount * 100,
         currency: "EGP",
-        payment_methods:  ["card"],
+        payment_methods: [parseInt(integrationId as string, 10)],
         items: order.items.map((item: any) => ({
           name: item.productNameSnapshot,
           amount: Number(item.priceSnapshot) * 100,
