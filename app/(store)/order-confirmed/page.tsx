@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 
@@ -9,8 +9,26 @@ function OrderConfirmedContent() {
   const email = searchParams.get("email")
   const success = searchParams.get("success")
   const orderId = searchParams.get("id")
+  const [verified, setVerified] = useState(false)
 
-  // Paymob رجع بـ failure
+  useEffect(() => {
+    if (!orderId || success === "false") return
+
+    const verify = async () => {
+      try {
+        const res = await fetch("/api/orders/verify-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId }),
+        })
+        const data = await res.json()
+        if (data.status === "PAID") setVerified(true)
+      } catch {}
+    }
+
+    verify()
+  }, [orderId, success])
+
   if (success === "false") {
     return (
       <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace", padding: "24px", textAlign: "center" }}>
@@ -31,7 +49,6 @@ function OrderConfirmedContent() {
     )
   }
 
-  // COD أو Paymob success
   return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace", padding: "24px", textAlign: "center" }}>
       <div style={{ width: "64px", height: "64px", border: "1px solid rgba(240,237,230,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "24px" }}>
