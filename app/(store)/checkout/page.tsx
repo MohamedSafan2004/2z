@@ -73,9 +73,11 @@ export default function CheckoutPage() {
       clearCart()
 
       // Redirect لـ Paymob
-      window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${process.env.NEXT_PUBLIC_PAYMOB_PUBLIC_KEY}&clientSecret=${data.clientSecret}`
-
-    } catch {
+    const redirectUrl = `https://2z-steel.vercel.app/order-confirmed?id=${data.orderId}&email=${encodeURIComponent(email)}`
+    const paymobUrl = `https://accept.paymob.com/unifiedcheckout/?publicKey=${process.env.NEXT_PUBLIC_PAYMOB_PUBLIC_KEY}&clientSecret=${data.clientSecret}&redirectUrl=${encodeURIComponent(redirectUrl)}`
+    window.location.href = paymobUrl
+    
+  } catch {
       setError("Something went wrong")
     } finally {
       setLoading(false)
