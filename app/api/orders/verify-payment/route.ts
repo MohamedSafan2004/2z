@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,36 +19,76 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
     }
 
-    // لو مفيش paymentId يبقى COD — مش محتاج verify
     if (!order.paymentId) {
       return NextResponse.json({ status: order.paymentStatus })
     }
 
-    // لو خلاص PAID مش محتاج نعمل call
     if (order.paymentStatus === "PAID") {
       return NextResponse.json({ status: "PAID" })
     }
 
-    // نسأل Paymob عن status الـ intention
-    const paymobRes = await fetch(`https://accept.paymob.com/v1/intention/${order.paymentId}/`, {
-      headers: {
-        Authorization: `Token ${process.env.PAYMOB_SECRET_KEY}`,
-      },
-    })
+    // نبحث عن transaction ناجح في Paymob
+    const paymobRes = await fetch(
+      `https://accept.paymob.com/v1/intention/${order.paymentId}/transactions/`,
+      {
+        headers: {
+          Authorization: `Token ${process.env.PAYMOB_SECRET_KEY}`,
+        },
+      }
+    )
 
     if (!paymobRes.ok) {
       return NextResponse.json({ status: order.paymentStatus })
     }
 
-   const intention = await paymobRes.json()
-    console.log("Paymob intention response:", JSON.stringify(intention))
+    const transactions = await paymobRes.json()
+    const successTx = Array.isArray(transactions)
+      ? transactions.find((tx: any) => tx.success === true)
+      : null
 
-    // Paymob بيرجع confirmed لما الدفع نجح
-    if (intention.status === "confirmed" || intention.payment_status === "PAID") {
+    if (successTx) {
       await db.order.update({
         where: { id: orderId },
         data: { paymentStatus: "PAID", status: "PAID" },
       })
+
+      const emailTo = order.guestEmail || order.user?.email
+      if (emailTo) {
+        try {
+          await sendOrderConfirmation({
+            to: emailTo,
+            orderNumber: order.id,
+            items: order.items.map((item: any) => ({
+              name: item.productNameSnapshot,
+              color: item.colorSnapshot,
+              size: item.sizeSnapshot,
+              quantity: item.quantity,
+              price: Number(item.priceSnapshot),
+            })),
+            total: Number(order.totalAmount),
+            address: order.address || "",
+          })
+        } catch {}
+      }
+
+      try {
+        await sendAdminNotification({
+          orderNumber: order.id,
+          customerName: order.user?.name || "Guest",
+          customerEmail: emailTo || "",
+          customerPhone: order.phone || "",
+          address: order.address || "",
+          items: order.items.map((item: any) => ({
+            name: item.productNameSnapshot,
+            color: item.colorSnapshot,
+            size: item.sizeSnapshot,
+            quantity: item.quantity,
+            price: Number(item.priceSnapshot),
+          })),
+          total: Number(order.totalAmount),
+        })
+      } catch {}
+
       return NextResponse.json({ status: "PAID" })
     }
 
