@@ -7,7 +7,6 @@ import { sanitize } from "@/lib/validation"
 
 export async function POST(req: NextRequest) {
   try {
-    console.log("Intention API called")
     const auth = optionalAuth(req)
 
     const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1"
@@ -17,8 +16,6 @@ export async function POST(req: NextRequest) {
     }
 
     const { items, address, phone, email, paymentMethod } = await req.json()
-
-    console.log("Payment method received:", paymentMethod)
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No items in order" }, { status: 400 })
@@ -93,15 +90,12 @@ export async function POST(req: NextRequest) {
 
       return newOrder
     })
-    console.log("Order created:", order.id)
 
-    const integrationId = paymentMethod === "card"
-      ? process.env.PAYMOB_INTEGRATION_ID_CARD
-      : process.env.PAYMOB_INTEGRATION_ID_VODAFONE
+    const integrationId =
+      paymentMethod === "card"
+        ? process.env.PAYMOB_INTEGRATION_ID_CARD
+        : process.env.PAYMOB_INTEGRATION_ID_VODAFONE
 
-    console.log("Integration ID:", integrationId, "Payment method:", paymentMethod)
-    console.log("Secret key starts with:", process.env.PAYMOB_SECRET_KEY?.slice(0, 10))
-    
     const intentionRes = await fetch("https://accept.paymob.com/v1/intention/", {
       method: "POST",
       headers: {
@@ -121,7 +115,7 @@ export async function POST(req: NextRequest) {
         billing_data: {
           first_name: user?.name || sanitize(email.split("@")[0]),
           last_name: ".",
-           email: "2z.eg2004@gmail.com", // إيميل الـ Paymob account
+          email: "2z.eg2004@gmail.com",
           phone_number: phone,
           country: "EG",
           city: "Cairo",
@@ -133,7 +127,7 @@ export async function POST(req: NextRequest) {
         customer: {
           first_name: user?.name || sanitize(email.split("@")[0]),
           last_name: ".",
-           email: "2z.eg2004@gmail.com", // إيميل الـ Paymob account
+          email: "2z.eg2004@gmail.com",
         },
         extras: {
           order_id: order.id,

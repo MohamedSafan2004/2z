@@ -86,7 +86,7 @@ export default function ComingSoonPage() {
 
       <div style={{ position: "absolute", bottom: "24px", display: "flex", gap: "24px" }}>
         <a href="https://www.instagram.com/2z_offical?igsh=MWh3dWZiYWN1ZzdrZA%3D%3D" target="_blank" rel="noopener noreferrer" style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#f0ede6", textDecoration: "none" }}>Instagram</a>
-        <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#f0ede6", textDecoration: "none" }}>TikTok</a>
+        <a href="https://www.tiktok.com/@2z_offical?_r=1&_t=ZS-96kSCZpQdl3" target="_blank" rel="noopener noreferrer" style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#f0ede6", textDecoration: "none" }}>TikTok</a>
       </div>
 
     </div>

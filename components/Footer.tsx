@@ -23,7 +23,7 @@ export default function Footer() {
                   <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
                 </svg>
               </a>
-              <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" aria-label="TikTok"
+              <a href="https://www.tiktok.com/@2z_offical?_r=1&_t=ZS-96kSCZpQdl3" target="_blank" rel="noopener noreferrer" aria-label="TikTok"
                 style={{ width: "36px", height: "36px", border: "1px solid rgba(240,237,230,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#b0aea8" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/>
