@@ -73,9 +73,9 @@ export default function CheckoutPage() {
       clearCart()
 
       // Redirect لـ Paymob
-    const redirectUrl = `https://2z-steel.vercel.app/order-confirmed?id=${data.orderId}&email=${encodeURIComponent(email)}`
-    const paymobUrl = `https://accept.paymob.com/unifiedcheckout/?publicKey=${process.env.NEXT_PUBLIC_PAYMOB_PUBLIC_KEY}&clientSecret=${data.clientSecret}&redirectUrl=${encodeURIComponent(redirectUrl)}`
-    window.location.href = paymobUrl
+    sessionStorage.setItem("pending_order_id", data.orderId)
+sessionStorage.setItem("pending_order_email", email)
+window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${process.env.NEXT_PUBLIC_PAYMOB_PUBLIC_KEY}&clientSecret=${data.clientSecret}`
     
   } catch {
       setError("Something went wrong")

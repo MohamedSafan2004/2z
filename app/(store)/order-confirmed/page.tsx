@@ -11,23 +11,27 @@ function OrderConfirmedContent() {
   const orderId = searchParams.get("id")
   const [verified, setVerified] = useState(false)
 
-  useEffect(() => {
-    if (!orderId || success === "false") return
+useEffect(() => {
+  const storedOrderId = sessionStorage.getItem("pending_order_id")
+  if (!storedOrderId || success === "false") return
 
-    const verify = async () => {
-      try {
-        const res = await fetch("/api/orders/verify-payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId }),
-        })
-        const data = await res.json()
-        if (data.status === "PAID") setVerified(true)
-      } catch {}
-    }
+  sessionStorage.removeItem("pending_order_id")
+  sessionStorage.removeItem("pending_order_email")
 
-    verify()
-  }, [orderId, success])
+  const verify = async () => {
+    try {
+      const res = await fetch("/api/orders/verify-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: storedOrderId }),
+      })
+      const data = await res.json()
+      if (data.status === "PAID") setVerified(true)
+    } catch {}
+  }
+
+  verify()
+}, [success])
 
   if (success === "false") {
     return (
