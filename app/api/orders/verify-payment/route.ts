@@ -39,7 +39,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: order.paymentStatus })
     }
 
-    const intention = await paymobRes.json()
+   const intention = await paymobRes.json()
+    console.log("Paymob intention response:", JSON.stringify(intention))
 
     // Paymob بيرجع confirmed لما الدفع نجح
     if (intention.status === "confirmed" || intention.payment_status === "PAID") {
