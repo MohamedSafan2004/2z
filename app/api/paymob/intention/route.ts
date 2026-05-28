@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
         billing_data: {
           first_name: user?.name || sanitize(email.split("@")[0]),
           last_name: ".",
-          email: email,
+           email: "2z.eg2004@gmail.com", // إيميل الـ Paymob account
           phone_number: phone,
           country: "EG",
           city: "Cairo",
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
         customer: {
           first_name: user?.name || sanitize(email.split("@")[0]),
           last_name: ".",
-          email: email,
+           email: "2z.eg2004@gmail.com", // إيميل الـ Paymob account
         },
         extras: {
           order_id: order.id,
