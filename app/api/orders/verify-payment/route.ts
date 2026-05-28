@@ -4,7 +4,7 @@ import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 
 export async function POST(req: NextRequest) {
   try {
-    const { orderId } = await req.json()
+    const { orderId, forceUpdate } = await req.json()
 
     if (!orderId) {
       return NextResponse.json({ error: "Order ID required" }, { status: 400 })
@@ -19,34 +19,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
     }
 
-    if (!order.paymentId) {
-      return NextResponse.json({ status: order.paymentStatus })
-    }
-
     if (order.paymentStatus === "PAID") {
       return NextResponse.json({ status: "PAID" })
     }
 
-    // نبحث عن transaction ناجح في Paymob
-    const paymobRes = await fetch(
-      `https://accept.paymob.com/v1/intention/${order.paymentId}/transactions/`,
-      {
-        headers: {
-          Authorization: `Token ${process.env.PAYMOB_SECRET_KEY}`,
-        },
-      }
-    )
-
-    if (!paymobRes.ok) {
-      return NextResponse.json({ status: order.paymentStatus })
-    }
-
-    const transactions = await paymobRes.json()
-    const successTx = Array.isArray(transactions)
-      ? transactions.find((tx: any) => tx.success === true)
-      : null
-
-    if (successTx) {
+    if (forceUpdate) {
       await db.order.update({
         where: { id: orderId },
         data: { paymentStatus: "PAID", status: "PAID" },
