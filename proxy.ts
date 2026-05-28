@@ -33,7 +33,7 @@ export function proxy(req: NextRequest) {
   }
 
   // غير كده، redirect على coming-soon
-  return NextResponse.redirect(new URL("/coming-soon", req.url))
+  // return NextResponse.redirect(new URL("/coming-soon", req.url))
 }
 
 export const config = {
