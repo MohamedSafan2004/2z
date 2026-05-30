@@ -188,7 +188,7 @@ async function markOrderPaid(order: OrderWithItems, txId: string): Promise<boole
   }
 
   const updated = await db.order.updateMany({
-    where: { id: order.id, paymentStatus: { in: ["PENDING", "FAILED", "CANCELLED"] } },
+    where: { id: order.id, paymentStatus: { in: ["PENDING", "FAILED"] } },
     data: { paymentStatus: "PAID", status: "PAID", paymobTransactionId: txId },
   })
 
