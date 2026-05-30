@@ -17,7 +17,7 @@ export default function ProductsPage() {
   useEffect(() => {
     fetch("/api/products")
       .then((r) => r.json())
-      .then((data) => { setProducts(data); setLoading(false) })
+      .then((data) => { setProducts(data.products || data); setLoading(false) })
   }, [])
 
   const filtered = active === "all"

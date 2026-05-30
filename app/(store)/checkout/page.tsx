@@ -14,6 +14,8 @@ const paymentMethods = [
   { id: "card",     label: "Credit / Debit Card", sub: "Visa & Mastercard",    available: true },
 ]
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
   const { user, token } = useAuth()
@@ -35,49 +37,69 @@ export default function CheckoutPage() {
   )
 
   const handleOrder = async () => {
-    if (!name || !email || !phone || !address) { setError("Please fill in all required fields"); return }
-    if (!/^01[0-9]{9}$/.test(phone)) { setError("Please enter a valid Egyptian phone number (01XXXXXXXXX)"); return }
+    if (loading) return
+
+    const trimmedName    = name.trim()
+    const trimmedEmail   = email.trim()
+    const trimmedPhone   = phone.trim()
+    const trimmedAddress = address.trim()
+
+    if (!trimmedName || !trimmedEmail || !trimmedPhone || !trimmedAddress) {
+      setError("Please fill in all required fields")
+      return
+    }
+    if (!emailRegex.test(trimmedEmail)) {
+      setError("Please enter a valid email address")
+      return
+    }
+    if (!/^01[0-9]{9}$/.test(trimmedPhone)) {
+      setError("Please enter a valid Egyptian phone number (01XXXXXXXXX)")
+      return
+    }
+
     setLoading(true)
     setError("")
 
     try {
-      // COD — نفس الـ flow القديم
       if (payment === "cod") {
         const res = await fetch("/api/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...(token && { Authorization: `Bearer ${token}` }) },
           body: JSON.stringify({
             items: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
-            address, phone, email, paymentMethod: "cod",
+            address: trimmedAddress, phone: trimmedPhone, email: trimmedEmail, paymentMethod: "cod",
           }),
         })
         const data = await res.json()
         if (!res.ok) { setError(data.error); return }
         clearCart()
-        if (user) { router.push("/orders") } else { router.push(`/order-confirmed?email=${encodeURIComponent(email)}`) }
+        if (user) { router.push("/orders") } else { router.push(`/order-confirmed?email=${encodeURIComponent(trimmedEmail)}`) }
         return
       }
 
-      // Card أو Vodafone — Paymob
       const res = await fetch("/api/paymob/intention", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token && { Authorization: `Bearer ${token}` }) },
         body: JSON.stringify({
           items: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
-          address, phone, email, paymentMethod: payment,
+          address: trimmedAddress, phone: trimmedPhone, email: trimmedEmail, paymentMethod: payment,
         }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error); return }
 
-      clearCart()
+      if (!data.clientSecret) {
+        setError("Payment session failed. Please try again.")
+        return
+      }
 
-      // Redirect لـ Paymob
-    sessionStorage.setItem("pending_order_id", data.orderId)
-sessionStorage.setItem("pending_order_email", email)
-window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${process.env.NEXT_PUBLIC_PAYMOB_PUBLIC_KEY}&clientSecret=${data.clientSecret}`
-    
-  } catch {
+      // لا نعمل clearCart هنا — بنعملها بعد تأكيد الدفع
+      sessionStorage.setItem("pending_order_id", data.orderId)
+      sessionStorage.setItem("pending_order_email", trimmedEmail)
+
+      window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${process.env.NEXT_PUBLIC_PAYMOB_PUBLIC_KEY}&clientSecret=${data.clientSecret}`
+
+    } catch {
       setError("Something went wrong")
     } finally {
       setLoading(false)
@@ -115,9 +137,7 @@ window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${p
         <style>{`@media (min-width: 768px) { .checkout-grid { grid-template-columns: 1fr 360px !important; gap: 64px !important; } }`}</style>
         <div className="checkout-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", alignItems: "start" }}>
 
-          {/* Left - Form */}
           <div>
-
             <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "16px" }}>Contact</p>
 
             <div style={{ marginBottom: "14px" }}>
@@ -159,17 +179,11 @@ window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${p
                     key={m.id}
                     onClick={() => setPayment(m.id as PaymentMethod)}
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "16px",
-                      padding: "16px",
+                      display: "flex", alignItems: "center", gap: "16px", padding: "16px",
                       background: isSelected ? "rgba(240,237,230,0.04)" : "transparent",
                       border: "1px solid rgba(240,237,230,0.12)",
                       borderTop: i === 0 ? "1px solid rgba(240,237,230,0.12)" : "none",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      width: "100%",
-                      transition: "background 0.15s",
+                      cursor: "pointer", textAlign: "left", width: "100%", transition: "background 0.15s",
                     }}
                   >
                     <div style={{
@@ -180,12 +194,10 @@ window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${p
                     }}>
                       {isSelected && <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#f0ede6" }} />}
                     </div>
-
                     <div style={{ flex: 1 }}>
                       <p style={{ fontSize: "11px", color: "#f0ede6", fontFamily: "Space Mono, monospace", margin: 0 }}>{m.label}</p>
                       <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", fontFamily: "Space Mono, monospace", margin: "3px 0 0", letterSpacing: "0.05em" }}>{m.sub}</p>
                     </div>
-
                     {isSelected && (
                       <div style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>Selected</div>
                     )}
@@ -195,10 +207,8 @@ window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${p
             </div>
 
             {error && <p style={{ fontSize: "10px", color: "#ff6b6b", marginTop: "16px", letterSpacing: "0.1em" }}>{error}</p>}
-
           </div>
 
-          {/* Right - Summary */}
           <div style={{ border: "1px solid rgba(240,237,230,0.08)", padding: "28px", position: "sticky", top: "80px" }}>
             <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "20px" }}>Order Summary</p>
 

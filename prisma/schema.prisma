@@ -65,6 +65,7 @@ model Order {
   items         OrderItem[]
   address       String?
   phone         String?
+  clientOrderId String?       @unique
 }
 
 model OrderItem {

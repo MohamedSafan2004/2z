@@ -4,7 +4,7 @@ import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 
 export async function POST(req: NextRequest) {
   try {
-    const { orderId, forceUpdate } = await req.json()
+    const { orderId } = await req.json()
 
     if (!orderId) {
       return NextResponse.json({ error: "Order ID required" }, { status: 400 })
@@ -23,39 +23,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: "PAID" })
     }
 
-    if (forceUpdate) {
-      await db.order.update({
-        where: { id: orderId },
-        data: { paymentStatus: "PAID", status: "PAID" },
-      })
+    if (!order.paymentId) {
+      return NextResponse.json({ status: order.paymentStatus })
+    }
 
-      const emailTo = order.guestEmail || order.user?.email
-      if (emailTo) {
-        try {
-          await sendOrderConfirmation({
-            to: emailTo,
-            orderNumber: order.id,
-            items: order.items.map((item: any) => ({
-              name: item.productNameSnapshot,
-              color: item.colorSnapshot,
-              size: item.sizeSnapshot,
-              quantity: item.quantity,
-              price: Number(item.priceSnapshot),
-            })),
-            total: Number(order.totalAmount),
-            address: order.address || "",
-          })
-        } catch {}
+    // نسأل Paymob عن الـ transactions
+    const paymobRes = await fetch(
+      `https://accept.paymob.com/v1/intention/${order.paymentId}/transactions/`,
+      {
+        headers: { Authorization: `Token ${process.env.PAYMOB_SECRET_KEY}` },
       }
+    )
 
+    if (!paymobRes.ok) {
+      return NextResponse.json({ status: order.paymentStatus })
+    }
+
+    const transactions = await paymobRes.json()
+    const successTx = Array.isArray(transactions)
+      ? transactions.find((tx) => tx.success === true)
+      : null
+
+    if (!successTx) {
+      return NextResponse.json({ status: order.paymentStatus })
+    }
+
+    // update فقط لو مش PAID عشان نتجنب race condition
+    await db.order.update({
+      where: { id: orderId, paymentStatus: { not: "PAID" } },
+      data: { paymentStatus: "PAID", status: "PAID" },
+    })
+
+    const emailTo = order.guestEmail || order.user?.email
+    if (emailTo) {
       try {
-        await sendAdminNotification({
+        await sendOrderConfirmation({
+          to: emailTo,
           orderNumber: order.id,
-          customerName: order.user?.name || "Guest",
-          customerEmail: emailTo || "",
-          customerPhone: order.phone || "",
-          address: order.address || "",
-          items: order.items.map((item: any) => ({
+          items: order.items.map((item: typeof order.items[number]) => ({
             name: item.productNameSnapshot,
             color: item.colorSnapshot,
             size: item.sizeSnapshot,
@@ -63,13 +68,35 @@ export async function POST(req: NextRequest) {
             price: Number(item.priceSnapshot),
           })),
           total: Number(order.totalAmount),
+          address: order.address || "",
         })
-      } catch {}
-
-      return NextResponse.json({ status: "PAID" })
+      } catch (error) {
+        console.error("Customer email failed:", error)
+      }
     }
 
-    return NextResponse.json({ status: order.paymentStatus })
+    try {
+      await sendAdminNotification({
+        orderNumber: order.id,
+        customerName: order.user?.name || "Guest",
+        customerEmail: emailTo || "",
+        customerPhone: order.phone || "",
+        address: order.address || "",
+        items: order.items.map((item: typeof order.items[number]) => ({
+          name: item.productNameSnapshot,
+          color: item.colorSnapshot,
+          size: item.sizeSnapshot,
+          quantity: item.quantity,
+          price: Number(item.priceSnapshot),
+        })),
+        total: Number(order.totalAmount),
+      })
+    } catch (error) {
+      console.error("Admin email failed:", error)
+    }
+
+    return NextResponse.json({ status: "PAID" })
+
   } catch (error) {
     console.error("Verify payment error:", error)
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })

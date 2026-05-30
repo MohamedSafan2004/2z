@@ -1,77 +1,108 @@
-import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/lib/db"
-import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
+"use client"
 
-export async function POST(req: NextRequest) {
-  try {
-    const { orderId, forceUpdate } = await req.json()
+import { Suspense, useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { useCart } from "@/lib/store/cart"
+import Link from "next/link"
 
-    if (!orderId) {
-      return NextResponse.json({ error: "Order ID required" }, { status: 400 })
+function OrderConfirmedContent() {
+  const searchParams = useSearchParams()
+  const email = searchParams.get("email")
+  const success = searchParams.get("success")
+  const orderId = searchParams.get("id")
+  const { clearCart } = useCart()
+  const [verified, setVerified] = useState(false)
+
+  useEffect(() => {
+    const storedOrderId = sessionStorage.getItem("pending_order_id")
+    if (!storedOrderId) return
+
+    const successParam = new URLSearchParams(window.location.search).get("success")
+    if (successParam !== "true") {
+      // دفع فاشل — نمسح الـ session بس منمسحش الكارت
+      sessionStorage.removeItem("pending_order_id")
+      sessionStorage.removeItem("pending_order_email")
+      return
     }
 
-    const order = await db.order.findUnique({
-      where: { id: orderId },
-      include: { items: true, user: true },
+    sessionStorage.removeItem("pending_order_id")
+    sessionStorage.removeItem("pending_order_email")
+
+    fetch("/api/orders/verify-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId: storedOrderId }),
     })
-
-    if (!order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 })
-    }
-
-    if (order.paymentStatus === "PAID") {
-      return NextResponse.json({ status: "PAID" })
-    }
-
-    if (forceUpdate) {
-      await db.order.update({
-        where: { id: orderId },
-        data: { paymentStatus: "PAID", status: "PAID" },
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "PAID") {
+          clearCart()
+          setVerified(true)
+        }
       })
+      .catch((error) => {
+        console.error("Payment verification failed:", error)
+      })
+  }, [])
 
-      const emailTo = order.guestEmail || order.user?.email
-      if (emailTo) {
-        try {
-          await sendOrderConfirmation({
-            to: emailTo,
-            orderNumber: order.id,
-            items: order.items.map((item: any) => ({
-              name: item.productNameSnapshot,
-              color: item.colorSnapshot,
-              size: item.sizeSnapshot,
-              quantity: item.quantity,
-              price: Number(item.priceSnapshot),
-            })),
-            total: Number(order.totalAmount),
-            address: order.address || "",
-          })
-        } catch {}
-      }
-
-      try {
-        await sendAdminNotification({
-          orderNumber: order.id,
-          customerName: order.user?.name || "Guest",
-          customerEmail: emailTo || "",
-          customerPhone: order.phone || "",
-          address: order.address || "",
-          items: order.items.map((item: any) => ({
-            name: item.productNameSnapshot,
-            color: item.colorSnapshot,
-            size: item.sizeSnapshot,
-            quantity: item.quantity,
-            price: Number(item.priceSnapshot),
-          })),
-          total: Number(order.totalAmount),
-        })
-      } catch {}
-
-      return NextResponse.json({ status: "PAID" })
-    }
-
-    return NextResponse.json({ status: order.paymentStatus })
-  } catch (error) {
-    console.error("Verify payment error:", error)
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
+  if (success === "false") {
+    return (
+      <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace", padding: "24px", textAlign: "center" }}>
+        <div style={{ width: "64px", height: "64px", border: "1px solid rgba(240,237,230,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "24px" }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.7)" strokeWidth="1.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </div>
+        <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "8px" }}>Payment Failed</p>
+        <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "36px", fontWeight: 300, color: "#f0ede6", marginBottom: "16px" }}>Something went wrong</h1>
+        <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)", lineHeight: 2, marginBottom: "32px" }}>
+          Your payment was not completed. Your order has been cancelled.
+        </p>
+        <Link href="/cart" style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#f0ede6", border: "1px solid rgba(240,237,230,0.3)", padding: "12px 24px", textDecoration: "none" }}>
+          Try Again
+        </Link>
+      </div>
+    )
   }
+
+  return (
+    <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace", padding: "24px", textAlign: "center" }}>
+      <div style={{ width: "64px", height: "64px", border: "1px solid rgba(240,237,230,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "24px" }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.7)" strokeWidth="1.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "8px" }}>Thank you</p>
+      <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "36px", fontWeight: 300, color: "#f0ede6", marginBottom: "16px" }}>Order Confirmed</h1>
+      <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)", lineHeight: 2, marginBottom: "8px" }}>
+        Your order has been placed successfully.
+      </p>
+      {email && (
+        <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)", lineHeight: 2, marginBottom: "32px" }}>
+          A confirmation has been sent to <span style={{ color: "#f0ede6" }}>{email}</span>
+        </p>
+      )}
+      {orderId && (
+        <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)", marginBottom: "32px", letterSpacing: "0.1em" }}>
+          Order #{orderId.slice(0, 8).toUpperCase()}
+        </p>
+      )}
+      <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)", lineHeight: 2, marginBottom: "32px" }}>
+        Want to track your order?{" "}
+        <Link href="/register" style={{ color: "#f0ede6", textDecoration: "underline" }}>Create an account</Link>
+        {" "}with the same email.
+      </p>
+      <Link href="/products" style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#f0ede6", border: "1px solid rgba(240,237,230,0.3)", padding: "12px 24px", textDecoration: "none" }}>
+        Continue Shopping
+      </Link>
+    </div>
+  )
+}
+
+export default function OrderConfirmedPage() {
+  return (
+    <Suspense>
+      <OrderConfirmedContent />
+    </Suspense>
+  )
 }
