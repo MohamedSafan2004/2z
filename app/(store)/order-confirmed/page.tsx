@@ -32,14 +32,15 @@ function OrderConfirmedContent() {
     localStorage.removeItem("pending_verify_token")
     localStorage.removeItem("pending_order_email")
 
-    fetch("/api/orders/verify-payment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orderId: storedOrderId,
-        verifyToken: storedVerifyToken || "",
-      }),
-    })
+  fetch("/api/orders/verify-payment", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      orderId: storedOrderId,
+      verifyToken: storedVerifyToken || "",
+      paymobParams: window.location.search,
+  }),
+})
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "PAID") {
