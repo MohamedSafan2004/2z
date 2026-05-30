@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
       const newOrder = await tx.order.create({
         data: {
           ...(auth.userId && {
-          user: { connect: { id: auth.userId } },
+            user: { connect: { id: auth.userId } },
           }),
           totalAmount,
           guestEmail: email || null,
@@ -202,6 +202,12 @@ export async function POST(req: NextRequest) {
       await rollbackOrder(order.id, items)
       return NextResponse.json({ error: "Payment initialization failed" }, { status: 500 })
     }
+
+    // نحفظ الـ paymentId عشان الـ verify-payment يقدر يعمل polling
+    await db.order.update({
+      where: { id: order.id },
+      data: { paymentId: intention.id },
+    })
 
     return NextResponse.json({
       clientSecret: intention.client_secret,
