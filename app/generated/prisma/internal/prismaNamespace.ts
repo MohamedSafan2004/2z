@@ -953,7 +953,13 @@ export const OrderScalarFieldEnum = {
   createdAt: 'createdAt',
   guestEmail: 'guestEmail',
   address: 'address',
-  phone: 'phone'
+  phone: 'phone',
+  clientOrderId: 'clientOrderId',
+  verifyToken: 'verifyToken',
+  lastPaymentCheckAt: 'lastPaymentCheckAt',
+  paymobTransactionId: 'paymobTransactionId',
+  confirmationEmailSent: 'confirmationEmailSent',
+  adminEmailSent: 'adminEmailSent'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]

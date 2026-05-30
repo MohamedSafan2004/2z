@@ -45,6 +45,12 @@ export type OrderMinAggregateOutputType = {
   guestEmail: string | null
   address: string | null
   phone: string | null
+  clientOrderId: string | null
+  verifyToken: string | null
+  lastPaymentCheckAt: Date | null
+  paymobTransactionId: string | null
+  confirmationEmailSent: boolean | null
+  adminEmailSent: boolean | null
 }
 
 export type OrderMaxAggregateOutputType = {
@@ -58,6 +64,12 @@ export type OrderMaxAggregateOutputType = {
   guestEmail: string | null
   address: string | null
   phone: string | null
+  clientOrderId: string | null
+  verifyToken: string | null
+  lastPaymentCheckAt: Date | null
+  paymobTransactionId: string | null
+  confirmationEmailSent: boolean | null
+  adminEmailSent: boolean | null
 }
 
 export type OrderCountAggregateOutputType = {
@@ -71,6 +83,12 @@ export type OrderCountAggregateOutputType = {
   guestEmail: number
   address: number
   phone: number
+  clientOrderId: number
+  verifyToken: number
+  lastPaymentCheckAt: number
+  paymobTransactionId: number
+  confirmationEmailSent: number
+  adminEmailSent: number
   _all: number
 }
 
@@ -94,6 +112,12 @@ export type OrderMinAggregateInputType = {
   guestEmail?: true
   address?: true
   phone?: true
+  clientOrderId?: true
+  verifyToken?: true
+  lastPaymentCheckAt?: true
+  paymobTransactionId?: true
+  confirmationEmailSent?: true
+  adminEmailSent?: true
 }
 
 export type OrderMaxAggregateInputType = {
@@ -107,6 +131,12 @@ export type OrderMaxAggregateInputType = {
   guestEmail?: true
   address?: true
   phone?: true
+  clientOrderId?: true
+  verifyToken?: true
+  lastPaymentCheckAt?: true
+  paymobTransactionId?: true
+  confirmationEmailSent?: true
+  adminEmailSent?: true
 }
 
 export type OrderCountAggregateInputType = {
@@ -120,6 +150,12 @@ export type OrderCountAggregateInputType = {
   guestEmail?: true
   address?: true
   phone?: true
+  clientOrderId?: true
+  verifyToken?: true
+  lastPaymentCheckAt?: true
+  paymobTransactionId?: true
+  confirmationEmailSent?: true
+  adminEmailSent?: true
   _all?: true
 }
 
@@ -220,6 +256,12 @@ export type OrderGroupByOutputType = {
   guestEmail: string | null
   address: string | null
   phone: string | null
+  clientOrderId: string | null
+  verifyToken: string | null
+  lastPaymentCheckAt: Date | null
+  paymobTransactionId: string | null
+  confirmationEmailSent: boolean
+  adminEmailSent: boolean
   _count: OrderCountAggregateOutputType | null
   _avg: OrderAvgAggregateOutputType | null
   _sum: OrderSumAggregateOutputType | null
@@ -256,6 +298,12 @@ export type OrderWhereInput = {
   guestEmail?: Prisma.StringNullableFilter<"Order"> | string | null
   address?: Prisma.StringNullableFilter<"Order"> | string | null
   phone?: Prisma.StringNullableFilter<"Order"> | string | null
+  clientOrderId?: Prisma.StringNullableFilter<"Order"> | string | null
+  verifyToken?: Prisma.StringNullableFilter<"Order"> | string | null
+  lastPaymentCheckAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  paymobTransactionId?: Prisma.StringNullableFilter<"Order"> | string | null
+  confirmationEmailSent?: Prisma.BoolFilter<"Order"> | boolean
+  adminEmailSent?: Prisma.BoolFilter<"Order"> | boolean
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
 }
@@ -271,12 +319,20 @@ export type OrderOrderByWithRelationInput = {
   guestEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  clientOrderId?: Prisma.SortOrderInput | Prisma.SortOrder
+  verifyToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastPaymentCheckAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymobTransactionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmationEmailSent?: Prisma.SortOrder
+  adminEmailSent?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   items?: Prisma.OrderItemOrderByRelationAggregateInput
 }
 
 export type OrderWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  clientOrderId?: string
+  verifyToken?: string
   AND?: Prisma.OrderWhereInput | Prisma.OrderWhereInput[]
   OR?: Prisma.OrderWhereInput[]
   NOT?: Prisma.OrderWhereInput | Prisma.OrderWhereInput[]
@@ -289,9 +345,13 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   guestEmail?: Prisma.StringNullableFilter<"Order"> | string | null
   address?: Prisma.StringNullableFilter<"Order"> | string | null
   phone?: Prisma.StringNullableFilter<"Order"> | string | null
+  lastPaymentCheckAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  paymobTransactionId?: Prisma.StringNullableFilter<"Order"> | string | null
+  confirmationEmailSent?: Prisma.BoolFilter<"Order"> | boolean
+  adminEmailSent?: Prisma.BoolFilter<"Order"> | boolean
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
-}, "id">
+}, "id" | "clientOrderId" | "verifyToken">
 
 export type OrderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -304,6 +364,12 @@ export type OrderOrderByWithAggregationInput = {
   guestEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  clientOrderId?: Prisma.SortOrderInput | Prisma.SortOrder
+  verifyToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastPaymentCheckAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymobTransactionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmationEmailSent?: Prisma.SortOrder
+  adminEmailSent?: Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
   _avg?: Prisma.OrderAvgOrderByAggregateInput
   _max?: Prisma.OrderMaxOrderByAggregateInput
@@ -325,6 +391,12 @@ export type OrderScalarWhereWithAggregatesInput = {
   guestEmail?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   address?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  clientOrderId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  verifyToken?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  lastPaymentCheckAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  paymobTransactionId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  confirmationEmailSent?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
+  adminEmailSent?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
 }
 
 export type OrderCreateInput = {
@@ -337,6 +409,12 @@ export type OrderCreateInput = {
   guestEmail?: string | null
   address?: string | null
   phone?: string | null
+  clientOrderId?: string | null
+  verifyToken?: string | null
+  lastPaymentCheckAt?: Date | string | null
+  paymobTransactionId?: string | null
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
 }
@@ -352,6 +430,12 @@ export type OrderUncheckedCreateInput = {
   guestEmail?: string | null
   address?: string | null
   phone?: string | null
+  clientOrderId?: string | null
+  verifyToken?: string | null
+  lastPaymentCheckAt?: Date | string | null
+  paymobTransactionId?: string | null
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
 }
 
@@ -365,6 +449,12 @@ export type OrderUpdateInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastPaymentCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymobTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
 }
@@ -380,6 +470,12 @@ export type OrderUncheckedUpdateInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastPaymentCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymobTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
 }
 
@@ -394,6 +490,12 @@ export type OrderCreateManyInput = {
   guestEmail?: string | null
   address?: string | null
   phone?: string | null
+  clientOrderId?: string | null
+  verifyToken?: string | null
+  lastPaymentCheckAt?: Date | string | null
+  paymobTransactionId?: string | null
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
 }
 
 export type OrderUpdateManyMutationInput = {
@@ -406,6 +508,12 @@ export type OrderUpdateManyMutationInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastPaymentCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymobTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type OrderUncheckedUpdateManyInput = {
@@ -419,6 +527,12 @@ export type OrderUncheckedUpdateManyInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastPaymentCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymobTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type OrderListRelationFilter = {
@@ -442,6 +556,12 @@ export type OrderCountOrderByAggregateInput = {
   guestEmail?: Prisma.SortOrder
   address?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  clientOrderId?: Prisma.SortOrder
+  verifyToken?: Prisma.SortOrder
+  lastPaymentCheckAt?: Prisma.SortOrder
+  paymobTransactionId?: Prisma.SortOrder
+  confirmationEmailSent?: Prisma.SortOrder
+  adminEmailSent?: Prisma.SortOrder
 }
 
 export type OrderAvgOrderByAggregateInput = {
@@ -459,6 +579,12 @@ export type OrderMaxOrderByAggregateInput = {
   guestEmail?: Prisma.SortOrder
   address?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  clientOrderId?: Prisma.SortOrder
+  verifyToken?: Prisma.SortOrder
+  lastPaymentCheckAt?: Prisma.SortOrder
+  paymobTransactionId?: Prisma.SortOrder
+  confirmationEmailSent?: Prisma.SortOrder
+  adminEmailSent?: Prisma.SortOrder
 }
 
 export type OrderMinOrderByAggregateInput = {
@@ -472,6 +598,12 @@ export type OrderMinOrderByAggregateInput = {
   guestEmail?: Prisma.SortOrder
   address?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  clientOrderId?: Prisma.SortOrder
+  verifyToken?: Prisma.SortOrder
+  lastPaymentCheckAt?: Prisma.SortOrder
+  paymobTransactionId?: Prisma.SortOrder
+  confirmationEmailSent?: Prisma.SortOrder
+  adminEmailSent?: Prisma.SortOrder
 }
 
 export type OrderSumOrderByAggregateInput = {
@@ -557,6 +689,12 @@ export type OrderCreateWithoutUserInput = {
   guestEmail?: string | null
   address?: string | null
   phone?: string | null
+  clientOrderId?: string | null
+  verifyToken?: string | null
+  lastPaymentCheckAt?: Date | string | null
+  paymobTransactionId?: string | null
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
 }
 
@@ -570,6 +708,12 @@ export type OrderUncheckedCreateWithoutUserInput = {
   guestEmail?: string | null
   address?: string | null
   phone?: string | null
+  clientOrderId?: string | null
+  verifyToken?: string | null
+  lastPaymentCheckAt?: Date | string | null
+  paymobTransactionId?: string | null
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
 }
 
@@ -613,6 +757,12 @@ export type OrderScalarWhereInput = {
   guestEmail?: Prisma.StringNullableFilter<"Order"> | string | null
   address?: Prisma.StringNullableFilter<"Order"> | string | null
   phone?: Prisma.StringNullableFilter<"Order"> | string | null
+  clientOrderId?: Prisma.StringNullableFilter<"Order"> | string | null
+  verifyToken?: Prisma.StringNullableFilter<"Order"> | string | null
+  lastPaymentCheckAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  paymobTransactionId?: Prisma.StringNullableFilter<"Order"> | string | null
+  confirmationEmailSent?: Prisma.BoolFilter<"Order"> | boolean
+  adminEmailSent?: Prisma.BoolFilter<"Order"> | boolean
 }
 
 export type OrderCreateWithoutItemsInput = {
@@ -625,6 +775,12 @@ export type OrderCreateWithoutItemsInput = {
   guestEmail?: string | null
   address?: string | null
   phone?: string | null
+  clientOrderId?: string | null
+  verifyToken?: string | null
+  lastPaymentCheckAt?: Date | string | null
+  paymobTransactionId?: string | null
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
 }
 
@@ -639,6 +795,12 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   guestEmail?: string | null
   address?: string | null
   phone?: string | null
+  clientOrderId?: string | null
+  verifyToken?: string | null
+  lastPaymentCheckAt?: Date | string | null
+  paymobTransactionId?: string | null
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
 }
 
 export type OrderCreateOrConnectWithoutItemsInput = {
@@ -667,6 +829,12 @@ export type OrderUpdateWithoutItemsInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastPaymentCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymobTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
 }
 
@@ -681,6 +849,12 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastPaymentCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymobTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type OrderCreateManyUserInput = {
@@ -693,6 +867,12 @@ export type OrderCreateManyUserInput = {
   guestEmail?: string | null
   address?: string | null
   phone?: string | null
+  clientOrderId?: string | null
+  verifyToken?: string | null
+  lastPaymentCheckAt?: Date | string | null
+  paymobTransactionId?: string | null
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
 }
 
 export type OrderUpdateWithoutUserInput = {
@@ -705,6 +885,12 @@ export type OrderUpdateWithoutUserInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastPaymentCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymobTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
 }
 
@@ -718,6 +904,12 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastPaymentCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymobTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
 }
 
@@ -731,6 +923,12 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastPaymentCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymobTransactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -775,6 +973,12 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   guestEmail?: boolean
   address?: boolean
   phone?: boolean
+  clientOrderId?: boolean
+  verifyToken?: boolean
+  lastPaymentCheckAt?: boolean
+  paymobTransactionId?: boolean
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
   _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
@@ -791,6 +995,12 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   guestEmail?: boolean
   address?: boolean
   phone?: boolean
+  clientOrderId?: boolean
+  verifyToken?: boolean
+  lastPaymentCheckAt?: boolean
+  paymobTransactionId?: boolean
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
@@ -805,6 +1015,12 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   guestEmail?: boolean
   address?: boolean
   phone?: boolean
+  clientOrderId?: boolean
+  verifyToken?: boolean
+  lastPaymentCheckAt?: boolean
+  paymobTransactionId?: boolean
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
@@ -819,9 +1035,15 @@ export type OrderSelectScalar = {
   guestEmail?: boolean
   address?: boolean
   phone?: boolean
+  clientOrderId?: boolean
+  verifyToken?: boolean
+  lastPaymentCheckAt?: boolean
+  paymobTransactionId?: boolean
+  confirmationEmailSent?: boolean
+  adminEmailSent?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "totalAmount" | "status" | "paymentId" | "paymentStatus" | "createdAt" | "guestEmail" | "address" | "phone", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "totalAmount" | "status" | "paymentId" | "paymentStatus" | "createdAt" | "guestEmail" | "address" | "phone" | "clientOrderId" | "verifyToken" | "lastPaymentCheckAt" | "paymobTransactionId" | "confirmationEmailSent" | "adminEmailSent", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
@@ -851,6 +1073,12 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     guestEmail: string | null
     address: string | null
     phone: string | null
+    clientOrderId: string | null
+    verifyToken: string | null
+    lastPaymentCheckAt: Date | null
+    paymobTransactionId: string | null
+    confirmationEmailSent: boolean
+    adminEmailSent: boolean
   }, ExtArgs["result"]["order"]>
   composites: {}
 }
@@ -1286,6 +1514,12 @@ export interface OrderFieldRefs {
   readonly guestEmail: Prisma.FieldRef<"Order", 'String'>
   readonly address: Prisma.FieldRef<"Order", 'String'>
   readonly phone: Prisma.FieldRef<"Order", 'String'>
+  readonly clientOrderId: Prisma.FieldRef<"Order", 'String'>
+  readonly verifyToken: Prisma.FieldRef<"Order", 'String'>
+  readonly lastPaymentCheckAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly paymobTransactionId: Prisma.FieldRef<"Order", 'String'>
+  readonly confirmationEmailSent: Prisma.FieldRef<"Order", 'Boolean'>
+  readonly adminEmailSent: Prisma.FieldRef<"Order", 'Boolean'>
 }
     
 
