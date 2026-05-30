@@ -11,25 +11,11 @@ function verifyWebhook(body: any, hmacSecret: string): boolean {
   const obj = body.obj || {}
 
   const dataToHash = [
-    obj.amount_cents,
-    obj.created_at,
-    obj.currency,
-    obj.error_occured,
-    obj.has_parent_transaction,
-    obj.id,
-    obj.integration_id,
-    obj.is_3d_secure,
-    obj.is_auth,
-    obj.is_capture,
-    obj.is_refunded,
-    obj.is_standalone_payment,
-    obj.is_voided,
-    obj.order?.id,
-    obj.owner,
-    obj.pending,
-    obj.source_data?.pan,
-    obj.source_data?.sub_type,
-    obj.source_data?.type,
+    obj.amount_cents, obj.created_at, obj.currency, obj.error_occured,
+    obj.has_parent_transaction, obj.id, obj.integration_id, obj.is_3d_secure,
+    obj.is_auth, obj.is_capture, obj.is_refunded, obj.is_standalone_payment,
+    obj.is_voided, obj.order?.id, obj.owner, obj.pending,
+    obj.source_data?.pan, obj.source_data?.sub_type, obj.source_data?.type,
     obj.success,
   ]
     .map((v) => (v === undefined || v === null ? "" : String(v)))
@@ -79,7 +65,6 @@ export async function POST(req: NextRequest) {
       obj.success === false &&
       obj.pending === false
 
-    // أي حالة تانية (pending, auth, retry) نتجاهلها بأمان
     if (!isSuccess && !isFailed) {
       return NextResponse.json({ ignored: true })
     }
@@ -98,29 +83,70 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
     }
 
-    // replay protection — لو نفس الـ transaction اتعمل قبل كده نتجاهله
     const txId = String(obj.id)
-    if (order.paymentId === txId) {
+
+    // replay protection
+    if (order.paymobTransactionId === txId && order.paymentStatus === "PAID") {
       return NextResponse.json({ ignored: true })
     }
 
     if (isSuccess) {
-      // idempotency — update بشرط إن الـ status لسه PENDING
       const updated = await db.order.updateMany({
-        where: { id: order.id, paymentStatus: "PENDING" },
-        data: { paymentStatus: "PAID", status: "PAID", paymentId: txId },
+        where: { id: order.id, paymentStatus: { in: ["PENDING", "FAILED"] } },
+        data: { paymentStatus: "PAID", status: "PAID", paymobTransactionId: txId },
       })
 
       if (updated.count === 0) {
         return NextResponse.json({ received: true })
       }
 
-      const emailTo = order.guestEmail || order.user?.email
-      if (emailTo) {
+      // email deduplication — نفس الـ atomic guard زي الـ verify-payment
+      const customerGuard = await db.order.updateMany({
+        where: { id: order.id, confirmationEmailSent: false },
+        data: { confirmationEmailSent: true },
+      })
+
+      if (customerGuard.count > 0) {
+        const emailTo = order.guestEmail || order.user?.email
+        if (emailTo) {
+          try {
+            await sendOrderConfirmation({
+              to: emailTo,
+              orderNumber: order.id,
+              items: order.items.map((item: typeof order.items[number]) => ({
+                name: item.productNameSnapshot,
+                color: item.colorSnapshot,
+                size: item.sizeSnapshot,
+                quantity: item.quantity,
+                price: Number(item.priceSnapshot),
+              })),
+              total: Number(order.totalAmount),
+              address: order.address || "",
+            })
+          } catch (error) {
+            console.error("Customer email failed:", error)
+            await db.order.updateMany({
+              where: { id: order.id },
+              data: { confirmationEmailSent: false },
+            }).catch(() => {})
+          }
+        }
+      }
+
+      const adminGuard = await db.order.updateMany({
+        where: { id: order.id, adminEmailSent: false },
+        data: { adminEmailSent: true },
+      })
+
+      if (adminGuard.count > 0) {
+        const emailTo = order.guestEmail || order.user?.email
         try {
-          await sendOrderConfirmation({
-            to: emailTo,
+          await sendAdminNotification({
             orderNumber: order.id,
+            customerName: order.user?.name || "Guest",
+            customerEmail: emailTo || "",
+            customerPhone: order.phone || "",
+            address: order.address || "",
             items: order.items.map((item: typeof order.items[number]) => ({
               name: item.productNameSnapshot,
               color: item.colorSnapshot,
@@ -129,56 +155,34 @@ export async function POST(req: NextRequest) {
               price: Number(item.priceSnapshot),
             })),
             total: Number(order.totalAmount),
-            address: order.address || "",
           })
         } catch (error) {
-          console.error("Customer email failed:", error)
+          console.error("Admin email failed:", error)
+          await db.order.updateMany({
+            where: { id: order.id },
+            data: { adminEmailSent: false },
+          }).catch(() => {})
         }
-      }
-
-      try {
-        await sendAdminNotification({
-          orderNumber: order.id,
-          customerName: order.user?.name || "Guest",
-          customerEmail: emailTo || "",
-          customerPhone: order.phone || "",
-          address: order.address || "",
-          items: order.items.map((item : typeof order.items[number]) => ({
-            name: item.productNameSnapshot,
-            color: item.colorSnapshot,
-            size: item.sizeSnapshot,
-            quantity: item.quantity,
-            price: Number(item.priceSnapshot),
-          })),
-          total: Number(order.totalAmount),
-        })
-      } catch (error) {
-        console.error("Admin email failed:", error)
       }
     }
 
     if (isFailed) {
-      // idempotency — update بشرط إن الـ status لسه PENDING
-      const updated = await db.order.updateMany({
-        where: { id: order.id, paymentStatus: "PENDING" },
-        data: { paymentStatus: "FAILED", status: "CANCELLED" },
-      })
+      // stock restore داخل transaction واحدة
+      await db.$transaction(async (tx: typeof db) => {
+        const updated = await tx.order.updateMany({
+          where: { id: order.id, paymentStatus: "PENDING" },
+          data: { paymentStatus: "FAILED", status: "CANCELLED" },
+        })
 
-      if (updated.count === 0) {
-        return NextResponse.json({ received: true })
-      }
+        if (updated.count === 0) return
 
-      // نرجع الـ stock بعد التأكيد إن الـ update اتعمل
-      for (const item of order.items) {
-        try {
-          await db.productVariant.update({
+        for (const item of order.items) {
+          await tx.productVariant.update({
             where: { id: item.variantId },
             data: { stockQuantity: { increment: item.quantity } },
           })
-        } catch (error) {
-          console.error(`Stock restore failed for variant ${item.variantId}:`, error)
         }
-      }
+      })
     }
 
     return NextResponse.json({ received: true })

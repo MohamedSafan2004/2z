@@ -5,6 +5,7 @@ import { requireAuth, optionalAuth } from "@/lib/middleware"
 import { orderRatelimit } from "@/lib/ratelimit"
 import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 import { sanitize } from "@/lib/validation"
+import crypto from "crypto"
 
 type CartItem = { variantId: string; quantity: number }
 
@@ -52,7 +53,10 @@ export async function POST(req: NextRequest) {
         include: { items: true },
       })
       if (existing) {
-        return NextResponse.json(existing, { status: 201 })
+        return NextResponse.json(
+          { ...existing, verifyToken: existing.verifyToken },
+          { status: 201 }
+        )
       }
     }
 
@@ -60,12 +64,11 @@ export async function POST(req: NextRequest) {
     const variants = await db.productVariant.findMany({
       where: {
         id: { in: variantIds },
-        product: { isActive: true }, // تأكد إن المنتج active
+        product: { isActive: true },
       },
       include: { product: true },
     })
 
-    // تحقق إن كل الـ variants موجودين
     for (const item of items) {
       const variant = variants.find((v: typeof variants[number]) => v.id === item.variantId)
       if (!variant) {
@@ -73,7 +76,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // السعر بيتحسب من الـ DB مش من الـ client
     const totalAmount = items.reduce((total: number, item: CartItem) => {
       const variant = variants.find((v: typeof variants[number]) => v.id === item.variantId)!
       return total + Number(variant.product.price) * item.quantity
@@ -83,8 +85,9 @@ export async function POST(req: NextRequest) {
       ? await db.user.findUnique({ where: { id: auth.userId } })
       : null
 
+    const verifyToken = crypto.randomBytes(32).toString("hex")
+
     const order = await db.$transaction(async (tx: typeof db) => {
-      // 1. re-check stock داخل الـ transaction لمنع race conditions
       for (const item of items) {
         const freshVariant = await tx.productVariant.findUnique({
           where: { id: item.variantId },
@@ -94,7 +97,6 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 2. decrement stock
       for (const item of items) {
         await tx.productVariant.update({
           where: { id: item.variantId },
@@ -102,7 +104,6 @@ export async function POST(req: NextRequest) {
         })
       }
 
-      // 3. create order
       const newOrder = await tx.order.create({
         data: {
           userId: auth.userId || undefined,
@@ -111,6 +112,7 @@ export async function POST(req: NextRequest) {
           address: sanitize(address),
           phone: sanitize(phone),
           clientOrderId: clientOrderId || null,
+          verifyToken,
           items: {
             create: items.map((item: CartItem) => {
               const variant = variants.find((v: typeof variants[number]) => v.id === item.variantId)!
@@ -173,7 +175,7 @@ export async function POST(req: NextRequest) {
       console.error("Admin notification failed:", error)
     }
 
-    return NextResponse.json(order, { status: 201 })
+    return NextResponse.json({ ...order, verifyToken }, { status: 201 })
   } catch (error) {
     console.error("Order creation error:", error)
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
@@ -185,7 +187,6 @@ export async function GET(req: NextRequest) {
     const auth = requireAuth(req)
     if ("error" in auth) return auth.error
 
-    // بنجيب الـ orders بالـ userId فقط — أأمن من الـ email matching
     const orders = await db.order.findMany({
       where: { userId: auth.userId },
       include: { items: true },

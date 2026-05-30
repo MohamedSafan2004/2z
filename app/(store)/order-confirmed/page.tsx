@@ -15,23 +15,30 @@ function OrderConfirmedContent() {
 
   useEffect(() => {
     const storedOrderId = sessionStorage.getItem("pending_order_id")
+    const storedVerifyToken = sessionStorage.getItem("pending_verify_token")
+
     if (!storedOrderId) return
 
     const successParam = new URLSearchParams(window.location.search).get("success")
+
     if (successParam !== "true") {
-      // دفع فاشل — نمسح الـ session بس منمسحش الكارت
       sessionStorage.removeItem("pending_order_id")
+      sessionStorage.removeItem("pending_verify_token")
       sessionStorage.removeItem("pending_order_email")
       return
     }
 
     sessionStorage.removeItem("pending_order_id")
+    sessionStorage.removeItem("pending_verify_token")
     sessionStorage.removeItem("pending_order_email")
 
     fetch("/api/orders/verify-payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId: storedOrderId }),
+      body: JSON.stringify({
+        orderId: storedOrderId,
+        verifyToken: storedVerifyToken || "",
+      }),
     })
       .then((res) => res.json())
       .then((data) => {

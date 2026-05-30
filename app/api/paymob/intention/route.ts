@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { optionalAuth } from "@/lib/middleware"
 import { orderRatelimit } from "@/lib/ratelimit"
 import { sanitize } from "@/lib/validation"
+import crypto from "crypto"
 
 type CartItem = { variantId: string; quantity: number }
 
@@ -78,7 +79,8 @@ export async function POST(req: NextRequest) {
       ? await db.user.findUnique({ where: { id: auth.userId } })
       : null
 
-    // 1. re-check stock + decrement + create order — كل ده في transaction واحدة
+    const verifyToken = crypto.randomBytes(32).toString("hex")
+
     const order = await db.$transaction(async (tx: typeof db) => {
       for (const item of items) {
         const freshVariant = await tx.productVariant.findUnique({
@@ -105,6 +107,7 @@ export async function POST(req: NextRequest) {
           phone: sanitize(phone),
           status: "PENDING",
           paymentStatus: "PENDING",
+          verifyToken,
           items: {
             create: items.map((item: CartItem) => {
               const variant = variants.find((v: VariantWithProduct) => v.id === item.variantId)!
@@ -130,7 +133,6 @@ export async function POST(req: NextRequest) {
         ? process.env.PAYMOB_INTEGRATION_ID_CARD
         : process.env.PAYMOB_INTEGRATION_ID_VODAFONE
 
-    // 2. Paymob request مع حماية من network failure و timeout
     let intentionRes: Response
     try {
       intentionRes = await fetch("https://accept.paymob.com/v1/intention/", {
@@ -177,7 +179,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Payment initialization failed" }, { status: 500 })
     }
 
-    // 3. safe JSON parsing — fallback لو الـ response مش JSON
     let intention: any
     try {
       intention = await intentionRes.json()
@@ -203,6 +204,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       clientSecret: intention.client_secret,
       orderId: order.id,
+      verifyToken,
     })
   } catch (error) {
     console.error("Intention error:", error)

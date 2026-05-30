@@ -93,8 +93,8 @@ export default function CheckoutPage() {
         return
       }
 
-      // لا نعمل clearCart هنا — بنعملها بعد تأكيد الدفع
       sessionStorage.setItem("pending_order_id", data.orderId)
+      sessionStorage.setItem("pending_verify_token", data.verifyToken)
       sessionStorage.setItem("pending_order_email", trimmedEmail)
 
       window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${process.env.NEXT_PUBLIC_PAYMOB_PUBLIC_KEY}&clientSecret=${data.clientSecret}`

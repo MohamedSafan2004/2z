@@ -66,6 +66,11 @@ model Order {
   address       String?
   phone         String?
   clientOrderId String?       @unique
+  verifyToken         String?   @unique
+  lastPaymentCheckAt  DateTime?
+  paymobTransactionId String?
+  confirmationEmailSent Boolean @default(false)
+  adminEmailSent        Boolean @default(false)
 }
 
 model OrderItem {
