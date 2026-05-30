@@ -9,9 +9,10 @@ import Link from "next/link"
 type PaymentMethod = "cod" | "vodafone" | "card"
 
 const paymentMethods = [
-  { id: "cod",      label: "Cash on Delivery",   sub: "Pay when you receive", available: true },
-  { id: "vodafone", label: "Vodafone Cash",       sub: "Pay online instantly", available: true },
-  { id: "card",     label: "Credit / Debit Card", sub: "Visa & Mastercard",    available: true },
+  { id: "cod",      label: "Cash on Delivery",   sub: "Pay when you receive",  available: true,  comingSoon: false },
+  { id: "vodafone", label: "Vodafone Cash",       sub: "Pay online instantly",  available: true,  comingSoon: false },
+  { id: "card",     label: "Credit / Debit Card", sub: "Visa & Mastercard",     available: true,  comingSoon: false },
+  { id: "instapay", label: "InstaPay",            sub: "Pay via InstaPay",      available: false, comingSoon: true  },
 ]
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -174,16 +175,21 @@ export default function CheckoutPage() {
             <div style={{ display: "flex", flexDirection: "column" }}>
               {paymentMethods.map((m, i) => {
                 const isSelected = payment === m.id
+                const isDisabled = !m.available
+
                 return (
                   <button
                     key={m.id}
-                    onClick={() => setPayment(m.id as PaymentMethod)}
+                    onClick={() => !isDisabled && setPayment(m.id as PaymentMethod)}
+                    disabled={isDisabled}
                     style={{
                       display: "flex", alignItems: "center", gap: "16px", padding: "16px",
                       background: isSelected ? "rgba(240,237,230,0.04)" : "transparent",
                       border: "1px solid rgba(240,237,230,0.12)",
                       borderTop: i === 0 ? "1px solid rgba(240,237,230,0.12)" : "none",
-                      cursor: "pointer", textAlign: "left", width: "100%", transition: "background 0.15s",
+                      cursor: isDisabled ? "default" : "pointer",
+                      textAlign: "left", width: "100%", transition: "background 0.15s",
+                      opacity: isDisabled ? 0.5 : 1,
                     }}
                   >
                     <div style={{
@@ -198,8 +204,13 @@ export default function CheckoutPage() {
                       <p style={{ fontSize: "11px", color: "#f0ede6", fontFamily: "Space Mono, monospace", margin: 0 }}>{m.label}</p>
                       <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", fontFamily: "Space Mono, monospace", margin: "3px 0 0", letterSpacing: "0.05em" }}>{m.sub}</p>
                     </div>
-                    {isSelected && (
+                    {isSelected && !isDisabled && (
                       <div style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>Selected</div>
+                    )}
+                    {m.comingSoon && (
+                      <div style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", border: "1px solid rgba(240,237,230,0.15)", padding: "2px 6px" }}>
+                        Coming Soon
+                      </div>
                     )}
                   </button>
                 )
