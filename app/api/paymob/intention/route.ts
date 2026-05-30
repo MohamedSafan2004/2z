@@ -100,7 +100,9 @@ export async function POST(req: NextRequest) {
 
       const newOrder = await tx.order.create({
         data: {
-          userId: auth.userId || undefined,
+          ...(auth.userId && {
+          user: { connect: { id: auth.userId } },
+          }),
           totalAmount,
           guestEmail: email || null,
           address: sanitize(address),
