@@ -6,10 +6,20 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-function createPrismaClient() {
+function createPrismaClient(): PrismaClient {
+  const connectionString = process.env.DIRECT_DATABASE_URL
+
+  if (!connectionString) {
+    throw new Error("DIRECT_DATABASE_URL is not set")
+  }
+
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString,
+    max: 10,              // max connections في الـ pool
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
   })
+
   const adapter = new PrismaPg(pool)
   return new PrismaClient({ adapter })
 }
