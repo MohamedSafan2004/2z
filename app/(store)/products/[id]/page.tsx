@@ -79,6 +79,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       color: variant.color,
       size: variant.size,
       quantity,
+       imageUrl: img,
     })
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)

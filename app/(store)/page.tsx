@@ -33,11 +33,7 @@ function useScrollReveal() {
 
 function RevealSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   return (
-    <div
-      style={{
-        animation: `heroFade 0.8s ease ${delay}ms both`,
-      }}
-    >
+    <div style={{ animation: `heroFade 0.8s ease ${delay}ms both` }}>
       {children}
     </div>
   )
@@ -51,6 +47,14 @@ export default function Home() {
           from { opacity: 0; transform: translateY(24px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 1; }
+        }
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
         .hero-text { animation: heroFade 1s ease 0.3s both; }
         .hero-sub { animation: heroFade 1s ease 0.6s both; }
         .hero-btn { animation: heroFade 1s ease 0.9s both; }
@@ -58,6 +62,15 @@ export default function Home() {
         .product-card { transition: transform 0.6s ease, opacity 0.6s ease; }
         .product-card:hover .card-img { transform: scale(1.06); opacity: 0.8; }
         .card-img { transition: transform 0.8s ease, opacity 0.6s ease; }
+        .coming-soon-dot { animation: pulse 2s ease infinite; }
+        .shimmer-text {
+          background: linear-gradient(90deg, rgba(240,237,230,0.3) 0%, rgba(240,237,230,0.8) 50%, rgba(240,237,230,0.3) 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: shimmer 3s linear infinite;
+        }
       `}</style>
 
       {/* Hero */}
@@ -96,7 +109,7 @@ export default function Home() {
           </div>
         </RevealSection>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {products.map((p, i) => (
+          {products.filter(p => p.name === "Essential Tee").map((p, i) => (
             <RevealSection key={p.id} delay={i * 100}>
               <Link
                 href={`/products/${p.id}`}
@@ -135,36 +148,149 @@ export default function Home() {
         </RevealSection>
       </section>
 
+      {/* New Collection Teaser */}
+      <section className="px-6 py-6" aria-label="Coming soon collection">
+        <RevealSection delay={100}>
+          <div style={{
+            border: "1px solid rgba(240,237,230,0.08)",
+            position: "relative",
+            overflow: "hidden",
+          }}>
+            {/* Background image */}
+            <img
+              src="https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&q=50&fm=webp"
+              alt="Sweatpants collection coming soon"
+              loading="lazy"
+              style={{
+                position: "absolute", inset: 0,
+                width: "100%", height: "100%",
+                objectFit: "cover",
+                opacity: 0.08,
+                filter: "grayscale(100%)",
+              }}
+            />
+
+            {/* Noise overlay */}
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(240,237,230,0.01) 2px, rgba(240,237,230,0.01) 4px)",
+            }} />
+
+            <div style={{ position: "relative", padding: "48px 32px", textAlign: "center" }}>
+
+              {/* Live dot */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "24px" }}>
+                <div className="coming-soon-dot" style={{
+                  width: "6px", height: "6px", borderRadius: "50%",
+                  background: "#f0ede6",
+                }} />
+                <span style={{ fontSize: "9px", letterSpacing: "0.4em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>
+                  Next Drop
+                </span>
+              </div>
+
+              {/* Title */}
+              <h2 className="shimmer-text font-serif font-light" style={{
+                fontSize: "clamp(28px, 7vw, 56px)",
+                letterSpacing: "-0.02em",
+                marginBottom: "16px",
+                fontFamily: "Cormorant Garamond, serif",
+              }}>
+                Sweatpants.
+              </h2>
+{/* 
+              <p style={{
+                fontSize: "10px",
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "rgba(240,237,230,0.3)",
+                marginBottom: "8px",
+              }}>
+                Minimal. Heavy. Yours.
+              </p>
+
+              <p style={{
+                fontSize: "9px",
+                letterSpacing: "0.15em",
+                color: "rgba(240,237,230,0.2)",
+                marginBottom: "32px",
+              }}>
+                Black & Grey — 650 EGP
+              </p> */}
+
+              {/* Coming Soon badge */}
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                border: "1px solid rgba(240,237,230,0.15)",
+                padding: "10px 20px",
+              }}>
+                <div className="coming-soon-dot" style={{
+                  width: "5px", height: "5px", borderRadius: "50%",
+                  background: "rgba(240,237,230,0.5)",
+                }} />
+                <span style={{
+                  fontSize: "9px",
+                  letterSpacing: "0.3em",
+                  textTransform: "uppercase",
+                  color: "rgba(240,237,230,0.5)",
+                }}>
+                  Coming Soon
+                </span>
+              </div>
+
+            </div>
+          </div>
+        </RevealSection>
+      </section>
+
       {/* Categories */}
-      <section className="grid grid-cols-2 gap-[2px]" aria-label="Shop by category">
+      <section className="grid grid-cols-2 gap-[2px] mt-6" aria-label="Shop by category">
         {[
-          { name: "T-Shirts", slug: "t-shirts", img: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=50&fm=webp" },
-          { name: "Sweatpants", slug: "sweatpants", img: "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=400&q=50&fm=webp" },
+          { name: "T-Shirts", slug: "t-shirts", img: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=50&fm=webp", available: true },
+          { name: "Sweatpants", slug: "sweatpants", img: "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=400&q=50&fm=webp", available: false },
         ].map((cat, i) => (
           <RevealSection key={cat.slug} delay={i * 150}>
-            <Link
-              href={`/products?category=${cat.slug}`}
-              className="relative h-44 overflow-hidden group block"
-              aria-label={`Shop ${cat.name} collection`}
-            >
-              <img
-                src={cat.img}
-                alt={`2Z ${cat.name} collection`}
-                loading="lazy"
-                className="card-img absolute inset-0 w-full h-full object-cover opacity-35 grayscale-[40%]"
-              />
-              <div className="absolute inset-0 flex flex-col justify-end p-4">
-                <p className="text-xs tracking-[0.25em] uppercase mb-1" style={{ color: "rgba(240,237,230,0.6)" }}>Collection</p>
-                <p className="font-serif font-light text-2xl" style={{ color: "#f0ede6" }}>{cat.name}</p>
+            {cat.available ? (
+              <Link
+                href={`/products?category=${cat.slug}`}
+                className="relative h-44 overflow-hidden group block"
+                aria-label={`Shop ${cat.name} collection`}
+              >
+                <img
+                  src={cat.img}
+                  alt={`2Z ${cat.name} collection`}
+                  loading="lazy"
+                  className="card-img absolute inset-0 w-full h-full object-cover opacity-35 grayscale-[40%]"
+                />
+                <div className="absolute inset-0 flex flex-col justify-end p-4">
+                  <p className="text-xs tracking-[0.25em] uppercase mb-1" style={{ color: "rgba(240,237,230,0.6)" }}>Collection</p>
+                  <p className="font-serif font-light text-2xl" style={{ color: "#f0ede6" }}>{cat.name}</p>
+                </div>
+              </Link>
+            ) : (
+              <div className="relative h-44 overflow-hidden" style={{ cursor: "default" }}>
+                <img
+                  src={cat.img}
+                  alt={`2Z ${cat.name} collection`}
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover grayscale-[80%]"
+                  style={{ opacity: 0.15 }}
+                />
+                <div className="absolute inset-0 flex flex-col justify-end p-4">
+                  <p className="text-xs tracking-[0.25em] uppercase mb-1" style={{ color: "rgba(240,237,230,0.3)" }}>Coming Soon</p>
+                  <p className="font-serif font-light text-2xl" style={{ color: "rgba(240,237,230,0.4)" }}>{cat.name}</p>
+                </div>
               </div>
-            </Link>
+            )}
           </RevealSection>
         ))}
       </section>
 
       {/* Footer Strip */}
       <RevealSection>
-        <div className="flex justify-between items-center px-6 py-5" style={{ borderTop: "1px solid rgba(240,237,230,0.08)" }}>
+        <div className="flex justify-between items-center px-6 py-5" style={{ borderTop: "1px solid rgba(240,237,230,0.08)", marginTop: "2px" }}>
           <span className="text-xs tracking-widest uppercase" style={{ color: "rgba(240,237,230,0.4)" }}>2Z — 6th of October, Egypt</span>
           <span className="text-xs tracking-widest uppercase" style={{ color: "rgba(240,237,230,0.4)" }}>Oversized T-shirts</span>
         </div>

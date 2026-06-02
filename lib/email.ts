@@ -31,7 +31,7 @@ export async function sendOrderConfirmation({
     .join("")
 
   await resend.emails.send({
-    from: "2Z Store <onboarding@resend.dev>",
+    from: "2Z Store <orders@2zstore.com>",
     to,
     subject: `Order Confirmed — ${orderNumber.toUpperCase()}`,
     html: `
@@ -79,7 +79,7 @@ export async function sendVerificationEmail({
   code: string
 }) {
   await resend.emails.send({
-    from: "2Z Store <onboarding@resend.dev>",
+    from: "2Z Store <orders@2zstore.com>",
     to,
     subject: "Verify your email — 2Z",
     html: `
@@ -134,7 +134,7 @@ export async function sendAdminNotification({
     `).join("")
 
   await resend.emails.send({
-    from: "2Z Store <onboarding@resend.dev>",
+    from: "2Z Store <orders@2zstore.com>",
     to: "2z.eg2004@gmail.com",
     subject: `🛍️ New Order — ${orderNumber.slice(0, 8).toUpperCase()}`,
     html: `

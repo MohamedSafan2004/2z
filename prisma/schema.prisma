@@ -21,6 +21,9 @@ model User {
   orders           Order[]
   resetCode         String?
   resetCodeExpiry   DateTime?
+  resetAttempts    Int       @default(0)
+  resetLockedUntil DateTime?
+  verificationCodeExpiry DateTime?
 }
 
 model Category {

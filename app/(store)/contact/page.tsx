@@ -14,18 +14,28 @@ export default function ContactPage() {
         </p>
 
         {/* WhatsApp */}
-        <a href="https://wa.me/201065178342" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
-          <div style={{ background: "#0f0f0f", padding: "32px", marginBottom: "2px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "10px" }}>WhatsApp</p>
-                <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "26px", fontWeight: 300, color: "#f0ede6", marginBottom: "8px" }}>+20 10 6517 8342</p>
-                <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)", letterSpacing: "0.1em", lineHeight: 1.8 }}>Available daily — 24/7</p>
-              </div>
-              <div style={{ fontSize: "40px", color: "rgba(240,237,230,0.2)" }}>↗</div>
+        <div style={{ background: "#0f0f0f", padding: "32px", marginBottom: "2px" }}>
+          <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "16px" }}>WhatsApp</p>
+          
+          <a href="https://wa.me/201065178342" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div>
+              <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "26px", fontWeight: 300, color: "#f0ede6", marginBottom: "4px" }}>+20 10 6517 8342</p>
+              <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)", letterSpacing: "0.1em" }}>Available daily — 24/7</p>
             </div>
+            <div style={{ fontSize: "24px", color: "rgba(240,237,230,0.2)" }}>↗</div>
+          </a>
+
+          <div style={{ borderTop: "1px solid rgba(240,237,230,0.06)", paddingTop: "16px" }}>
+            <a href="https://wa.me/201553594689" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "26px", fontWeight: 300, color: "#f0ede6", marginBottom: "4px" }}>+20 15 5359 4689</p>
+                <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)", letterSpacing: "0.1em" }}>Available daily — 24/7</p>
+              </div>
+              <div style={{ fontSize: "24px", color: "rgba(240,237,230,0.2)" }}>↗</div>
+            </a>
           </div>
-        </a>
+        </div>
+        
 
         {/* Email */}
         <a href="mailto:2z.eg2004@gmail.com" style={{ textDecoration: "none" }}>

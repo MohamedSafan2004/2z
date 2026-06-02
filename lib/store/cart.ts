@@ -9,6 +9,7 @@ interface CartItem {
   size: string
   quantity: number
   image?: string
+  imageUrl?: string
 }
 
 interface CartStore {
