@@ -20,8 +20,18 @@ export type UserModel = runtime.Types.Result.DefaultSelection<Prisma.$UserPayloa
 
 export type AggregateUser = {
   _count: UserCountAggregateOutputType | null
+  _avg: UserAvgAggregateOutputType | null
+  _sum: UserSumAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
+}
+
+export type UserAvgAggregateOutputType = {
+  resetAttempts: number | null
+}
+
+export type UserSumAggregateOutputType = {
+  resetAttempts: number | null
 }
 
 export type UserMinAggregateOutputType = {
@@ -37,6 +47,9 @@ export type UserMinAggregateOutputType = {
   verificationCode: string | null
   resetCode: string | null
   resetCodeExpiry: Date | null
+  resetAttempts: number | null
+  resetLockedUntil: Date | null
+  verificationCodeExpiry: Date | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -52,6 +65,9 @@ export type UserMaxAggregateOutputType = {
   verificationCode: string | null
   resetCode: string | null
   resetCodeExpiry: Date | null
+  resetAttempts: number | null
+  resetLockedUntil: Date | null
+  verificationCodeExpiry: Date | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -67,9 +83,20 @@ export type UserCountAggregateOutputType = {
   verificationCode: number
   resetCode: number
   resetCodeExpiry: number
+  resetAttempts: number
+  resetLockedUntil: number
+  verificationCodeExpiry: number
   _all: number
 }
 
+
+export type UserAvgAggregateInputType = {
+  resetAttempts?: true
+}
+
+export type UserSumAggregateInputType = {
+  resetAttempts?: true
+}
 
 export type UserMinAggregateInputType = {
   id?: true
@@ -84,6 +111,9 @@ export type UserMinAggregateInputType = {
   verificationCode?: true
   resetCode?: true
   resetCodeExpiry?: true
+  resetAttempts?: true
+  resetLockedUntil?: true
+  verificationCodeExpiry?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -99,6 +129,9 @@ export type UserMaxAggregateInputType = {
   verificationCode?: true
   resetCode?: true
   resetCodeExpiry?: true
+  resetAttempts?: true
+  resetLockedUntil?: true
+  verificationCodeExpiry?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -114,6 +147,9 @@ export type UserCountAggregateInputType = {
   verificationCode?: true
   resetCode?: true
   resetCodeExpiry?: true
+  resetAttempts?: true
+  resetLockedUntil?: true
+  verificationCodeExpiry?: true
   _all?: true
 }
 
@@ -155,6 +191,18 @@ export type UserAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: UserAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: UserSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: UserMinAggregateInputType
@@ -185,6 +233,8 @@ export type UserGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   _count?: UserCountAggregateInputType | true
+  _avg?: UserAvgAggregateInputType
+  _sum?: UserSumAggregateInputType
   _min?: UserMinAggregateInputType
   _max?: UserMaxAggregateInputType
 }
@@ -202,7 +252,12 @@ export type UserGroupByOutputType = {
   verificationCode: string | null
   resetCode: string | null
   resetCodeExpiry: Date | null
+  resetAttempts: number
+  resetLockedUntil: Date | null
+  verificationCodeExpiry: Date | null
   _count: UserCountAggregateOutputType | null
+  _avg: UserAvgAggregateOutputType | null
+  _sum: UserSumAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
 }
@@ -238,6 +293,9 @@ export type UserWhereInput = {
   verificationCode?: Prisma.StringNullableFilter<"User"> | string | null
   resetCode?: Prisma.StringNullableFilter<"User"> | string | null
   resetCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  resetAttempts?: Prisma.IntFilter<"User"> | number
+  resetLockedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  verificationCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   orders?: Prisma.OrderListRelationFilter
 }
 
@@ -254,6 +312,9 @@ export type UserOrderByWithRelationInput = {
   verificationCode?: Prisma.SortOrderInput | Prisma.SortOrder
   resetCode?: Prisma.SortOrderInput | Prisma.SortOrder
   resetCodeExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
+  resetAttempts?: Prisma.SortOrder
+  resetLockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationCodeExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   orders?: Prisma.OrderOrderByRelationAggregateInput
 }
 
@@ -273,6 +334,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   verificationCode?: Prisma.StringNullableFilter<"User"> | string | null
   resetCode?: Prisma.StringNullableFilter<"User"> | string | null
   resetCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  resetAttempts?: Prisma.IntFilter<"User"> | number
+  resetLockedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  verificationCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   orders?: Prisma.OrderListRelationFilter
 }, "id" | "email">
 
@@ -289,9 +353,14 @@ export type UserOrderByWithAggregationInput = {
   verificationCode?: Prisma.SortOrderInput | Prisma.SortOrder
   resetCode?: Prisma.SortOrderInput | Prisma.SortOrder
   resetCodeExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
+  resetAttempts?: Prisma.SortOrder
+  resetLockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationCodeExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
+  _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
   _min?: Prisma.UserMinOrderByAggregateInput
+  _sum?: Prisma.UserSumOrderByAggregateInput
 }
 
 export type UserScalarWhereWithAggregatesInput = {
@@ -310,6 +379,9 @@ export type UserScalarWhereWithAggregatesInput = {
   verificationCode?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   resetCode?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   resetCodeExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  resetAttempts?: Prisma.IntWithAggregatesFilter<"User"> | number
+  resetLockedUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  verificationCodeExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
 }
 
 export type UserCreateInput = {
@@ -325,6 +397,9 @@ export type UserCreateInput = {
   verificationCode?: string | null
   resetCode?: string | null
   resetCodeExpiry?: Date | string | null
+  resetAttempts?: number
+  resetLockedUntil?: Date | string | null
+  verificationCodeExpiry?: Date | string | null
   orders?: Prisma.OrderCreateNestedManyWithoutUserInput
 }
 
@@ -341,6 +416,9 @@ export type UserUncheckedCreateInput = {
   verificationCode?: string | null
   resetCode?: string | null
   resetCodeExpiry?: Date | string | null
+  resetAttempts?: number
+  resetLockedUntil?: Date | string | null
+  verificationCodeExpiry?: Date | string | null
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -357,6 +435,9 @@ export type UserUpdateInput = {
   verificationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
 }
 
@@ -373,6 +454,9 @@ export type UserUncheckedUpdateInput = {
   verificationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -389,6 +473,9 @@ export type UserCreateManyInput = {
   verificationCode?: string | null
   resetCode?: string | null
   resetCodeExpiry?: Date | string | null
+  resetAttempts?: number
+  resetLockedUntil?: Date | string | null
+  verificationCodeExpiry?: Date | string | null
 }
 
 export type UserUpdateManyMutationInput = {
@@ -404,6 +491,9 @@ export type UserUpdateManyMutationInput = {
   verificationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -419,6 +509,9 @@ export type UserUncheckedUpdateManyInput = {
   verificationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -434,6 +527,13 @@ export type UserCountOrderByAggregateInput = {
   verificationCode?: Prisma.SortOrder
   resetCode?: Prisma.SortOrder
   resetCodeExpiry?: Prisma.SortOrder
+  resetAttempts?: Prisma.SortOrder
+  resetLockedUntil?: Prisma.SortOrder
+  verificationCodeExpiry?: Prisma.SortOrder
+}
+
+export type UserAvgOrderByAggregateInput = {
+  resetAttempts?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -449,6 +549,9 @@ export type UserMaxOrderByAggregateInput = {
   verificationCode?: Prisma.SortOrder
   resetCode?: Prisma.SortOrder
   resetCodeExpiry?: Prisma.SortOrder
+  resetAttempts?: Prisma.SortOrder
+  resetLockedUntil?: Prisma.SortOrder
+  verificationCodeExpiry?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -464,6 +567,13 @@ export type UserMinOrderByAggregateInput = {
   verificationCode?: Prisma.SortOrder
   resetCode?: Prisma.SortOrder
   resetCodeExpiry?: Prisma.SortOrder
+  resetAttempts?: Prisma.SortOrder
+  resetLockedUntil?: Prisma.SortOrder
+  verificationCodeExpiry?: Prisma.SortOrder
+}
+
+export type UserSumOrderByAggregateInput = {
+  resetAttempts?: Prisma.SortOrder
 }
 
 export type UserNullableScalarRelationFilter = {
@@ -495,6 +605,14 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }
 
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type UserCreateNestedOneWithoutOrdersInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutOrdersInput, Prisma.UserUncheckedCreateWithoutOrdersInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutOrdersInput
@@ -524,6 +642,9 @@ export type UserCreateWithoutOrdersInput = {
   verificationCode?: string | null
   resetCode?: string | null
   resetCodeExpiry?: Date | string | null
+  resetAttempts?: number
+  resetLockedUntil?: Date | string | null
+  verificationCodeExpiry?: Date | string | null
 }
 
 export type UserUncheckedCreateWithoutOrdersInput = {
@@ -539,6 +660,9 @@ export type UserUncheckedCreateWithoutOrdersInput = {
   verificationCode?: string | null
   resetCode?: string | null
   resetCodeExpiry?: Date | string | null
+  resetAttempts?: number
+  resetLockedUntil?: Date | string | null
+  verificationCodeExpiry?: Date | string | null
 }
 
 export type UserCreateOrConnectWithoutOrdersInput = {
@@ -570,6 +694,9 @@ export type UserUpdateWithoutOrdersInput = {
   verificationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserUncheckedUpdateWithoutOrdersInput = {
@@ -585,6 +712,9 @@ export type UserUncheckedUpdateWithoutOrdersInput = {
   verificationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -631,6 +761,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   verificationCode?: boolean
   resetCode?: boolean
   resetCodeExpiry?: boolean
+  resetAttempts?: boolean
+  resetLockedUntil?: boolean
+  verificationCodeExpiry?: boolean
   orders?: boolean | Prisma.User$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
@@ -648,6 +781,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   verificationCode?: boolean
   resetCode?: boolean
   resetCodeExpiry?: boolean
+  resetAttempts?: boolean
+  resetLockedUntil?: boolean
+  verificationCodeExpiry?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -663,6 +799,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   verificationCode?: boolean
   resetCode?: boolean
   resetCodeExpiry?: boolean
+  resetAttempts?: boolean
+  resetLockedUntil?: boolean
+  verificationCodeExpiry?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -678,9 +817,12 @@ export type UserSelectScalar = {
   verificationCode?: boolean
   resetCode?: boolean
   resetCodeExpiry?: boolean
+  resetAttempts?: boolean
+  resetLockedUntil?: boolean
+  verificationCodeExpiry?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "address" | "role" | "createdAt" | "emailVerified" | "verificationCode" | "resetCode" | "resetCodeExpiry", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "address" | "role" | "createdAt" | "emailVerified" | "verificationCode" | "resetCode" | "resetCodeExpiry" | "resetAttempts" | "resetLockedUntil" | "verificationCodeExpiry", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orders?: boolean | Prisma.User$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -706,6 +848,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     verificationCode: string | null
     resetCode: string | null
     resetCodeExpiry: Date | null
+    resetAttempts: number
+    resetLockedUntil: Date | null
+    verificationCodeExpiry: Date | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -1142,6 +1287,9 @@ export interface UserFieldRefs {
   readonly verificationCode: Prisma.FieldRef<"User", 'String'>
   readonly resetCode: Prisma.FieldRef<"User", 'String'>
   readonly resetCodeExpiry: Prisma.FieldRef<"User", 'DateTime'>
+  readonly resetAttempts: Prisma.FieldRef<"User", 'Int'>
+  readonly resetLockedUntil: Prisma.FieldRef<"User", 'DateTime'>
+  readonly verificationCodeExpiry: Prisma.FieldRef<"User", 'DateTime'>
 }
     
 

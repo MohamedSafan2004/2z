@@ -8,7 +8,9 @@ function createPrismaClient() {
   const pool = new Pool({
     connectionString: process.env.DIRECT_DATABASE_URL,
   })
+
   const adapter = new PrismaPg(pool)
+
   // @ts-ignore
   return new PrismaClient({ adapter })
 }
