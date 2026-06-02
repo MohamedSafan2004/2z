@@ -1,73 +1,106 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { hashPassword } from "@/lib/auth"
+import { loginRatelimit } from "@/lib/ratelimit"
+import { validateEmail, validatePhone, validatePassword, sanitize } from "@/lib/validation"
+import { sendVerificationEmail } from "@/lib/email"
 import crypto from "crypto"
 
-function generateCode() {
+function generateCode(): string {
   return crypto.randomInt(100000, 1000000).toString()
 }
 
-function hashCode(code: string) {
+function hashCode(code: string): string {
   return crypto.createHash("sha256").update(code).digest("hex")
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"
+    const { success } = await loginRatelimit.limit(ip)
+    if (!success) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again later." },
+        { status: 429 }
+      )
+    }
+
     const body = await req.json()
 
-    const name = body.name?.trim()
-    const email = body.email?.toLowerCase().trim()
-    const password = body.password
-    const phone = body.phone
+    const name     = typeof body.name     === "string" ? body.name.trim()                   : null
+    const email    = typeof body.email    === "string" ? body.email.toLowerCase().trim()     : null
+    const password = typeof body.password === "string" ? body.password                       : null
+    const phone    = typeof body.phone    === "string" ? body.phone.trim()                   : null
 
     if (!name || !email || !password) {
       return NextResponse.json(
-        { error: "Missing fields" },
+        { error: "Name, email, and password are required" },
         { status: 400 }
       )
     }
 
-    const hashedPassword = await hashPassword(password)
+    if (!validateEmail(email)) {
+      return NextResponse.json({ error: "Invalid email address" }, { status: 400 })
+    }
 
-    const code = generateCode()
-    const codeHash = hashCode(code)
-    const expiry = new Date(Date.now() + 10 * 60 * 1000)
+    if (!validatePassword(password)) {
+      return NextResponse.json(
+        { error: "Password must be at least 8 characters" },
+        { status: 400 }
+      )
+    }
 
-    let user
+    if (phone && !validatePhone(phone)) {
+      return NextResponse.json({ error: "Invalid phone number" }, { status: 400 })
+    }
+
+    const hashedPassword   = await hashPassword(password)
+    const verificationCode = generateCode()
+    const verificationHash = hashCode(verificationCode)
+    const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000)
+
+    let user: { id: string; email: string }
 
     try {
       user = await db.user.create({
         data: {
-          name,
+          name: sanitize(name),
           email,
           password: hashedPassword,
-          phone: phone || null,
+          phone: phone ? sanitize(phone) : null,
           emailVerified: false,
-          verificationCode: codeHash,
-          verificationCodeExpiry: expiry,
+          verificationCode: verificationHash,
+          verificationCodeExpiry: verificationExpiry,
         },
       })
     } catch (e: any) {
-      if (e.code === "P2002") {
-        return NextResponse.json(
-          { error: "Email already exists" },
-          { status: 400 }
-        )
+      if (e?.code === "P2002") {
+        return NextResponse.json({ error: "Email already exists" }, { status: 400 })
       }
       throw e
     }
 
-    // هنا لاحقًا تبعت الإيميل
-    // await sendVerificationEmail(email, code)
+    // لو الإيميل فشل — احذف الـ user عشان ميفضلش account معلق
+    try {
+      await sendVerificationEmail({ to: email, code: verificationCode })
+    } catch (emailError) {
+      console.error("Verification email failed:", emailError)
+      await db.user.delete({ where: { id: user.id } }).catch(() => {})
+      return NextResponse.json(
+        { error: "Something went wrong, please try again" },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
-      message: "User created",
+      message: "Verification code sent to your email",
       userId: user.id,
     })
-  } catch (err) {
-    console.error(err)
+  } catch (error) {
+    console.error("Register error:", error)
     return NextResponse.json(
-      { error: "Server error" },
+      { error: "Something went wrong, please try again" },
       { status: 500 }
     )
   }

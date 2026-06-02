@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { comparePassword, generateToken } from "@/lib/auth"
 import { loginRatelimit } from "@/lib/ratelimit"
-import { validateEmail, sanitize } from "@/lib/validation"
+import { validateEmail } from "@/lib/validation"
 
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1"
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"
     const { success } = await loginRatelimit.limit(ip)
 
     if (!success) {
@@ -16,7 +17,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { email, password } = await req.json()
+    const body = await req.json()
+    const email    = typeof body.email    === "string" ? body.email    : null
+    const password = typeof body.password === "string" ? body.password : null
 
     if (!email || !password) {
       return NextResponse.json(
@@ -58,13 +61,15 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       )
     }
-     const token = generateToken(user.id, user.role)
+
+    const token = generateToken(user.id, user.role)
 
     return NextResponse.json({
       token,
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
     })
   } catch (error) {
+    console.error("Login error:", error)
     return NextResponse.json(
       { error: "Something went wrong, please try again" },
       { status: 500 }

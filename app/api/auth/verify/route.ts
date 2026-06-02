@@ -2,10 +2,16 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { generateToken } from "@/lib/auth"
 import { loginRatelimit } from "@/lib/ratelimit"
+import crypto from "crypto"
+
+function hashCode(code: string): string {
+  return crypto.createHash("sha256").update(code).digest("hex")
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1"
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"
     const { success } = await loginRatelimit.limit(ip)
 
     if (!success) {
@@ -14,7 +20,10 @@ export async function POST(req: NextRequest) {
         { status: 429 }
       )
     }
-     const { userId, code } = await req.json()
+
+    const body = await req.json()
+    const userId = typeof body.userId === "string" ? body.userId : null
+    const code   = typeof body.code   === "string" ? body.code.trim() : null
 
     if (!userId || !code) {
       return NextResponse.json(
@@ -39,23 +48,44 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    if (user.verificationCode !== code) {
+    if (!user.verificationCode) {
       return NextResponse.json(
         { error: "Invalid verification code" },
         { status: 400 }
       )
     }
 
-    // تأكيد الإيميل وربط الأوردرات القديمة
+    // expiry check
+    if (user.verificationCodeExpiry && new Date() > user.verificationCodeExpiry) {
+      await db.user.update({
+        where: { id: userId },
+        data: { verificationCode: null, verificationCodeExpiry: null },
+      }).catch(() => {})
+      return NextResponse.json(
+        { error: "Code has expired. Please request a new one." },
+        { status: 400 }
+      )
+    }
+
+    // SHA-256 hash comparison
+    const incomingHash = hashCode(code)
+    if (user.verificationCode !== incomingHash) {
+      return NextResponse.json(
+        { error: "Invalid verification code" },
+        { status: 400 }
+      )
+    }
+
     await db.user.update({
       where: { id: userId },
       data: {
         emailVerified: true,
         verificationCode: null,
+        verificationCodeExpiry: null,
       },
     })
 
-    // ربط الأوردرات القديمة بتاع الـ guestEmail بالأكونت
+    // ربط الأوردرات القديمة بالأكونت
     await db.order.updateMany({
       where: { guestEmail: user.email },
       data: { userId: user.id },
@@ -73,6 +103,7 @@ export async function POST(req: NextRequest) {
       },
     })
   } catch (error) {
+    console.error("Verify error:", error)
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }
