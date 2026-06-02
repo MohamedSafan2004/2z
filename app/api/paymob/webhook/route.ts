@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
 
     if (isFailed) {
       // stock restore داخل transaction واحدة
-      await db.$transaction(async (tx: typeof db) => {
+      await db.$transaction(async (tx) => {
         const updated = await tx.order.updateMany({
           where: { id: order.id, paymentStatus: "PENDING" },
           data: { paymentStatus: "FAILED", status: "CANCELLED" },

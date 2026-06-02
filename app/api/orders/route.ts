@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
 
     const verifyToken = crypto.randomBytes(32).toString("hex")
 
-    const order = await db.$transaction(async (tx: typeof db) => {
+    const order = await db.$transaction(async (tx) => {
       for (const item of items) {
         const freshVariant = await tx.productVariant.findUnique({
           where: { id: item.variantId },

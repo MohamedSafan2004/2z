@@ -10,7 +10,7 @@ type CartItem = { variantId: string; quantity: number }
 
 async function rollbackOrder(orderId: string, items: CartItem[]) {
   try {
-    await db.$transaction(async (tx: typeof db) => {
+    await db.$transaction(async (tx) => {
       await tx.order.update({
         where: { id: orderId },
         data: { status: "CANCELLED", paymentStatus: "FAILED" },
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
     const verifyToken = crypto.randomBytes(32).toString("hex")
 
-    const order = await db.$transaction(async (tx: typeof db) => {
+    const order = await db.$transaction(async (tx) => {
       for (const item of items) {
         const freshVariant = await tx.productVariant.findUnique({
           where: { id: item.variantId },
