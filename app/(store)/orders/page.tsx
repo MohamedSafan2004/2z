@@ -4,7 +4,34 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
-import { SkeletonBlock, SkeletonLine } from "@/components/Skeleton"
+import { SkeletonLine } from "@/components/Skeleton"
+
+type OrderItem = {
+  id: string
+  productNameSnapshot: string
+  colorSnapshot: string
+  sizeSnapshot: string
+  quantity: number
+  priceSnapshot: number | string
+}
+
+type Order = {
+  id: string
+  status: string
+  paymentStatus: string
+  totalAmount: number | string
+  createdAt: string
+  address: string | null
+  items: OrderItem[]
+}
+
+const statusColor: Record<string, string> = {
+  PENDING:   "rgba(240,200,100,0.7)",
+  PAID:      "rgba(100,200,150,0.7)",
+  SHIPPED:   "rgba(100,150,240,0.7)",
+  DELIVERED: "rgba(100,220,100,0.7)",
+  CANCELLED: "rgba(220,100,100,0.7)",
+}
 
 function OrderSkeleton() {
   return (
@@ -30,15 +57,26 @@ function OrderSkeleton() {
 export default function OrdersPage() {
   const { user, token } = useAuth()
   const router = useRouter()
-  const [orders, setOrders] = useState<any[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => { setHydrated(true) }, [])
 
   useEffect(() => {
+    if (!hydrated) return
     if (!user) { router.push("/login"); return }
+
     fetch("/api/orders", { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
-      .then((data) => { setOrders(data); setLoading(false) })
-  }, [user])
+      .then((data) => {
+        if (Array.isArray(data)) setOrders(data)
+        else setError("Failed to load orders")
+      })
+      .catch(() => setError("Something went wrong"))
+      .finally(() => setLoading(false))
+  }, [user, hydrated])
 
   if (loading) return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>
@@ -66,7 +104,11 @@ export default function OrdersPage() {
         <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "6px" }}>Your</p>
         <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "40px", fontWeight: 300, color: "#f0ede6", marginBottom: "48px" }}>Orders</h1>
 
-        {orders.length === 0 ? (
+        {error && (
+          <p style={{ fontSize: "10px", color: "#ff6b6b", textAlign: "center", letterSpacing: "0.1em", marginBottom: "24px" }}>{error}</p>
+        )}
+
+        {!error && orders.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 0" }}>
             <p style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "24px" }}>No orders yet</p>
             <Link href="/products" style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#f0ede6", border: "1px solid rgba(240,237,230,0.3)", padding: "12px 24px" }}>
@@ -75,37 +117,51 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div>
-            {orders.map((order: any, i: number) => (
+            {orders.map((order, i) => (
               <div key={order.id} className="order-card" style={{ border: "1px solid rgba(240,237,230,0.08)", padding: "24px", marginBottom: "16px", animationDelay: `${i * 80}ms` }}>
+
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "16px", gap: "12px", flexWrap: "wrap" }}>
                   <div>
                     <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "4px" }}>Order</p>
-                    <p style={{ fontSize: "11px", color: "#f0ede6" }}>{order.id.slice(0, 8).toUpperCase()}</p>
+                    <p style={{ fontSize: "11px", color: "#f0ede6", marginBottom: "8px" }}>#{order.id.slice(0, 8).toUpperCase()}</p>
+                    <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", letterSpacing: "0.1em" }}>
+                      {new Date(order.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                    </p>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "4px", color: order.status === "DELIVERED" ? "rgba(100,200,100,0.7)" : order.status === "CANCELLED" ? "rgba(200,100,100,0.7)" : "rgba(240,237,230,0.4)" }}>
+                    <span style={{
+                      fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase",
+                      padding: "3px 8px", marginBottom: "6px", display: "inline-block",
+                      color: statusColor[order.status] || "rgba(240,237,230,0.4)",
+                      border: `1px solid ${statusColor[order.status] || "rgba(240,237,230,0.15)"}`,
+                    }}>
                       {order.status}
-                    </p>
-                    <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "20px", color: "#f0ede6" }}>
-                      {Number(order.totalAmount)} <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)" }}>EGP</span>
+                    </span>
+                    <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "20px", color: "#f0ede6", marginTop: "6px" }}>
+                      {Number(order.totalAmount).toLocaleString()} <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)" }}>EGP</span>
                     </p>
                   </div>
                 </div>
+
                 <div style={{ borderTop: "1px solid rgba(240,237,230,0.06)", paddingTop: "16px" }}>
-                  {order.items.map((item: any) => (
+                  {order.items.map((item) => (
                     <div key={item.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", gap: "8px", flexWrap: "wrap" }}>
                       <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.6)" }}>
                         {item.productNameSnapshot} — {item.colorSnapshot} / {item.sizeSnapshot} × {item.quantity}
                       </p>
                       <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)" }}>
-                        {Number(item.priceSnapshot) * item.quantity} EGP
+                        {(Number(item.priceSnapshot) * item.quantity).toLocaleString()} EGP
                       </p>
                     </div>
                   ))}
                 </div>
-                <p style={{ fontSize: "9px", letterSpacing: "0.1em", color: "rgba(240,237,230,0.2)", marginTop: "16px" }}>
-                  {new Date(order.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
-                </p>
+
+                {order.address && (
+                  <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", marginTop: "12px", letterSpacing: "0.05em", lineHeight: 1.6 }}>
+                    📍 {order.address}
+                  </p>
+                )}
+
               </div>
             ))}
           </div>

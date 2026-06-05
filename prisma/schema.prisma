@@ -74,6 +74,11 @@ model Order {
   paymobTransactionId String?
   confirmationEmailSent Boolean @default(false)
   adminEmailSent        Boolean @default(false)
+
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([userId])
+  @@index([paymobTransactionId])
 }
 
 model OrderItem {

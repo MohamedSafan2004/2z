@@ -17,9 +17,29 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const body = await req.json()
-    const email    = typeof body.email    === "string" ? body.email    : null
-    const password = typeof body.password === "string" ? body.password : null
+    // safe JSON parsing — malformed body يرجع 400 مش 500
+    let body: unknown
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 }
+      )
+    }
+
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 }
+      )
+    }
+
+    const raw = body as Record<string, unknown>
+
+    // strict type extraction — منع أي حاجة مش string
+    const email    = typeof raw.email    === "string" ? raw.email.toLowerCase().trim() : null
+    const password = typeof raw.password === "string" ? raw.password                   : null
 
     if (!email || !password) {
       return NextResponse.json(
@@ -35,10 +55,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const cleanEmail = email.toLowerCase().trim()
+    const user = await db.user.findUnique({ where: { email } })
 
-    const user = await db.user.findUnique({ where: { email: cleanEmail } })
-
+    // نفس الـ error للـ user مش موجود والـ password غلط
+    // عشان نمنع user enumeration
     if (!user) {
       return NextResponse.json(
         { error: "Invalid email or password" },
@@ -55,6 +75,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // تحقق من الـ email verification بعد password check
+    // عشان نمنع timing-based user enumeration
     if (!user.emailVerified) {
       return NextResponse.json(
         { error: "Please verify your email before logging in" },
@@ -66,7 +88,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     })
   } catch (error) {
     console.error("Login error:", error)
