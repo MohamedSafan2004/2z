@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useCart } from "@/lib/store/cart"
 import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
@@ -22,13 +22,20 @@ export default function CheckoutPage() {
   const { user, token } = useAuth()
   const router = useRouter()
 
-  const [name, setName]       = useState(user?.name || "")
-  const [email, setEmail]     = useState(user?.email || "")
-  const [phone, setPhone]     = useState(user?.phone || "")
+  const [name, setName]       = useState("")
+  const [email, setEmail]     = useState("")
+  const [phone, setPhone]     = useState("")
   const [address, setAddress] = useState("")
   const [payment, setPayment] = useState<PaymentMethod>("cod")
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState("")
+
+  // نملي البيانات لما الـ user يتحمل من الـ localStorage
+  useEffect(() => {
+    if (user?.name)  setName(user.name)
+    if (user?.email) setEmail(user.email)
+    if (user?.phone) setPhone(user.phone)
+  }, [user])
 
   if (items.length === 0) return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace" }}>
@@ -144,7 +151,7 @@ export default function CheckoutPage() {
             <div style={{ marginBottom: "14px" }}>
               <label style={labelStyle}>Email *</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} placeholder="your@email.com" />
-              <p style={{ fontSize: "8px", color: "rgba(240,237,230,0.35)", marginTop: "6px", letterSpacing: "0.1em" }}>
+              <p style={{ fontSize: "8px", color: "rgb(255, 255, 255)", marginTop: "6px", letterSpacing: "0.1em" }}>
                 Order updates will be sent to this email — no account needed
               </p>
             </div>
@@ -176,7 +183,6 @@ export default function CheckoutPage() {
               {paymentMethods.map((m, i) => {
                 const isSelected = payment === m.id
                 const isDisabled = !m.available
-
                 return (
                   <button
                     key={m.id}
@@ -192,12 +198,7 @@ export default function CheckoutPage() {
                       opacity: isDisabled ? 0.5 : 1,
                     }}
                   >
-                    <div style={{
-                      width: "16px", height: "16px", borderRadius: "50%",
-                      border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.3)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      flexShrink: 0, transition: "border 0.15s",
-                    }}>
+                    <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "border 0.15s" }}>
                       {isSelected && <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#f0ede6" }} />}
                     </div>
                     <div style={{ flex: 1 }}>
@@ -247,21 +248,14 @@ export default function CheckoutPage() {
             <button
               onClick={handleOrder}
               disabled={loading}
-              style={{
-                width: "100%", padding: "14px", fontSize: "10px",
-                letterSpacing: "0.25em", textTransform: "uppercase",
-                fontFamily: "Space Mono, monospace", background: "#f0ede6",
-                color: "#080808", border: "none",
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.7 : 1, transition: "all 0.3s", marginBottom: "16px",
-              }}
+              style={{ width: "100%", padding: "14px", fontSize: "10px", letterSpacing: "0.25em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", background: "#f0ede6", color: "#080808", border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, transition: "all 0.3s", marginBottom: "16px" }}
             >
               {loading ? "Please wait..." : payment === "cod" ? "Place Order" : "Pay Now"}
             </button>
 
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               {["Secure", "Egypt Only", "Easy Returns"].map((t) => (
-                <p key={t} style={{ fontSize: "8px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(240,237,230,0.25)" }}>{t}</p>
+                <p key={t} style={{ fontSize: "8px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgb(255, 255, 255)" }}>{t}</p>
               ))}
             </div>
           </div>

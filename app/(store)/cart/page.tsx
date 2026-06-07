@@ -19,7 +19,7 @@ export default function CartPage() {
     if (next <= 0) {
       removeItem(variantId)
     } else {
-      updateQuantity(variantId, Math.min(next, 10))
+      updateQuantity(variantId, Math.min(next, 99))
     }
   }
 
@@ -44,7 +44,6 @@ export default function CartPage() {
 
       window.location.href = "/checkout"
     } catch {
-      // لو الـ API مش موجود لسه، نكمل للـ checkout عادي
       window.location.href = "/checkout"
     } finally {
       setCheckingStock(false)
@@ -67,19 +66,16 @@ export default function CartPage() {
         <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--fg-muted)", marginBottom: "6px" }}>Your</p>
         <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "36px", fontWeight: 300, color: "var(--fg)", marginBottom: "32px" }}>Cart</h1>
 
-        {/* Items */}
         <div style={{ marginBottom: "32px" }}>
           {items.map((item) => {
             const imgSrc = item.imageUrl || FALLBACK_IMAGE
             return (
               <div key={item.variantId} style={{ display: "flex", gap: "16px", padding: "20px 0", borderBottom: "1px solid var(--border)", alignItems: "center" }}>
 
-                {/* Image */}
                 <div style={{ width: "72px", height: "90px", overflow: "hidden", background: "var(--card)", flexShrink: 0 }}>
                   <img src={imgSrc} alt={item.productName} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.8 }} />
                 </div>
 
-                {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "16px", fontWeight: 300, color: "var(--fg)", marginBottom: "4px" }}>{item.productName}</p>
                   <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--fg-muted)", marginBottom: "12px" }}>
@@ -96,8 +92,8 @@ export default function CartPage() {
                       <button
                         onClick={() => handleQuantityChange(item.variantId, item.quantity, 1)}
                         aria-label={`Increase quantity of ${item.productName}`}
-                        disabled={item.quantity >= 10}
-                        style={{ width: "28px", height: "28px", border: "1px solid var(--border)", color: item.quantity >= 10 ? "var(--fg-dim)" : "var(--fg-muted)", background: "none", cursor: item.quantity >= 10 ? "not-allowed" : "pointer", fontFamily: "Space Mono, monospace", fontSize: "14px" }}
+                        disabled={item.quantity >= 99}
+                        style={{ width: "28px", height: "28px", border: "1px solid var(--border)", color: item.quantity >= 99 ? "var(--fg-dim)" : "var(--fg-muted)", background: "none", cursor: item.quantity >= 99 ? "not-allowed" : "pointer", fontFamily: "Space Mono, monospace", fontSize: "14px" }}
                       >+</button>
                     </div>
                     <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "18px", color: "var(--fg)" }}>
@@ -118,7 +114,6 @@ export default function CartPage() {
           })}
         </div>
 
-        {/* Summary */}
         <div style={{ border: "1px solid var(--border)", padding: "24px", marginBottom: "16px" }}>
           <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--fg-muted)", marginBottom: "20px" }}>Order Summary</p>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
@@ -154,7 +149,7 @@ export default function CartPage() {
           </button>
         </div>
 
-        <Link href="/products" style={{ display: "block", textAlign: "center", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--fg-dim)", textDecoration: "none" }}>
+        <Link href="/products" style={{ display: "block", textAlign: "center", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "white", textDecoration: "none" }}>
           Continue Shopping
         </Link>
 
