@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     }
 
     for (const item of items) {
-      if (!item.variantId || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 10) {
+      if (!item.variantId || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 99) {
         return NextResponse.json({ error: "Invalid item quantity" }, { status: 400 })
       }
     }

@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
         !item.variantId ||
         !Number.isInteger(item.quantity) ||
         item.quantity < 1 ||
-        item.quantity > 10
+        item.quantity > 99
       ) {
         return NextResponse.json({ error: "Invalid item quantity" }, { status: 400 })
       }
