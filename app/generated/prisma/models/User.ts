@@ -297,6 +297,7 @@ export type UserWhereInput = {
   resetLockedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   verificationCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   orders?: Prisma.OrderListRelationFilter
+  promoUsages?: Prisma.PromoCodeUsageListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -316,6 +317,7 @@ export type UserOrderByWithRelationInput = {
   resetLockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   verificationCodeExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   orders?: Prisma.OrderOrderByRelationAggregateInput
+  promoUsages?: Prisma.PromoCodeUsageOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -338,6 +340,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   resetLockedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   verificationCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   orders?: Prisma.OrderListRelationFilter
+  promoUsages?: Prisma.PromoCodeUsageListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -401,6 +404,7 @@ export type UserCreateInput = {
   resetLockedUntil?: Date | string | null
   verificationCodeExpiry?: Date | string | null
   orders?: Prisma.OrderCreateNestedManyWithoutUserInput
+  promoUsages?: Prisma.PromoCodeUsageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -420,6 +424,7 @@ export type UserUncheckedCreateInput = {
   resetLockedUntil?: Date | string | null
   verificationCodeExpiry?: Date | string | null
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  promoUsages?: Prisma.PromoCodeUsageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -439,6 +444,7 @@ export type UserUpdateInput = {
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  promoUsages?: Prisma.PromoCodeUsageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -458,6 +464,7 @@ export type UserUncheckedUpdateInput = {
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  promoUsages?: Prisma.PromoCodeUsageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -629,6 +636,22 @@ export type UserUpdateOneWithoutOrdersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOrdersInput, Prisma.UserUpdateWithoutOrdersInput>, Prisma.UserUncheckedUpdateWithoutOrdersInput>
 }
 
+export type UserCreateNestedOneWithoutPromoUsagesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPromoUsagesInput, Prisma.UserUncheckedCreateWithoutPromoUsagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPromoUsagesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutPromoUsagesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPromoUsagesInput, Prisma.UserUncheckedCreateWithoutPromoUsagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPromoUsagesInput
+  upsert?: Prisma.UserUpsertWithoutPromoUsagesInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPromoUsagesInput, Prisma.UserUpdateWithoutPromoUsagesInput>, Prisma.UserUncheckedUpdateWithoutPromoUsagesInput>
+}
+
 export type UserCreateWithoutOrdersInput = {
   id?: string
   name: string
@@ -645,6 +668,7 @@ export type UserCreateWithoutOrdersInput = {
   resetAttempts?: number
   resetLockedUntil?: Date | string | null
   verificationCodeExpiry?: Date | string | null
+  promoUsages?: Prisma.PromoCodeUsageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOrdersInput = {
@@ -663,6 +687,7 @@ export type UserUncheckedCreateWithoutOrdersInput = {
   resetAttempts?: number
   resetLockedUntil?: Date | string | null
   verificationCodeExpiry?: Date | string | null
+  promoUsages?: Prisma.PromoCodeUsageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOrdersInput = {
@@ -697,6 +722,7 @@ export type UserUpdateWithoutOrdersInput = {
   resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  promoUsages?: Prisma.PromoCodeUsageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrdersInput = {
@@ -715,6 +741,99 @@ export type UserUncheckedUpdateWithoutOrdersInput = {
   resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  promoUsages?: Prisma.PromoCodeUsageUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutPromoUsagesInput = {
+  id?: string
+  name: string
+  email: string
+  password: string
+  phone?: string | null
+  address?: string | null
+  role?: $Enums.Role
+  createdAt?: Date | string
+  emailVerified?: boolean
+  verificationCode?: string | null
+  resetCode?: string | null
+  resetCodeExpiry?: Date | string | null
+  resetAttempts?: number
+  resetLockedUntil?: Date | string | null
+  verificationCodeExpiry?: Date | string | null
+  orders?: Prisma.OrderCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutPromoUsagesInput = {
+  id?: string
+  name: string
+  email: string
+  password: string
+  phone?: string | null
+  address?: string | null
+  role?: $Enums.Role
+  createdAt?: Date | string
+  emailVerified?: boolean
+  verificationCode?: string | null
+  resetCode?: string | null
+  resetCodeExpiry?: Date | string | null
+  resetAttempts?: number
+  resetLockedUntil?: Date | string | null
+  verificationCodeExpiry?: Date | string | null
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutPromoUsagesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPromoUsagesInput, Prisma.UserUncheckedCreateWithoutPromoUsagesInput>
+}
+
+export type UserUpsertWithoutPromoUsagesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPromoUsagesInput, Prisma.UserUncheckedUpdateWithoutPromoUsagesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPromoUsagesInput, Prisma.UserUncheckedCreateWithoutPromoUsagesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPromoUsagesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPromoUsagesInput, Prisma.UserUncheckedUpdateWithoutPromoUsagesInput>
+}
+
+export type UserUpdateWithoutPromoUsagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPromoUsagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -724,10 +843,12 @@ export type UserUncheckedUpdateWithoutOrdersInput = {
 
 export type UserCountOutputType = {
   orders: number
+  promoUsages: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orders?: boolean | UserCountOutputTypeCountOrdersArgs
+  promoUsages?: boolean | UserCountOutputTypeCountPromoUsagesArgs
 }
 
 /**
@@ -745,6 +866,13 @@ export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
  */
 export type UserCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.OrderWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPromoUsagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PromoCodeUsageWhereInput
 }
 
 
@@ -765,6 +893,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   resetLockedUntil?: boolean
   verificationCodeExpiry?: boolean
   orders?: boolean | Prisma.User$ordersArgs<ExtArgs>
+  promoUsages?: boolean | Prisma.User$promoUsagesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -825,6 +954,7 @@ export type UserSelectScalar = {
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "address" | "role" | "createdAt" | "emailVerified" | "verificationCode" | "resetCode" | "resetCodeExpiry" | "resetAttempts" | "resetLockedUntil" | "verificationCodeExpiry", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orders?: boolean | Prisma.User$ordersArgs<ExtArgs>
+  promoUsages?: boolean | Prisma.User$promoUsagesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -834,6 +964,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "User"
   objects: {
     orders: Prisma.$OrderPayload<ExtArgs>[]
+    promoUsages: Prisma.$PromoCodeUsagePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1246,6 +1377,7 @@ readonly fields: UserFieldRefs;
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   orders<T extends Prisma.User$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  promoUsages<T extends Prisma.User$promoUsagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$promoUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PromoCodeUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1704,6 +1836,30 @@ export type User$ordersArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
+}
+
+/**
+ * User.promoUsages
+ */
+export type User$promoUsagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PromoCodeUsage
+   */
+  select?: Prisma.PromoCodeUsageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PromoCodeUsage
+   */
+  omit?: Prisma.PromoCodeUsageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PromoCodeUsageInclude<ExtArgs> | null
+  where?: Prisma.PromoCodeUsageWhereInput
+  orderBy?: Prisma.PromoCodeUsageOrderByWithRelationInput | Prisma.PromoCodeUsageOrderByWithRelationInput[]
+  cursor?: Prisma.PromoCodeUsageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PromoCodeUsageScalarFieldEnum | Prisma.PromoCodeUsageScalarFieldEnum[]
 }
 
 /**

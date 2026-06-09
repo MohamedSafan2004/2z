@@ -56,7 +56,9 @@ export const ModelName = {
   Product: 'Product',
   ProductVariant: 'ProductVariant',
   Order: 'Order',
-  OrderItem: 'OrderItem'
+  OrderItem: 'OrderItem',
+  PromoCode: 'PromoCode',
+  PromoCodeUsage: 'PromoCodeUsage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -133,6 +135,8 @@ export const OrderScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   totalAmount: 'totalAmount',
+  discountAmount: 'discountAmount',
+  promoCode: 'promoCode',
   status: 'status',
   paymentId: 'paymentId',
   paymentStatus: 'paymentStatus',
@@ -163,6 +167,28 @@ export const OrderItemScalarFieldEnum = {
 } as const
 
 export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+
+
+export const PromoCodeScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  discount: 'discount',
+  isActive: 'isActive',
+  createdAt: 'createdAt'
+} as const
+
+export type PromoCodeScalarFieldEnum = (typeof PromoCodeScalarFieldEnum)[keyof typeof PromoCodeScalarFieldEnum]
+
+
+export const PromoCodeUsageScalarFieldEnum = {
+  id: 'id',
+  promoCodeId: 'promoCodeId',
+  userId: 'userId',
+  phone: 'phone',
+  usedAt: 'usedAt'
+} as const
+
+export type PromoCodeUsageScalarFieldEnum = (typeof PromoCodeUsageScalarFieldEnum)[keyof typeof PromoCodeUsageScalarFieldEnum]
 
 
 export const SortOrder = {

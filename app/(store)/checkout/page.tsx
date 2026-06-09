@@ -30,12 +30,77 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState("")
 
-  // نملي البيانات لما الـ user يتحمل من الـ localStorage
+  // promo state
+  const [promoInput, setPromoInput]       = useState("")
+  const [promoApplied, setPromoApplied]   = useState("")   // الكود المتحقق منه
+  const [promoDiscount, setPromoDiscount] = useState(0)    // النسبة — 10
+  const [promoLoading, setPromoLoading]   = useState(false)
+  const [promoError, setPromoError]       = useState("")
+  const [promoSuccess, setPromoSuccess]   = useState("")
+
   useEffect(() => {
     if (user?.name)  setName(user.name)
     if (user?.email) setEmail(user.email)
     if (user?.phone) setPhone(user.phone)
   }, [user])
+
+  // لو غير الفون بعد ما طبق الكود — نمسح الكود
+  useEffect(() => {
+    if (promoApplied) {
+      setPromoApplied("")
+      setPromoDiscount(0)
+      setPromoSuccess("")
+      setPromoError("Phone changed — please re-apply your promo code")
+    }
+  }, [phone])
+
+  const subtotal      = total()
+  const discountValue = promoApplied ? Math.round((subtotal * promoDiscount) / 100) : 0
+  const finalTotal    = subtotal - discountValue
+
+  const handleApplyPromo = async () => {
+    if (promoLoading) return
+    const code = promoInput.trim().toUpperCase()
+    if (!code) { setPromoError("Enter a promo code"); return }
+    if (!phone.trim()) { setPromoError("Enter your phone number first"); return }
+
+    setPromoLoading(true)
+    setPromoError("")
+    setPromoSuccess("")
+
+    try {
+      const res = await fetch("/api/promo/validate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ code, phone: phone.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setPromoError(data.error || "Invalid promo code")
+        setPromoApplied("")
+        setPromoDiscount(0)
+        return
+      }
+      setPromoApplied(data.code)
+      setPromoDiscount(data.discount)
+      setPromoSuccess(`${data.discount}% discount applied!`)
+    } catch {
+      setPromoError("Something went wrong")
+    } finally {
+      setPromoLoading(false)
+    }
+  }
+
+  const handleRemovePromo = () => {
+    setPromoApplied("")
+    setPromoDiscount(0)
+    setPromoInput("")
+    setPromoSuccess("")
+    setPromoError("")
+  }
 
   if (items.length === 0) return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace" }}>
@@ -72,10 +137,17 @@ export default function CheckoutPage() {
       if (payment === "cod") {
         const res = await fetch("/api/orders", {
           method: "POST",
-          headers: { "Content-Type": "application/json", ...(token && { Authorization: `Bearer ${token}` }) },
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
           body: JSON.stringify({
             items: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
-            address: trimmedAddress, phone: trimmedPhone, email: trimmedEmail, paymentMethod: "cod",
+            address: trimmedAddress,
+            phone: trimmedPhone,
+            email: trimmedEmail,
+            paymentMethod: "cod",
+            promoCode: promoApplied || undefined,
           }),
         })
         const data = await res.json()
@@ -87,10 +159,17 @@ export default function CheckoutPage() {
 
       const res = await fetch("/api/paymob/intention", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(token && { Authorization: `Bearer ${token}` }) },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         body: JSON.stringify({
           items: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
-          address: trimmedAddress, phone: trimmedPhone, email: trimmedEmail, paymentMethod: payment,
+          address: trimmedAddress,
+          phone: trimmedPhone,
+          email: trimmedEmail,
+          paymentMethod: payment,
+          promoCode: promoApplied || undefined,
         }),
       })
       const data = await res.json()
@@ -221,6 +300,7 @@ export default function CheckoutPage() {
             {error && <p style={{ fontSize: "10px", color: "#ff6b6b", marginTop: "16px", letterSpacing: "0.1em" }}>{error}</p>}
           </div>
 
+          {/* Order Summary */}
           <div style={{ border: "1px solid rgba(240,237,230,0.08)", padding: "28px", position: "sticky", top: "80px" }}>
             <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "20px" }}>Order Summary</p>
 
@@ -236,11 +316,76 @@ export default function CheckoutPage() {
               </div>
             ))}
 
-            <div style={{ borderTop: "1px solid rgba(240,237,230,0.08)", paddingTop: "16px", marginTop: "8px", marginBottom: "24px" }}>
+            {/* Promo Code */}
+            <div style={{ borderTop: "1px solid rgba(240,237,230,0.08)", paddingTop: "16px", marginTop: "8px", marginBottom: "16px" }}>
+              <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "10px" }}>Promo Code</p>
+
+              {!promoApplied ? (
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <input
+                    type="text"
+                    value={promoInput}
+                    onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError("") }}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
+                    placeholder="SAVE10"
+                    style={{
+                      flex: 1, padding: "10px 12px", background: "transparent",
+                      border: "1px solid rgba(240,237,230,0.15)", color: "#f0ede6",
+                      fontFamily: "Space Mono, monospace", fontSize: "11px",
+                      outline: "none", letterSpacing: "0.1em",
+                    }}
+                  />
+                  <button
+                    onClick={handleApplyPromo}
+                    disabled={promoLoading}
+                    style={{
+                      padding: "10px 16px", fontSize: "9px", letterSpacing: "0.15em",
+                      textTransform: "uppercase", fontFamily: "Space Mono, monospace",
+                      background: "transparent", color: promoLoading ? "rgba(240,237,230,0.3)" : "rgba(240,237,230,0.7)",
+                      border: "1px solid rgba(240,237,230,0.2)", cursor: promoLoading ? "not-allowed" : "pointer",
+                      whiteSpace: "nowrap", transition: "all 0.2s",
+                    }}
+                  >
+                    {promoLoading ? "..." : "Apply"}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", border: "1px solid rgba(80,200,120,0.25)", background: "rgba(80,200,120,0.04)" }}>
+                  <div>
+                    <p style={{ fontSize: "10px", color: "rgba(80,200,120,0.9)", letterSpacing: "0.15em", fontFamily: "Space Mono, monospace" }}>{promoApplied}</p>
+                    <p style={{ fontSize: "9px", color: "rgba(80,200,120,0.6)", marginTop: "2px", letterSpacing: "0.05em" }}>{promoDiscount}% off</p>
+                  </div>
+                  <button
+                    onClick={handleRemovePromo}
+                    style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)", background: "transparent", border: "none", cursor: "pointer", fontFamily: "Space Mono, monospace", letterSpacing: "0.1em" }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+
+              {promoError   && <p style={{ fontSize: "9px", color: "#ff6b6b", marginTop: "8px", letterSpacing: "0.05em" }}>{promoError}</p>}
+              {promoSuccess && !promoError && <p style={{ fontSize: "9px", color: "rgba(80,200,120,0.8)", marginTop: "8px", letterSpacing: "0.05em" }}>{promoSuccess}</p>}
+            </div>
+
+            {/* Totals */}
+            <div style={{ borderTop: "1px solid rgba(240,237,230,0.08)", paddingTop: "16px", marginBottom: "24px" }}>
+              {promoApplied && (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                    <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Subtotal</span>
+                    <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.5)" }}>{subtotal} EGP</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                    <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(80,200,120,0.7)" }}>Discount ({promoDiscount}%)</span>
+                    <span style={{ fontSize: "11px", color: "rgba(80,200,120,0.8)" }}>− {discountValue} EGP</span>
+                  </div>
+                </>
+              )}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                 <span style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Total</span>
                 <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "26px", color: "#f0ede6" }}>
-                  {total()} <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.4)" }}>EGP</span>
+                  {finalTotal} <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.4)" }}>EGP</span>
                 </span>
               </div>
             </div>

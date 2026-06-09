@@ -14,6 +14,8 @@ async function main() {
   // امسح الداتا القديمة
   await prisma.orderItem.deleteMany({})
   await prisma.order.deleteMany({})
+  await prisma.promoCodeUsage.deleteMany({})
+  await prisma.promoCode.deleteMany({})
   await prisma.productVariant.deleteMany({})
   await prisma.product.deleteMany({})
   await prisma.category.deleteMany({})
@@ -52,6 +54,17 @@ async function main() {
       })
     }
   }
+
+  // Promo Code
+  await prisma.promoCode.upsert({
+    where: { code: "SAVE10" },
+    update: {},
+    create: {
+      code: "SAVE10",
+      discount: 10,
+      isActive: true,
+    },
+  })
 
   console.log("✓ Seed complete")
   await pool.end()

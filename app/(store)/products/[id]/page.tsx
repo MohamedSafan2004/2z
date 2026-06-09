@@ -176,11 +176,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     <p className="low-stock-badge" style={{ fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(220,60,60,0.9)" }}>
                       Only {stockQuantity} left!
                     </p>
-                  ) : (
-                    <p style={{ fontSize: "9px", letterSpacing: "0.15em", color: "rgba(240,237,230,0.35)" }}>
-                      {stockQuantity} in stock
-                    </p>
-                  )
+                  ) : null
                 )}
               </div>
               <div style={{ display: "flex", gap: "8px" }}>
@@ -218,7 +214,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
             </div>
 
-            {/* Quantity — مش شغال غير بعد اختيار السايز */}
+            {/* Quantity */}
             <div style={{ marginBottom: "28px" }}>
               <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: quantityDisabled ? "rgba(240,237,230,0.2)" : "rgba(240,237,230,0.4)", marginBottom: "12px", transition: "color 0.2s" }}>Quantity</p>
               <div style={{ display: "flex", alignItems: "center", width: "fit-content", border: `1px solid ${quantityDisabled ? "rgba(240,237,230,0.06)" : "rgba(240,237,230,0.12)"}`, opacity: quantityDisabled ? 0.4 : 1, transition: "all 0.2s" }}>

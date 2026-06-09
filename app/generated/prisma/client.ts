@@ -71,3 +71,13 @@ export type Order = Prisma.OrderModel
  * 
  */
 export type OrderItem = Prisma.OrderItemModel
+/**
+ * Model PromoCode
+ * 
+ */
+export type PromoCode = Prisma.PromoCodeModel
+/**
+ * Model PromoCodeUsage
+ * 
+ */
+export type PromoCodeUsage = Prisma.PromoCodeUsageModel

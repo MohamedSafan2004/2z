@@ -1,4 +1,3 @@
-// app/api/orders/route.ts
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { requireAuth, optionalAuth } from "@/lib/middleware"
@@ -13,85 +12,83 @@ export async function POST(req: NextRequest) {
   try {
     const auth = optionalAuth(req)
 
-    const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"
     const { success } = await orderRatelimit.limit(ip)
     if (!success) {
-      return NextResponse.json(
-        { error: "Too many orders. Please try again later." },
-        { status: 429 }
-      )
+      return NextResponse.json({ error: "Too many orders. Please try again later." }, { status: 429 })
     }
 
-    const { items, address, phone, email, clientOrderId } = await req.json()
+    const body = await req.json().catch(() => null)
+    if (!body) return NextResponse.json({ error: "Invalid request" }, { status: 400 })
 
-    if (!items || items.length === 0) {
-      return NextResponse.json({ error: "No items in order" }, { status: 400 })
-    }
-    if (!email || !phone || !address) {
-      return NextResponse.json(
-        { error: "Email, phone, and address are required" },
-        { status: 400 }
-      )
-    }
+    const { items, address, phone, email, clientOrderId, promoCode } = body
+
+    if (!items || items.length === 0) return NextResponse.json({ error: "No items in order" }, { status: 400 })
+    if (!email || !phone || !address) return NextResponse.json({ error: "Email, phone, and address are required" }, { status: 400 })
 
     for (const item of items) {
-      if (
-        !item.variantId ||
-        !Number.isInteger(item.quantity) ||
-        item.quantity < 1 ||
-        item.quantity > 99
-      ) {
+      if (!item.variantId || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 99) {
         return NextResponse.json({ error: "Invalid item quantity" }, { status: 400 })
       }
     }
 
-    // idempotency — لو في clientOrderId نشوف لو الـ order ده اتعمل قبل كده
     if (clientOrderId) {
       const existing = await db.order.findFirst({
         where: { clientOrderId },
         include: { items: true },
       })
-      if (existing) {
-        return NextResponse.json(
-          { ...existing, verifyToken: existing.verifyToken },
-          { status: 201 }
-        )
-      }
+      if (existing) return NextResponse.json({ ...existing, verifyToken: existing.verifyToken }, { status: 201 })
     }
 
     const variantIds = items.map((item: CartItem) => item.variantId)
     const variants = await db.productVariant.findMany({
-      where: {
-        id: { in: variantIds },
-        product: { isActive: true },
-      },
+      where: { id: { in: variantIds }, product: { isActive: true } },
       include: { product: true },
     })
 
     for (const item of items) {
       const variant = variants.find((v: typeof variants[number]) => v.id === item.variantId)
-      if (!variant) {
-        return NextResponse.json({ error: "Product not found" }, { status: 404 })
-      }
+      if (!variant) return NextResponse.json({ error: "Product not found" }, { status: 404 })
     }
 
-    const totalAmount = items.reduce((total: number, item: CartItem) => {
+    const subtotal = items.reduce((total: number, item: CartItem) => {
       const variant = variants.find((v: typeof variants[number]) => v.id === item.variantId)!
       return total + Number(variant.product.price) * item.quantity
     }, 0)
 
-    const user = auth.userId
-      ? await db.user.findUnique({ where: { id: auth.userId } })
-      : null
+    // تحقق من الـ promo code على السيرفر
+    let discountAmount = 0
+    let validatedPromoCode: string | null = null
+    let promoId: string | null = null
 
+    if (promoCode && typeof promoCode === "string") {
+      const code = promoCode.trim().toUpperCase()
+      const promo = await db.promoCode.findUnique({ where: { code } })
+
+      if (promo && promo.isActive) {
+        const usedByPhone = await db.promoCodeUsage.findFirst({
+          where: { promoCodeId: promo.id, phone },
+        })
+        const usedByUser = auth.userId
+          ? await db.promoCodeUsage.findFirst({ where: { promoCodeId: promo.id, userId: auth.userId } })
+          : null
+
+        if (!usedByPhone && !usedByUser) {
+          discountAmount = Math.round((subtotal * promo.discount) / 100)
+          validatedPromoCode = promo.code
+          promoId = promo.id
+        }
+      }
+    }
+
+    const totalAmount = subtotal - discountAmount
+
+    const user = auth.userId ? await db.user.findUnique({ where: { id: auth.userId } }) : null
     const verifyToken = crypto.randomBytes(32).toString("hex")
 
     const order = await db.$transaction(async (tx) => {
       for (const item of items) {
-        const freshVariant = await tx.productVariant.findUnique({
-          where: { id: item.variantId },
-        })
+        const freshVariant = await tx.productVariant.findUnique({ where: { id: item.variantId } })
         if (!freshVariant || freshVariant.stockQuantity < item.quantity) {
           throw new Error(`Not enough stock for variant ${item.variantId}`)
         }
@@ -106,9 +103,10 @@ export async function POST(req: NextRequest) {
 
       const newOrder = await tx.order.create({
         data: {
-          ...(auth.userId && {
-          user: { connect: { id: auth.userId } },}),
+          ...(auth.userId && { user: { connect: { id: auth.userId } } }),
           totalAmount,
+          discountAmount,
+          promoCode: validatedPromoCode,
           guestEmail: email || null,
           address: sanitize(address),
           phone: sanitize(phone),
@@ -130,6 +128,17 @@ export async function POST(req: NextRequest) {
         },
         include: { items: true },
       })
+
+      // سجل استخدام الكود
+      if (promoId && validatedPromoCode) {
+        await tx.promoCodeUsage.create({
+          data: {
+            promoCodeId: promoId,
+            userId: auth.userId || null,
+            phone,
+          },
+        })
+      }
 
       return newOrder
     })

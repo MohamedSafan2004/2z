@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 const PREVIEW_SECRET = "2z-x9k#mP3q"
 
-export function proxy(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   // اسمح للـ API routes والـ static files والـ coming-soon نفسها
