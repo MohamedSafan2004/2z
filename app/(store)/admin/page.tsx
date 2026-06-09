@@ -94,7 +94,8 @@ export default function AdminPage() {
         o.phone?.includes(q) ||
         o.guestEmail?.toLowerCase().includes(q) ||
         o.user?.email?.toLowerCase().includes(q) ||
-        o.address?.toLowerCase().includes(q)
+        o.address?.toLowerCase().includes(q) ||
+        o.promoCode?.toLowerCase().includes(q)
       )
     })
 
@@ -116,6 +117,7 @@ export default function AdminPage() {
           <div>
             <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "6px" }}>Dashboard</p>
             <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "36px", fontWeight: 300, color: "#f0ede6" }}>Admin</h1>
+            
           </div>
           <div style={{ display: "flex", gap: "8px", marginTop: "8px", flexWrap: "wrap" }}>
             <button onClick={() => fetchOrders(true)} disabled={refreshing} style={{ padding: "9px 18px", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: refreshing ? "not-allowed" : "pointer", background: "transparent", color: refreshing ? "rgba(240,237,230,0.3)" : "rgba(240,237,230,0.6)", border: "1px solid rgba(240,237,230,0.15)" }}>
@@ -154,7 +156,7 @@ export default function AdminPage() {
           ))}
         </div>
 
-        <input type="text" placeholder="Search by name, phone, email, address..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} style={{ width: "100%", padding: "10px 14px", background: "transparent", border: "1px solid rgba(240,237,230,0.15)", color: "#f0ede6", fontFamily: "Space Mono, monospace", fontSize: "10px", outline: "none", marginBottom: "16px", boxSizing: "border-box" }} />
+        <input type="text" placeholder="Search by name, phone, email, address, promo code..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} style={{ width: "100%", padding: "10px 14px", background: "transparent", border: "1px solid rgba(240,237,230,0.15)", color: "#f0ede6", fontFamily: "Space Mono, monospace", fontSize: "10px", outline: "none", marginBottom: "16px", boxSizing: "border-box" }} />
 
         <div style={{ display: "flex", gap: "8px", marginBottom: "24px", flexWrap: "wrap" }}>
           {statuses.map((s) => (
@@ -185,6 +187,11 @@ export default function AdminPage() {
                       <p style={{ fontSize: "8px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.1em" }}>{formatDate(order.createdAt)}</p>
                     </div>
                     <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+                      {order.promoCode && (
+                        <span style={{ fontSize: "8px", letterSpacing: "0.12em", textTransform: "uppercase", padding: "3px 8px", color: "rgba(80,200,120,0.9)", border: "1px solid rgba(80,200,120,0.25)" }}>
+                          🏷 {order.promoCode} · -{Number(order.discountAmount).toLocaleString()} EGP
+                        </span>
+                      )}
                       <span style={{ fontSize: "8px", letterSpacing: "0.12em", textTransform: "uppercase", padding: "3px 8px", color: paymentStatusColor[order.paymentStatus] || "rgba(240,237,230,0.4)", border: `1px solid ${paymentStatusColor[order.paymentStatus] || "rgba(240,237,230,0.15)"}` }}>
                         Payment · {order.paymentStatus}
                       </span>
@@ -213,10 +220,17 @@ export default function AdminPage() {
                   </div>
 
                   <div style={{ borderTop: "1px solid rgba(240,237,230,0.06)", paddingTop: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-                    <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "24px", color: "#f0ede6" }}>
-                      {Number(order.totalAmount).toLocaleString()}
-                      <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)", fontFamily: "Space Mono, monospace", marginLeft: "6px" }}>EGP</span>
-                    </p>
+                    <div>
+                      {order.promoCode && Number(order.discountAmount) > 0 && (
+                        <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.35)", marginBottom: "4px", letterSpacing: "0.05em" }}>
+                          Original: {(Number(order.totalAmount) + Number(order.discountAmount)).toLocaleString()} EGP
+                        </p>
+                      )}
+                      <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "24px", color: "#f0ede6" }}>
+                        {Number(order.totalAmount).toLocaleString()}
+                        <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)", fontFamily: "Space Mono, monospace", marginLeft: "6px" }}>EGP</span>
+                      </p>
+                    </div>
                     <select value={order.status} onChange={(e) => updateStatus(order.id, e.target.value)} style={{ background: "#111", color: "#f0ede6", border: "1px solid rgba(240,237,230,0.15)", padding: "8px 12px", fontSize: "8px", fontFamily: "Space Mono, monospace", cursor: "pointer", letterSpacing: "0.1em", outline: "none" }}>
                       {["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"].map((s) => (
                         <option key={s} value={s}>{s}</option>

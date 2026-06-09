@@ -115,11 +115,11 @@ model PromoCodeUsage {
   promoCode   PromoCode @relation(fields: [promoCodeId], references: [id])
   user        User?     @relation(fields: [userId], references: [id])
 
+  @@unique([promoCodeId, phone])
   @@index([promoCodeId])
   @@index([phone])
   @@index([userId])
 }
-
 enum Role {
   CUSTOMER
   ADMIN
