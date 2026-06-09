@@ -113,35 +113,63 @@ export default function AdminPage() {
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "80px 16px 60px" }}>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
-          <div>
-            <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "6px" }}>Dashboard</p>
-            <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "36px", fontWeight: 300, color: "#f0ede6" }}>Admin</h1>
-            
-          </div>
-          <div style={{ display: "flex", gap: "8px", marginTop: "8px", flexWrap: "wrap" }}>
-            <button onClick={() => fetchOrders(true)} disabled={refreshing} style={{ padding: "9px 18px", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: refreshing ? "not-allowed" : "pointer", background: "transparent", color: refreshing ? "rgba(240,237,230,0.3)" : "rgba(240,237,230,0.6)", border: "1px solid rgba(240,237,230,0.15)" }}>
-              {refreshing ? "..." : "↻ Refresh"}
-            </button>
-            <button
-              onClick={async () => {
-                const res = await fetch("/api/admin/export", { headers: { Authorization: `Bearer ${token}` } })
-                if (!res.ok) return
-                const blob = await res.blob()
-                const url = URL.createObjectURL(blob)
-                const a = document.createElement("a")
-                a.href = url
-                a.download = `2Z-Report-${new Date().toISOString().split("T")[0]}.xlsx`
-                a.click()
-                URL.revokeObjectURL(url)
-              }}
-              style={{ padding: "9px 18px", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: "pointer", background: "#f0ede6", color: "#080808", border: "1px solid #f0ede6" }}
-            >
-              Export Excel
-            </button>
-          </div>
+        {/* Welcome */}
+        <div style={{
+          marginBottom: "48px",
+          paddingBottom: "40px",
+          borderBottom: "1px solid rgba(240,237,230,0.06)",
+        }}>
+          <p style={{
+            fontSize: "9px",
+            letterSpacing: "0.3em",
+            textTransform: "uppercase",
+            color: "rgb(179 149 26)",
+            marginBottom: "12px",
+          }}>
+            Admin Dashboard
+          </p>
+          <h1 style={{
+            fontFamily: "Cormorant Garamond, serif",
+            fontSize: "clamp(42px, 7vw, 72px)",
+            fontWeight: 300,
+            lineHeight: 1,
+            margin: 0,
+            color: "#f0ede6",
+          }}>
+            Welcome{" "}
+            <em style={{
+              fontStyle: "italic",
+              color: "rgba(240,237,230,0.35)",
+            }}>
+              Mr.7dido
+            </em>
+          </h1>
         </div>
 
+        {/* Buttons */}
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "32px", flexWrap: "wrap", gap: "8px" }}>
+          <button onClick={() => fetchOrders(true)} disabled={refreshing} style={{ padding: "9px 18px", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: refreshing ? "not-allowed" : "pointer", background: "transparent", color: refreshing ? "rgba(240,237,230,0.3)" : "rgba(240,237,230,0.6)", border: "1px solid rgba(240,237,230,0.15)" }}>
+            {refreshing ? "..." : "↻ Refresh"}
+          </button>
+          <button
+            onClick={async () => {
+              const res = await fetch("/api/admin/export", { headers: { Authorization: `Bearer ${token}` } })
+              if (!res.ok) return
+              const blob = await res.blob()
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement("a")
+              a.href = url
+              a.download = `2Z-Report-${new Date().toISOString().split("T")[0]}.xlsx`
+              a.click()
+              URL.revokeObjectURL(url)
+            }}
+            style={{ padding: "9px 18px", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: "pointer", background: "#f0ede6", color: "#080808", border: "1px solid #f0ede6" }}
+          >
+            Export Excel
+          </button>
+        </div>
+
+        {/* Stats */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", marginBottom: "32px" }}>
           {[
             { label: "Total Orders",    value: orders.length },
