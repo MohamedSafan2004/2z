@@ -56,16 +56,15 @@ async function main() {
   }
 
   // Promo Code
-  await prisma.promoCode.upsert({
-    where: { code: "SAVE10" },
-    update: {},
-    create: {
-      code: "SAVE10",
-      discount: 10,
-      isActive: true,
-    },
-  })
-
+await prisma.promoCode.upsert({
+  where: { code: "2ZSAVE10" },
+  update: {},
+  create: {
+    code: "2ZSAVE10",
+    discount: 10,
+    isActive: true,
+  },
+})
   console.log("✓ Seed complete")
   await pool.end()
 }

@@ -327,7 +327,7 @@ export default function CheckoutPage() {
                     value={promoInput}
                     onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError("") }}
                     onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
-                    placeholder="SAVE10"
+                    placeholder="...."
                     style={{
                       flex: 1, padding: "10px 12px", background: "transparent",
                       border: "1px solid rgba(240,237,230,0.15)", color: "#f0ede6",
