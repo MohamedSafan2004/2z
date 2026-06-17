@@ -27,7 +27,7 @@ export default function AdminPage() {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
-      setOrders(data)
+      setOrders(Array.isArray(data) ? data : [])
     } finally {
       setLoading(false)
       setRefreshing(false)

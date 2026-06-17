@@ -19,11 +19,19 @@ async function appendToSheet(order: any) {
     const sheets = google.sheets({ version: "v4", auth })
     const spreadsheetId = process.env.GOOGLE_SHEET_ID
 
+    // نشوف آخر صف فيه بيانات في الجدول
+    const existing = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${SHEET_NAME}!A3:A`,
+    })
+
+    let nextRow = (existing.data.values?.length || 0) + 3
+
     for (const item of order.items) {
-      const unitPrice = Number(item.priceSnapshot)
-      const quantity  = item.quantity
-      const discount  = order.discountAmount && order.promoCode
-        ? Number(order.discountAmount) / Number(order.totalAmount + order.discountAmount) * 100
+      const unitPrice  = Number(item.priceSnapshot)
+      const quantity   = item.quantity
+      const discount   = order.discountAmount && order.promoCode
+        ? Number(order.discountAmount) / (Number(order.totalAmount) + Number(order.discountAmount)) * 100
         : 0
       const finalPrice = unitPrice * quantity * (1 - discount / 100)
       const revenue    = finalPrice
@@ -33,29 +41,32 @@ async function appendToSheet(order: any) {
       })
 
       const row = [
-        date,                          // التاريخ
-        item.variantId.slice(0, 8).toUpperCase(), // كود المنتج
-        item.productNameSnapshot,      // المنتج
-        item.colorSnapshot,            // اللون
-        item.sizeSnapshot,             // المقاس
-        quantity,                      // الكمية
-        unitPrice,                     // سعر الوحدة
-        discount.toFixed(1),           // خصم %
-        finalPrice.toFixed(2),         // السعر النهائي
-        revenue.toFixed(2),            // الإيراد
-        order.id.slice(0, 8).toUpperCase(), // رقم الأوردر
+        date,
+        item.variantId.slice(0, 8).toUpperCase(),
+        item.productNameSnapshot,
+        item.colorSnapshot,
+        item.sizeSnapshot,
+        quantity,
+        unitPrice,
+        discount.toFixed(1),
+        finalPrice.toFixed(2),
+        revenue.toFixed(2),
+        order.id.slice(0, 8).toUpperCase(),
       ]
 
-      await sheets.spreadsheets.values.append({
+      await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: `${SHEET_NAME}!A:K`,
+        range: `${SHEET_NAME}!A${nextRow}:K${nextRow}`,
         valueInputOption: "USER_ENTERED",
         requestBody: { values: [row] },
       })
+
+      nextRow++
     }
+
+    console.log("✅ Google Sheets updated for order:", order.id)
   } catch (error) {
     console.error("Google Sheets append error:", error)
-    // مش بنرجع error عشان مش نأثر على الـ order update
   }
 }
 
@@ -83,9 +94,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
     }
 
-    const isCancelling = status === "CANCELLED" && currentOrder.status !== "CANCELLED"
+    const isCancelling =
+      status === "CANCELLED" && currentOrder.status !== "CANCELLED"
 
-    // بنتحقق إن الأوردر مكانش PAID أو DELIVERED قبل كده
     const isNewPaidOrDelivered =
       (status === "PAID" || status === "DELIVERED") &&
       currentOrder.status !== "PAID" &&
@@ -111,9 +122,8 @@ export async function PATCH(
       }
 
       return updated
-    })
+    }, { timeout: 30000 })
 
-    // لو بقى PAID أو DELIVERED للأول — اكتب في الشيت
     if (isNewPaidOrDelivered) {
       await appendToSheet(order)
     }
