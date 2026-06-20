@@ -4,28 +4,36 @@ import { requireAdmin } from "@/lib/middleware"
 import { google } from "googleapis"
 
 const VALID_STATUSES = ["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]
-const SHEET_NAME = "متابعة المبيعات"
+const SALES_SHEET = "متابعة المبيعات"
+const INVENTORY_SHEET = "المخزون"
 
-async function appendToSheet(order: any) {
+function getGoogleAuth() {
+  return new google.auth.GoogleAuth({
+    credentials: {
+      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    },
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  })
+}
+
+async function appendToSalesSheet(sheets: any, spreadsheetId: string, order: any) {
   try {
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-      },
-      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-    })
-
-    const sheets = google.sheets({ version: "v4", auth })
-    const spreadsheetId = process.env.GOOGLE_SHEET_ID
-
-    // نشوف آخر صف فيه بيانات في الجدول
     const existing = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `${SHEET_NAME}!A3:A`,
+      range: `${SALES_SHEET}!A3:A`,
     })
 
-    let nextRow = (existing.data.values?.length || 0) + 3
+    const rows = existing.data.values || []
+    let lastDataRow = 0
+    for (let i = 0; i < rows.length; i++) {
+      const cellValue = rows[i]?.[0] || ""
+      if (cellValue && cellValue !== "الإجماليات") {
+        lastDataRow = i + 1
+      }
+    }
+
+    let nextRow = lastDataRow + 3
 
     for (const item of order.items) {
       const unitPrice  = Number(item.priceSnapshot)
@@ -56,17 +64,76 @@ async function appendToSheet(order: any) {
 
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: `${SHEET_NAME}!A${nextRow}:K${nextRow}`,
+        range: `${SALES_SHEET}!A${nextRow}:K${nextRow}`,
         valueInputOption: "USER_ENTERED",
         requestBody: { values: [row] },
       })
 
       nextRow++
     }
-
-    console.log("✅ Google Sheets updated for order:", order.id)
   } catch (error) {
-    console.error("Google Sheets append error:", error)
+    console.error("Sales sheet update error:", error)
+  }
+}
+
+async function updateInventorySheet(sheets: any, spreadsheetId: string, order: any) {
+  try {
+    // هات كل الـ SKUs من تاب المخزون (عمود A) عشان نلاقي الـ row الصح لكل variant
+    const skuColumn = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${INVENTORY_SHEET}!A3:A`,
+    })
+
+    const skuRows = skuColumn.data.values || []
+
+    for (const item of order.items) {
+      // هات الـ variant عشان نعرف الـ sku والـ stockQuantity الحالي
+      const variant = await db.productVariant.findUnique({
+        where: { id: item.variantId },
+      })
+
+      if (!variant || !variant.sku) continue
+
+      // دور على الـ row اللي فيها نفس الـ SKU
+      const rowIndex = skuRows.findIndex((r: string[]) => r[0] === variant.sku)
+      if (rowIndex === -1) continue
+
+      const sheetRow = rowIndex + 3 // +3 عشان البيانات بتبدأ من row 3
+
+      // هات قيمة "مباع" الحالية من العمود G عشان نزود عليها
+      const currentSoldCell = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `${INVENTORY_SHEET}!G${sheetRow}`,
+      })
+
+      const currentSold = Number(currentSoldCell.data.values?.[0]?.[0] || 0)
+      const newSold = currentSold + item.quantity
+
+      // حدّث عمود "مباع" (G) و"متبقي" (H)
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `${INVENTORY_SHEET}!G${sheetRow}:H${sheetRow}`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values: [[newSold, variant.stockQuantity]] },
+      })
+    }
+  } catch (error) {
+    console.error("Inventory sheet update error:", error)
+  }
+}
+
+async function syncToSheets(order: any) {
+  try {
+    const auth = getGoogleAuth()
+    const sheets = google.sheets({ version: "v4", auth })
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID as string
+
+    await appendToSalesSheet(sheets, spreadsheetId, order)
+    await updateInventorySheet(sheets, spreadsheetId, order)
+
+    console.log("✅ Google Sheets synced for order:", order.id)
+  } catch (error) {
+    console.error("Google Sheets sync error:", error)
   }
 }
 
@@ -125,7 +192,7 @@ export async function PATCH(
     }, { timeout: 30000 })
 
     if (isNewPaidOrDelivered) {
-      await appendToSheet(order)
+      await syncToSheets(order)
     }
 
     return NextResponse.json(order)

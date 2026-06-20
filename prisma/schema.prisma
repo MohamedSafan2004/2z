@@ -51,6 +51,7 @@ model ProductVariant {
   productId     String
   color         Color
   size          Size
+  sku           String?     @unique
   stockQuantity Int         @default(0)
   orderItems    OrderItem[]
   product       Product     @relation(fields: [productId], references: [id])

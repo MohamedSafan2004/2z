@@ -198,6 +198,7 @@ export type PromoCodeUsageOrderByWithRelationInput = {
 
 export type PromoCodeUsageWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  promoCodeId_phone?: Prisma.PromoCodeUsagePromoCodeIdPhoneCompoundUniqueInput
   AND?: Prisma.PromoCodeUsageWhereInput | Prisma.PromoCodeUsageWhereInput[]
   OR?: Prisma.PromoCodeUsageWhereInput[]
   NOT?: Prisma.PromoCodeUsageWhereInput | Prisma.PromoCodeUsageWhereInput[]
@@ -207,7 +208,7 @@ export type PromoCodeUsageWhereUniqueInput = Prisma.AtLeast<{
   usedAt?: Prisma.DateTimeFilter<"PromoCodeUsage"> | Date | string
   promoCode?: Prisma.XOR<Prisma.PromoCodeScalarRelationFilter, Prisma.PromoCodeWhereInput>
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-}, "id">
+}, "id" | "promoCodeId_phone">
 
 export type PromoCodeUsageOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -293,6 +294,11 @@ export type PromoCodeUsageListRelationFilter = {
 
 export type PromoCodeUsageOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type PromoCodeUsagePromoCodeIdPhoneCompoundUniqueInput = {
+  promoCodeId: string
+  phone: string
 }
 
 export type PromoCodeUsageCountOrderByAggregateInput = {

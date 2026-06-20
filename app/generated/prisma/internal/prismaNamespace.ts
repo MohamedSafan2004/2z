@@ -1090,6 +1090,7 @@ export const ProductVariantScalarFieldEnum = {
   productId: 'productId',
   color: 'color',
   size: 'size',
+  sku: 'sku',
   stockQuantity: 'stockQuantity'
 } as const
 

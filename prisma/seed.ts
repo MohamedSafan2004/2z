@@ -6,6 +6,13 @@ const dotenv = require("dotenv")
 
 dotenv.config()
 
+const colorCodes: Record<string, string> = {
+  BLACK: "B",
+  WHITE: "W",
+  NAVY: "N",
+  GREY: "GR",
+}
+
 async function main() {
   const pool = new Pool({ connectionString: process.env.DIRECT_DATABASE_URL })
   const adapter = new PrismaPg(pool)
@@ -44,27 +51,30 @@ async function main() {
     })
 
     for (const size of ["S", "M", "L"]) {
+      const sku = `2Z-TEE-${colorCodes[item.color]}-${size}`
       await prisma.productVariant.create({
         data: {
           productId: product.id,
           color: item.color as any,
           size: size as any,
           stockQuantity: 20,
+          sku,
         },
       })
     }
   }
 
   // Promo Code
-await prisma.promoCode.upsert({
-  where: { code: "2ZSAVE10" },
-  update: {},
-  create: {
-    code: "2ZSAVE10",
-    discount: 10,
-    isActive: true,
-  },
-})
+  await prisma.promoCode.upsert({
+    where: { code: "2ZSAVE10" },
+    update: {},
+    create: {
+      code: "2ZSAVE10",
+      discount: 10,
+      isActive: true,
+    },
+  })
+
   console.log("✓ Seed complete")
   await pool.end()
 }
