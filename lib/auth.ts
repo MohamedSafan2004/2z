@@ -16,7 +16,7 @@ export async function comparePassword(password: string, hash: string): Promise<b
 }
 
 export function generateToken(userId: string, role: string): string {
-  return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: "7d" })
+  return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: "30d" })
 }
 
 export function verifyToken(token: string): { userId: string; role: string } | null {

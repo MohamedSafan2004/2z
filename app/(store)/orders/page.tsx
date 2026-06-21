@@ -55,7 +55,7 @@ function OrderSkeleton() {
 }
 
 export default function OrdersPage() {
-  const { user, token } = useAuth()
+  const { user, token, logout } = useAuth()
   const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -69,8 +69,17 @@ export default function OrdersPage() {
     if (!user) { router.push("/login"); return }
 
     fetch("/api/orders", { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => r.json())
+      .then(async (r) => {
+        // Token expired or invalid — send back to login instead of showing a dead-end error
+        if (r.status === 401) {
+          logout()
+          router.push("/login?expired=1")
+          return null
+        }
+        return r.json()
+      })
       .then((data) => {
+        if (data === null) return // already redirecting
         if (Array.isArray(data)) setOrders(data)
         else setError("Failed to load orders")
       })

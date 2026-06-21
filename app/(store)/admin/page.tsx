@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 const ITEMS_PER_PAGE = 20
 
 export default function AdminPage() {
-  const { user, token } = useAuth()
+  const { user, token, logout } = useAuth()
   const router = useRouter()
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -26,6 +26,13 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/orders", {
         headers: { Authorization: `Bearer ${token}` },
       })
+
+      if (res.status === 401) {
+        logout()
+        router.push("/login?expired=1")
+        return
+      }
+
       const data = await res.json()
       setOrders(Array.isArray(data) ? data : [])
     } finally {
@@ -42,11 +49,18 @@ export default function AdminPage() {
   }, [user, hydrated])
 
   const updateStatus = async (orderId: string, status: string) => {
-    await fetch(`/api/admin/orders/${orderId}`, {
+    const res = await fetch(`/api/admin/orders/${orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ status }),
     })
+
+    if (res.status === 401) {
+      logout()
+      router.push("/login?expired=1")
+      return
+    }
+
     setOrders(orders.map((o) => o.id === orderId ? { ...o, status } : o))
   }
 
@@ -78,8 +92,10 @@ export default function AdminPage() {
     FAILED:  "rgba(220,100,100,0.7)",
   }
 
+  // Revenue follows ORDER status (PAID / DELIVERED) — not payment status —
+  // to stay consistent with the same logic used for the Google Sheets sync.
   const revenue = orders
-    .filter(o => o.paymentStatus === "PAID" || o.status === "DELIVERED")
+    .filter(o => o.status === "PAID" || o.status === "DELIVERED")
     .reduce((sum, o) => sum + Number(o.totalAmount), 0)
 
   const filtered = orders
@@ -154,6 +170,11 @@ export default function AdminPage() {
           <button
             onClick={async () => {
               const res = await fetch("/api/admin/export", { headers: { Authorization: `Bearer ${token}` } })
+              if (res.status === 401) {
+                logout()
+                router.push("/login?expired=1")
+                return
+              }
               if (!res.ok) return
               const blob = await res.blob()
               const url = URL.createObjectURL(blob)
