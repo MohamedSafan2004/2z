@@ -56,7 +56,6 @@ export async function POST(req: NextRequest) {
       return total + Number(variant.product.price) * item.quantity
     }, 0)
 
-    // تحقق من الـ promo code على السيرفر
     let discountAmount = 0
     let validatedPromoCode: string | null = null
     let promoId: string | null = null
@@ -129,7 +128,6 @@ export async function POST(req: NextRequest) {
         include: { items: true },
       })
 
-      // سجل استخدام الكود
       if (promoId && validatedPromoCode) {
         await tx.promoCodeUsage.create({
           data: {
@@ -159,6 +157,8 @@ export async function POST(req: NextRequest) {
           })),
           total: totalAmount,
           address: address || "",
+          promoCode: validatedPromoCode ?? undefined,
+          discountAmount: discountAmount > 0 ? discountAmount : undefined,
         })
       } catch (error) {
         console.error("Customer email failed:", error)
@@ -180,6 +180,8 @@ export async function POST(req: NextRequest) {
           price: Number(item.priceSnapshot),
         })),
         total: totalAmount,
+        promoCode: validatedPromoCode ?? undefined,
+        discountAmount: discountAmount > 0 ? discountAmount : undefined,
       })
     } catch (error) {
       console.error("Admin notification failed:", error)

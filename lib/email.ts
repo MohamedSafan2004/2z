@@ -2,74 +2,163 @@ import { Resend } from "resend"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+// ─── Shared base styles ──────────────────────────────────────────────────────
+
+const font = `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`
+
+function base(content: string): string {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
+      color: #111111;
+    }
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #0f0f0f !important;
+        color: #f0ede6 !important;
+      }
+      .card {
+        background-color: #1a1a1a !important;
+        border-color: #2a2a2a !important;
+      }
+      .muted {
+        color: #888888 !important;
+      }
+      .divider {
+        border-color: #2a2a2a !important;
+      }
+    }
+  </style>
+</head>
+<body style="font-family:${font};font-size:15px;line-height:1.6;background-color:#ffffff;color:#111111;padding:0;margin:0">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;padding:40px 24px">
+    <tr><td>
+      <!-- Logo -->
+      <div style="margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid #e5e5e5" class="divider">
+        <span style="font-size:24px;font-weight:700;letter-spacing:-0.5px">2Z</span>
+        <span class="muted" style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#888888;margin-left:10px">Minimal Streetwear</span>
+      </div>
+
+      ${content}
+
+      <!-- Footer -->
+      <div style="margin-top:40px;padding-top:24px;border-top:1px solid #e5e5e5" class="divider">
+        <p class="muted" style="font-size:12px;color:#888888;margin:0">
+          2Z Store · Cairo, Egypt<br/>
+          Questions? Reply to this email.
+        </p>
+      </div>
+    </td></tr>
+  </table>
+</body>
+</html>
+`
+}
+
+function card(content: string): string {
+  return `
+    <div class="card" style="background:#f7f7f7;border:1px solid #e5e5e5;border-radius:6px;padding:20px;margin-bottom:20px">
+      ${content}
+    </div>
+  `
+}
+
+function label(text: string): string {
+  return `<p class="muted" style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#888888;margin:0 0 6px">${text}</p>`
+}
+
+// ─── Order Confirmation ───────────────────────────────────────────────────────
+
 export async function sendOrderConfirmation({
   to,
   orderNumber,
   items,
   total,
   address,
+  promoCode,
+  discountAmount,
 }: {
   to: string
   orderNumber: string
   items: { name: string; color: string; size: string; quantity: number; price: number }[]
   total: number
   address: string
+  promoCode?: string
+  discountAmount?: number
 }) {
-  const itemsHtml = items
-    .map(
-      (item) => `
+  const originalTotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
+
+  const itemsRows = items.map((item) => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #e5e5e5;font-size:14px" class="divider">
+        ${item.name} — ${item.color} / ${item.size} × ${item.quantity}
+      </td>
+      <td style="padding:10px 0;border-bottom:1px solid #e5e5e5;font-size:14px;text-align:right;white-space:nowrap" class="divider">
+        ${(item.price * item.quantity).toLocaleString()} EGP
+      </td>
+    </tr>
+  `).join("")
+
+  const promoRow = promoCode && discountAmount ? `
+    <tr>
+      <td style="padding:10px 0;font-size:13px;color:#888888" class="muted">Promo: ${promoCode}</td>
+      <td style="padding:10px 0;font-size:13px;color:#888888;text-align:right" class="muted">− ${discountAmount.toLocaleString()} EGP</td>
+    </tr>
+  ` : ""
+
+  const originalRow = promoCode && discountAmount ? `
+    <tr>
+      <td style="padding:4px 0;font-size:12px;color:#888888" class="muted">Subtotal</td>
+      <td style="padding:4px 0;font-size:12px;color:#888888;text-align:right" class="muted">${originalTotal.toLocaleString()} EGP</td>
+    </tr>
+  ` : ""
+
+  const content = `
+    <h1 style="font-size:22px;font-weight:600;margin:0 0 8px">Order Confirmed</h1>
+    <p class="muted" style="font-size:14px;color:#888888;margin:0 0 28px">
+      Thanks for your order. We'll let you know when it ships.
+    </p>
+
+    ${card(`
+      ${label("Order Number")}
+      <p style="font-size:16px;font-weight:600;margin:0;letter-spacing:0.05em">#${orderNumber.slice(0, 8).toUpperCase()}</p>
+    `)}
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px">
+      ${itemsRows}
+      ${originalRow}
+      ${promoRow}
       <tr>
-        <td style="padding:8px 0;border-bottom:1px solid #1a1a1a;font-family:monospace;font-size:12px;color:#a0a0a0">
-          ${item.name} — ${item.color} / ${item.size} × ${item.quantity}
-        </td>
-        <td style="padding:8px 0;border-bottom:1px solid #1a1a1a;font-family:monospace;font-size:12px;color:#f0ede6;text-align:right">
-          ${item.price * item.quantity} EGP
-        </td>
+        <td style="padding:14px 0 0;font-size:14px;font-weight:600">Total</td>
+        <td style="padding:14px 0 0;font-size:18px;font-weight:700;text-align:right">${total.toLocaleString()} EGP</td>
       </tr>
-    `
-    )
-    .join("")
+    </table>
+
+    ${card(`
+      ${label("Delivery Address")}
+      <p style="font-size:14px;margin:0">${address}</p>
+    `)}
+  `
 
   await resend.emails.send({
     from: "2Z Store <orders@2zstore.com>",
     to,
-    subject: `Order Confirmed — ${orderNumber.toUpperCase()}`,
-    html: `
-      <div style="background:#080808;padding:40px 24px;max-width:600px;margin:0 auto">
-        <h1 style="font-family:Georgia,serif;font-size:32px;font-weight:300;color:#f0ede6;margin-bottom:8px">2Z</h1>
-        <p style="font-family:monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#555;margin-bottom:40px">Minimal Streetwear</p>
-
-        <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:300;color:#f0ede6;margin-bottom:8px">Order Confirmed</h2>
-        <p style="font-family:monospace;font-size:11px;color:#666;margin-bottom:32px">
-          Thank you for your order. We'll notify you when it ships.
-        </p>
-
-        <div style="background:#0f0f0f;padding:20px;margin-bottom:24px">
-          <p style="font-family:monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#555;margin-bottom:6px">Order Number</p>
-          <p style="font-family:monospace;font-size:14px;color:#f0ede6">${orderNumber.slice(0, 8).toUpperCase()}</p>
-        </div>
-
-        <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
-          ${itemsHtml}
-          <tr>
-            <td style="padding:16px 0;font-family:monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#555">Total</td>
-            <td style="padding:16px 0;font-family:Georgia,serif;font-size:22px;color:#f0ede6;text-align:right">${total} EGP</td>
-          </tr>
-        </table>
-
-        <div style="background:#0f0f0f;padding:20px;margin-bottom:32px">
-          <p style="font-family:monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#555;margin-bottom:6px">Delivery Address</p>
-          <p style="font-family:monospace;font-size:11px;color:#a0a0a0">${address}</p>
-        </div>
-
-        <p style="font-family:monospace;font-size:10px;color:#444;line-height:1.8">
-          Questions? Reply to this email or contact us on WhatsApp.<br/>
-          Cairo, Egypt — 2Z Store
-        </p>
-      </div>
-    `,
+    subject: `Order Confirmed — #${orderNumber.slice(0, 8).toUpperCase()}`,
+    html: base(content),
   })
 }
+
+// ─── Verification Email ───────────────────────────────────────────────────────
 
 export async function sendVerificationEmail({
   to,
@@ -78,32 +167,65 @@ export async function sendVerificationEmail({
   to: string
   code: string
 }) {
+  const content = `
+    <h1 style="font-size:22px;font-weight:600;margin:0 0 8px">Verify Your Email</h1>
+    <p class="muted" style="font-size:14px;color:#888888;margin:0 0 28px">
+      Enter this code to verify your email address.
+    </p>
+
+    ${card(`
+      <p style="text-align:center;font-size:36px;font-weight:700;letter-spacing:0.3em;margin:12px 0">${code}</p>
+    `)}
+
+    <p class="muted" style="font-size:13px;color:#888888;margin:0">
+      This code expires in 10 minutes.<br/>
+      If you didn't request this, you can safely ignore this email.
+    </p>
+  `
+
   await resend.emails.send({
     from: "2Z Store <orders@2zstore.com>",
     to,
     subject: "Verify your email — 2Z",
-    html: `
-      <div style="background:#080808;padding:40px 24px;max-width:600px;margin:0 auto">
-        <h1 style="font-family:Georgia,serif;font-size:32px;font-weight:300;color:#f0ede6;margin-bottom:8px">2Z</h1>
-        <p style="font-family:monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#555;margin-bottom:40px">Minimal Streetwear</p>
-
-        <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:300;color:#f0ede6;margin-bottom:16px">Verify Your Email</h2>
-        <p style="font-family:monospace;font-size:11px;color:#666;margin-bottom:32px">
-          Use this code to verify your email address.
-        </p>
-
-        <div style="background:#0f0f0f;padding:32px;text-align:center;margin-bottom:32px">
-          <p style="font-family:Georgia,serif;font-size:48px;font-weight:300;color:#f0ede6;letter-spacing:0.3em">${code}</p>
-        </div>
-
-        <p style="font-family:monospace;font-size:10px;color:#444;line-height:1.8">
-          This code expires in 10 minutes.<br/>
-          If you didn't request this, ignore this email.
-        </p>
-      </div>
-    `,
+    html: base(content),
   })
 }
+
+// ─── Password Reset ───────────────────────────────────────────────────────────
+
+export async function sendPasswordResetEmail({
+  to,
+  code,
+}: {
+  to: string
+  code: string
+}) {
+  const content = `
+    <h1 style="font-size:22px;font-weight:600;margin:0 0 8px">Reset Your Password</h1>
+    <p class="muted" style="font-size:14px;color:#888888;margin:0 0 28px">
+      Use this code to reset your password.
+    </p>
+
+    ${card(`
+      <p style="text-align:center;font-size:36px;font-weight:700;letter-spacing:0.3em;margin:12px 0">${code}</p>
+    `)}
+
+    <p class="muted" style="font-size:13px;color:#888888;margin:0">
+      This code expires in 10 minutes.<br/>
+      If you didn't request a password reset, ignore this email.
+    </p>
+  `
+
+  await resend.emails.send({
+    from: "2Z Store <orders@2zstore.com>",
+    to,
+    subject: "Reset your password — 2Z",
+    html: base(content),
+  })
+}
+
+// ─── Admin Notification ───────────────────────────────────────────────────────
+
 export async function sendAdminNotification({
   orderNumber,
   customerName,
@@ -112,6 +234,8 @@ export async function sendAdminNotification({
   address,
   items,
   total,
+  promoCode,
+  discountAmount,
 }: {
   orderNumber: string
   customerName: string
@@ -120,49 +244,58 @@ export async function sendAdminNotification({
   address: string
   items: { name: string; color: string; size: string; quantity: number; price: number }[]
   total: number
+  promoCode?: string
+  discountAmount?: number
 }) {
-  const itemsHtml = items
-    .map((item) => `
+  const itemsRows = items.map((item) => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #e5e5e5;font-size:14px" class="divider">
+        ${item.name} — ${item.color} / ${item.size} × ${item.quantity}
+      </td>
+      <td style="padding:10px 0;border-bottom:1px solid #e5e5e5;font-size:14px;text-align:right;white-space:nowrap" class="divider">
+        ${(item.price * item.quantity).toLocaleString()} EGP
+      </td>
+    </tr>
+  `).join("")
+
+  const promoRow = promoCode && discountAmount ? `
+    <tr>
+      <td style="padding:6px 0;font-size:13px;color:#888888" class="muted">Promo: ${promoCode}</td>
+      <td style="padding:6px 0;font-size:13px;color:#888888;text-align:right" class="muted">− ${discountAmount.toLocaleString()} EGP</td>
+    </tr>
+  ` : ""
+
+  const content = `
+    <h1 style="font-size:22px;font-weight:600;margin:0 0 4px">New Order</h1>
+    <p class="muted" style="font-size:13px;color:#888888;margin:0 0 28px">Action required — prepare for shipment.</p>
+
+    ${card(`
+      ${label("Order Number")}
+      <p style="font-size:16px;font-weight:600;margin:0">#${orderNumber.slice(0, 8).toUpperCase()}</p>
+    `)}
+
+    ${card(`
+      ${label("Customer")}
+      <p style="font-size:15px;font-weight:600;margin:0 0 4px">${customerName}</p>
+      <p style="font-size:13px;color:#888888;margin:0 0 2px" class="muted">${customerEmail}</p>
+      <p style="font-size:13px;color:#888888;margin:0 0 2px" class="muted">${customerPhone}</p>
+      <p style="font-size:13px;color:#888888;margin:0" class="muted">${address}</p>
+    `)}
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px">
+      ${itemsRows}
+      ${promoRow}
       <tr>
-        <td style="padding:8px 0;border-bottom:1px solid #1a1a1a;font-family:monospace;font-size:12px;color:#a0a0a0">
-          ${item.name} — ${item.color} / ${item.size} × ${item.quantity}
-        </td>
-        <td style="padding:8px 0;border-bottom:1px solid #1a1a1a;font-family:monospace;font-size:12px;color:#f0ede6;text-align:right">
-          ${item.price * item.quantity} EGP
-        </td>
+        <td style="padding:14px 0 0;font-size:14px;font-weight:600">Total</td>
+        <td style="padding:14px 0 0;font-size:18px;font-weight:700;text-align:right">${total.toLocaleString()} EGP</td>
       </tr>
-    `).join("")
+    </table>
+  `
 
   await resend.emails.send({
     from: "2Z Store <orders@2zstore.com>",
     to: "2z.eg2004@gmail.com",
-    subject: `🛍️ New Order — ${orderNumber.slice(0, 8).toUpperCase()}`,
-    html: `
-      <div style="background:#080808;padding:40px 24px;max-width:600px;margin:0 auto">
-        <h1 style="font-family:Georgia,serif;font-size:28px;font-weight:300;color:#f0ede6;margin-bottom:8px">2Z — New Order</h1>
-        <p style="font-family:monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#555;margin-bottom:32px">Action Required</p>
-
-        <div style="background:#0f0f0f;padding:20px;margin-bottom:20px">
-          <p style="font-family:monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#555;margin-bottom:6px">Order</p>
-          <p style="font-family:monospace;font-size:14px;color:#f0ede6">${orderNumber.slice(0, 8).toUpperCase()}</p>
-        </div>
-
-        <div style="background:#0f0f0f;padding:20px;margin-bottom:20px">
-          <p style="font-family:monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#555;margin-bottom:10px">Customer</p>
-          <p style="font-family:monospace;font-size:12px;color:#f0ede6;margin-bottom:4px">${customerName}</p>
-          <p style="font-family:monospace;font-size:11px;color:#a0a0a0;margin-bottom:4px">${customerEmail}</p>
-          <p style="font-family:monospace;font-size:11px;color:#a0a0a0;margin-bottom:4px">${customerPhone}</p>
-          <p style="font-family:monospace;font-size:11px;color:#a0a0a0">${address}</p>
-        </div>
-
-        <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
-          ${itemsHtml}
-          <tr>
-            <td style="padding:16px 0;font-family:monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#555">Total</td>
-            <td style="padding:16px 0;font-family:Georgia,serif;font-size:22px;color:#f0ede6;text-align:right">${total} EGP</td>
-          </tr>
-        </table>
-      </div>
-    `,
+    subject: `🛍️ New Order — #${orderNumber.slice(0, 8).toUpperCase()}`,
+    html: base(content),
   })
 }
