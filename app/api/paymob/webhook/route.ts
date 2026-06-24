@@ -85,7 +85,6 @@ export async function POST(req: NextRequest) {
 
     const txId = String(obj.id)
 
-    // replay protection
     if (order.paymobTransactionId === txId && order.paymentStatus === "PAID") {
       return NextResponse.json({ ignored: true })
     }
@@ -100,7 +99,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ received: true })
       }
 
-      // email deduplication — نفس الـ atomic guard زي الـ verify-payment
       const customerGuard = await db.order.updateMany({
         where: { id: order.id, confirmationEmailSent: false },
         data: { confirmationEmailSent: true },
@@ -122,6 +120,8 @@ export async function POST(req: NextRequest) {
               })),
               total: Number(order.totalAmount),
               address: order.address || "",
+              promoCode: order.promoCode ?? undefined,
+              discountAmount: Number(order.discountAmount) > 0 ? Number(order.discountAmount) : undefined,
             })
           } catch (error) {
             console.error("Customer email failed:", error)
@@ -155,6 +155,8 @@ export async function POST(req: NextRequest) {
               price: Number(item.priceSnapshot),
             })),
             total: Number(order.totalAmount),
+            promoCode: order.promoCode ?? undefined,
+            discountAmount: Number(order.discountAmount) > 0 ? Number(order.discountAmount) : undefined,
           })
         } catch (error) {
           console.error("Admin email failed:", error)
@@ -167,7 +169,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (isFailed) {
-      // stock restore داخل transaction واحدة
       await db.$transaction(async (tx) => {
         const updated = await tx.order.updateMany({
           where: { id: order.id, paymentStatus: "PENDING" },
