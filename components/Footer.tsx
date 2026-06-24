@@ -1,102 +1,93 @@
 import Link from "next/link"
 import React from "react"
 
-const linkStyle: React.CSSProperties = {
-  fontSize: "11px",
-  letterSpacing: "0.12em",
-  textTransform: "uppercase",
-  color: "rgba(240,237,230,0.6)",
-  textDecoration: "none",
-  display: "block",
-  transition: "color 0.2s",
-}
-
-const socialStyle: React.CSSProperties = {
-  width: "38px",
-  height: "38px",
-  border: "1px solid rgba(240,237,230,0.12)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color: "rgba(240,237,230,0.5)",
-  textDecoration: "none",
-  transition: "border-color 0.2s, color 0.2s",
-  flexShrink: 0,
-}
-
-const sectionLabelStyle: React.CSSProperties = {
-  fontSize: "9px",
-  letterSpacing: "0.25em",
-  textTransform: "uppercase",
-  color: "rgba(240,237,230,0.25)",
-  marginBottom: "20px",
-  marginTop: 0,
-}
-
 export default function Footer() {
   return (
     <footer style={{
       background: "#080808",
       borderTop: "1px solid rgba(240,237,230,0.06)",
-      fontFamily: "'Space Mono', monospace",
+      fontFamily: "Space Mono, monospace",
     }}>
       <style>{`
         .footer-link:hover { color: #f0ede6 !important; }
         .footer-social:hover { border-color: rgba(240,237,230,0.35) !important; color: #f0ede6 !important; }
+
+        .footer-top {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 40px;
+        }
+        .footer-brand {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .footer-links {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 20px;
+        }
+        .footer-socials {
+          display: flex;
+          justify-content: center;
+          gap: 12px;
+        }
+        .footer-bottom {
+          text-align: center;
+        }
+
         @media (min-width: 768px) {
-          .footer-top { grid-template-columns: 1fr 1fr !important; }
-          .footer-brand { text-align: left !important; }
-          .footer-socials { justify-content: flex-start !important; }
+          .footer-top {
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: space-between;
+            text-align: left;
+            gap: 0;
+          }
+          .footer-brand {
+            align-items: flex-start;
+          }
+          .footer-links {
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 48px;
+          }
+          .footer-links-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+          }
+          .footer-socials {
+            justify-content: flex-start;
+          }
+          .footer-bottom {
+            text-align: left;
+          }
         }
       `}</style>
 
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "56px 24px 32px" }}>
 
-        {/* Top */}
-        <div
-          className="footer-top"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr",
-            gap: "48px",
-            marginBottom: "48px",
-          }}
-        >
+        <div className="footer-top" style={{ marginBottom: "48px" }}>
+
           {/* Brand */}
-          <div className="footer-brand" style={{ textAlign: "center" }}>
+          <div className="footer-brand" style={{ gap: "14px" }}>
             <img
-              src="/logo.jpeg"
-              alt="2Z"
-              style={{
-                height: "36px",
-                width: "36px",
-                objectFit: "cover",
-                borderRadius: "50%",
-                marginBottom: "16px",
-                mixBlendMode: "screen",
-              }}
+              src="/logo.jpeg" alt="2Z"
+              style={{ height: "36px", width: "36px", objectFit: "cover", borderRadius: "50%", mixBlendMode: "screen" }}
             />
-            <p style={{
-              fontSize: "10px",
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: "rgba(240,237,230,0.4)",
-              lineHeight: 2,
-              margin: "0 0 20px",
-            }}>
-              Oversized T-shirts<br />6th of October, Egypt
+            <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", lineHeight: 2, margin: 0 }}>
+              Minimal Streetwear<br />6th of October, Egypt
             </p>
-            <div
-              className="footer-socials"
-              style={{ display: "flex", gap: "10px", justifyContent: "center" }}
-            >
+            <div className="footer-socials" style={{ marginTop: "4px" }}>
               <a
                 href="https://www.instagram.com/2z_offical?igsh=MWh3dWZiYWN1ZzdrZA%3D%3D"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
+                target="_blank" rel="noopener noreferrer" aria-label="Instagram"
                 className="footer-social"
-                style={socialStyle}
+                style={{ width: "38px", height: "38px", border: "1px solid rgba(240,237,230,0.12)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(240,237,230,0.4)", transition: "border-color 0.2s, color 0.2s" }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -106,11 +97,9 @@ export default function Footer() {
               </a>
               <a
                 href="https://www.tiktok.com/@2z_offical?_r=1&_t=ZS-96kSCZpQdl3"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="TikTok"
+                target="_blank" rel="noopener noreferrer" aria-label="TikTok"
                 className="footer-social"
-                style={socialStyle}
+                style={{ width: "38px", height: "38px", border: "1px solid rgba(240,237,230,0.12)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(240,237,230,0.4)", transition: "border-color 0.2s, color 0.2s" }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z" />
@@ -119,43 +108,28 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Nav Links */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px" }}>
-            <div>
-              <p style={sectionLabelStyle}>Shop</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                <Link href="/products" className="footer-link" style={linkStyle}>All</Link>
-                <Link href="/products?category=t-shirts" className="footer-link" style={linkStyle}>T-Shirts</Link>
-                <Link href="/products?category=sweatpants" className="footer-link" style={linkStyle}>Sweatpants</Link>
-              </div>
+          {/* Links */}
+          <div className="footer-links">
+            <div className="footer-links-col">
+              <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.2)", margin: 0 }}>Shop</p>
+              <Link href="/products" className="footer-link" style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", textDecoration: "none", transition: "color 0.2s" }}>All</Link>
+              <Link href="/products?category=t-shirts" className="footer-link" style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", textDecoration: "none", transition: "color 0.2s" }}>T-Shirts</Link>
+              <Link href="/products?category=sweatpants" className="footer-link" style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", textDecoration: "none", transition: "color 0.2s" }}>Sweatpants</Link>
             </div>
-            <div>
-              <p style={sectionLabelStyle}>Info</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                <Link href="/contact" className="footer-link" style={linkStyle}>Contact</Link>
-                <Link href="/privacy" className="footer-link" style={linkStyle}>Privacy</Link>
-                <Link href="/terms" className="footer-link" style={linkStyle}>Terms</Link>
-              </div>
+            <div className="footer-links-col">
+              <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.2)", margin: 0 }}>Info</p>
+              <Link href="/contact" className="footer-link" style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", textDecoration: "none", transition: "color 0.2s" }}>Contact</Link>
+              <Link href="/privacy" className="footer-link" style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", textDecoration: "none", transition: "color 0.2s" }}>Privacy</Link>
+              <Link href="/terms" className="footer-link" style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", textDecoration: "none", transition: "color 0.2s" }}>Terms</Link>
             </div>
           </div>
+
         </div>
 
         {/* Bottom */}
-        <div style={{
-          borderTop: "1px solid rgba(240,237,230,0.06)",
-          paddingTop: "24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "8px",
-        }}>
-          <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.25)", margin: 0 }}>
-            © 2026 2Z
-          </p>
-          <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.25)", margin: 0 }}>
-            6th of October, Egypt
-          </p>
+        <div style={{ borderTop: "1px solid rgba(240,237,230,0.06)", paddingTop: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+          <p className="footer-bottom" style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.2)", margin: 0 }}>© 2026 2Z</p>
+          <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.2)", margin: 0 }}>6th of October, Egypt</p>
         </div>
 
       </div>
