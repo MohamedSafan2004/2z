@@ -19,6 +19,12 @@ function getSheets() {
   return google.sheets({ version: "v4", auth })
 }
 
+async function getSheetId(sheets: any, spreadsheetId: string, sheetName: string): Promise<number> {
+  const meta = await sheets.spreadsheets.get({ spreadsheetId })
+  const sheet = meta.data.sheets?.find((s: any) => s.properties?.title === sheetName)
+  return sheet?.properties?.sheetId ?? 0
+}
+
 // ─── Sales Sheet ──────────────────────────────────────────────────────────────
 
 export async function appendToSalesSheet(order: any) {
@@ -41,9 +47,9 @@ export async function appendToSalesSheet(order: any) {
     }
 
     let nextRow = lastDataRow + 3
+    const sheetId = await getSheetId(sheets, spreadsheetId, SALES_SHEET)
 
     for (const item of order.items) {
-      // جيب الـ SKU من الداتابيز
       const variant = await db.productVariant.findUnique({
         where: { id: item.variantId },
       })
@@ -78,11 +84,38 @@ export async function appendToSalesSheet(order: any) {
         invoiceNum,
       ]
 
+      // كتابة البيانات
       await sheets.spreadsheets.values.update({
         spreadsheetId,
         range: `${SALES_SHEET}!A${nextRow}:K${nextRow}`,
         valueInputOption: "USER_ENTERED",
         requestBody: { values: [row] },
+      })
+
+      // center alignment على الصف
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: nextRow - 1,
+                  endRowIndex: nextRow,
+                  startColumnIndex: 0,
+                  endColumnIndex: 11,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    horizontalAlignment: "CENTER",
+                  },
+                },
+                fields: "userEnteredFormat.horizontalAlignment",
+              },
+            },
+          ],
+        },
       })
 
       nextRow++

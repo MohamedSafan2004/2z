@@ -34,13 +34,15 @@ export async function PATCH(
 
     const isNewPaidOrDelivered =
       (status === "PAID" || status === "DELIVERED") &&
-      currentOrder.status !== "PAID" &&
-      currentOrder.status !== "DELIVERED"
+      !currentOrder.sheetSynced
 
     const order = await db.$transaction(async (tx) => {
       const updated = await tx.order.update({
         where: { id },
-        data: { status },
+        data: {
+          status,
+          ...(isNewPaidOrDelivered && { sheetSynced: true }),
+        },
         include: {
           user: { select: { id: true, name: true, email: true, phone: true } },
           items: true,
