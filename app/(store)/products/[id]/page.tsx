@@ -11,7 +11,7 @@ const categoryImages: Record<string, string> = {
   "sweatpants": "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=400&q=50&fm=webp",
 }
 
-const sizes = ["S", "M", "L"]
+const sizes = ["M", "L", "XL"]
 const LOW_STOCK_THRESHOLD = 3
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
