@@ -1,3 +1,4 @@
+export {}
 /// <reference types="node" />
 // @ts-ignore
 const { PrismaClient } = require("../app/generated/prisma/client")
