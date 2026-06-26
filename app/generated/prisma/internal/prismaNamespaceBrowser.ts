@@ -57,6 +57,7 @@ export const ModelName = {
   ProductVariant: 'ProductVariant',
   Order: 'Order',
   OrderItem: 'OrderItem',
+  InvoiceCounter: 'InvoiceCounter',
   PromoCode: 'PromoCode',
   PromoCodeUsage: 'PromoCodeUsage'
 } as const
@@ -126,7 +127,8 @@ export const ProductVariantScalarFieldEnum = {
   color: 'color',
   size: 'size',
   sku: 'sku',
-  stockQuantity: 'stockQuantity'
+  stockQuantity: 'stockQuantity',
+  openingStock: 'openingStock'
 } as const
 
 export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnum)[keyof typeof ProductVariantScalarFieldEnum]
@@ -134,6 +136,7 @@ export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnu
 
 export const OrderScalarFieldEnum = {
   id: 'id',
+  invoiceNumber: 'invoiceNumber',
   userId: 'userId',
   totalAmount: 'totalAmount',
   discountAmount: 'discountAmount',
@@ -168,6 +171,14 @@ export const OrderItemScalarFieldEnum = {
 } as const
 
 export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+
+
+export const InvoiceCounterScalarFieldEnum = {
+  id: 'id',
+  lastNum: 'lastNum'
+} as const
+
+export type InvoiceCounterScalarFieldEnum = (typeof InvoiceCounterScalarFieldEnum)[keyof typeof InvoiceCounterScalarFieldEnum]
 
 
 export const PromoCodeScalarFieldEnum = {

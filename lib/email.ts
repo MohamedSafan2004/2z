@@ -2,8 +2,6 @@ import { Resend } from "resend"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// ─── Shared base styles ──────────────────────────────────────────────────────
-
 const font = `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`
 
 function base(content: string): string {
@@ -16,42 +14,23 @@ function base(content: string): string {
   <meta name="color-scheme" content="light dark" />
   <meta name="supported-color-schemes" content="light dark" />
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #ffffff;
-      color: #111111;
-    }
+    body { margin: 0; padding: 0; background-color: #ffffff; color: #111111; }
     @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #0f0f0f !important;
-        color: #f0ede6 !important;
-      }
-      .card {
-        background-color: #1a1a1a !important;
-        border-color: #2a2a2a !important;
-      }
-      .muted {
-        color: #888888 !important;
-      }
-      .divider {
-        border-color: #2a2a2a !important;
-      }
+      body { background-color: #0f0f0f !important; color: #f0ede6 !important; }
+      .card { background-color: #1a1a1a !important; border-color: #2a2a2a !important; }
+      .muted { color: #888888 !important; }
+      .divider { border-color: #2a2a2a !important; }
     }
   </style>
 </head>
 <body style="font-family:${font};font-size:15px;line-height:1.6;background-color:#ffffff;color:#111111;padding:0;margin:0">
   <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;padding:40px 24px">
     <tr><td>
-      <!-- Logo -->
       <div style="margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid #e5e5e5" class="divider">
         <span style="font-size:24px;font-weight:700;letter-spacing:-0.5px">2Z</span>
         <span class="muted" style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#888888;margin-left:10px">Minimal Streetwear</span>
       </div>
-
       ${content}
-
-      <!-- Footer -->
       <div style="margin-top:40px;padding-top:24px;border-top:1px solid #e5e5e5" class="divider">
         <p class="muted" style="font-size:12px;color:#888888;margin:0">
           2Z Store · Cairo, Egypt<br/>
@@ -82,6 +61,7 @@ function label(text: string): string {
 export async function sendOrderConfirmation({
   to,
   orderNumber,
+  invoiceNumber,
   items,
   total,
   address,
@@ -90,6 +70,7 @@ export async function sendOrderConfirmation({
 }: {
   to: string
   orderNumber: string
+  invoiceNumber?: string
   items: { name: string; color: string; size: string; quantity: number; price: number }[]
   total: number
   address: string
@@ -130,8 +111,20 @@ export async function sendOrderConfirmation({
     </p>
 
     ${card(`
-      ${label("Order Number")}
-      <p style="font-size:16px;font-weight:600;margin:0;letter-spacing:0.05em">#${orderNumber.slice(0, 8).toUpperCase()}</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>
+            ${label("Order Number")}
+            <p style="font-size:16px;font-weight:600;margin:0;letter-spacing:0.05em">#${orderNumber.slice(0, 8).toUpperCase()}</p>
+          </td>
+          ${invoiceNumber ? `
+          <td style="text-align:right">
+            ${label("Invoice")}
+            <p style="font-size:16px;font-weight:600;margin:0;letter-spacing:0.05em">${invoiceNumber}</p>
+          </td>
+          ` : ""}
+        </tr>
+      </table>
     `)}
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px">
@@ -153,36 +146,27 @@ export async function sendOrderConfirmation({
   await resend.emails.send({
     from: "2Z Store <orders@2zstore.com>",
     to,
-    subject: `Order Confirmed — #${orderNumber.slice(0, 8).toUpperCase()}`,
+    subject: `Order Confirmed — ${invoiceNumber || "#" + orderNumber.slice(0, 8).toUpperCase()}`,
     html: base(content),
   })
 }
 
 // ─── Verification Email ───────────────────────────────────────────────────────
 
-export async function sendVerificationEmail({
-  to,
-  code,
-}: {
-  to: string
-  code: string
-}) {
+export async function sendVerificationEmail({ to, code }: { to: string; code: string }) {
   const content = `
     <h1 style="font-size:22px;font-weight:600;margin:0 0 8px">Verify Your Email</h1>
     <p class="muted" style="font-size:14px;color:#888888;margin:0 0 28px">
       Enter this code to verify your email address.
     </p>
-
     ${card(`
       <p style="text-align:center;font-size:36px;font-weight:700;letter-spacing:0.3em;margin:12px 0">${code}</p>
     `)}
-
     <p class="muted" style="font-size:13px;color:#888888;margin:0">
       This code expires in 10 minutes.<br/>
       If you didn't request this, you can safely ignore this email.
     </p>
   `
-
   await resend.emails.send({
     from: "2Z Store <orders@2zstore.com>",
     to,
@@ -193,29 +177,20 @@ export async function sendVerificationEmail({
 
 // ─── Password Reset ───────────────────────────────────────────────────────────
 
-export async function sendPasswordResetEmail({
-  to,
-  code,
-}: {
-  to: string
-  code: string
-}) {
+export async function sendPasswordResetEmail({ to, code }: { to: string; code: string }) {
   const content = `
     <h1 style="font-size:22px;font-weight:600;margin:0 0 8px">Reset Your Password</h1>
     <p class="muted" style="font-size:14px;color:#888888;margin:0 0 28px">
       Use this code to reset your password.
     </p>
-
     ${card(`
       <p style="text-align:center;font-size:36px;font-weight:700;letter-spacing:0.3em;margin:12px 0">${code}</p>
     `)}
-
     <p class="muted" style="font-size:13px;color:#888888;margin:0">
       This code expires in 10 minutes.<br/>
       If you didn't request a password reset, ignore this email.
     </p>
   `
-
   await resend.emails.send({
     from: "2Z Store <orders@2zstore.com>",
     to,
@@ -228,6 +203,7 @@ export async function sendPasswordResetEmail({
 
 export async function sendAdminNotification({
   orderNumber,
+  invoiceNumber,
   customerName,
   customerEmail,
   customerPhone,
@@ -238,6 +214,7 @@ export async function sendAdminNotification({
   discountAmount,
 }: {
   orderNumber: string
+  invoiceNumber?: string
   customerName: string
   customerEmail: string
   customerPhone: string
@@ -270,8 +247,20 @@ export async function sendAdminNotification({
     <p class="muted" style="font-size:13px;color:#888888;margin:0 0 28px">Action required — prepare for shipment.</p>
 
     ${card(`
-      ${label("Order Number")}
-      <p style="font-size:16px;font-weight:600;margin:0">#${orderNumber.slice(0, 8).toUpperCase()}</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>
+            ${label("Order Number")}
+            <p style="font-size:16px;font-weight:600;margin:0">#${orderNumber.slice(0, 8).toUpperCase()}</p>
+          </td>
+          ${invoiceNumber ? `
+          <td style="text-align:right">
+            ${label("Invoice")}
+            <p style="font-size:16px;font-weight:600;margin:0">${invoiceNumber}</p>
+          </td>
+          ` : ""}
+        </tr>
+      </table>
     `)}
 
     ${card(`
@@ -295,7 +284,7 @@ export async function sendAdminNotification({
   await resend.emails.send({
     from: "2Z Store <orders@2zstore.com>",
     to: "2z.eg2004@gmail.com",
-    subject: `🛍️ New Order — #${orderNumber.slice(0, 8).toUpperCase()}`,
+    subject: `🛍️ New Order — ${invoiceNumber || "#" + orderNumber.slice(0, 8).toUpperCase()}`,
     html: base(content),
   })
 }

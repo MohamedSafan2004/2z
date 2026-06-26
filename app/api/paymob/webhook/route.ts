@@ -7,9 +7,7 @@ import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 function verifyWebhook(body: any, hmacSecret: string): boolean {
   const received = body.hmac
   if (!received) return false
-
   const obj = body.obj || {}
-
   const dataToHash = [
     obj.amount_cents, obj.created_at, obj.currency, obj.error_occured,
     obj.has_parent_transaction, obj.id, obj.integration_id, obj.is_3d_secure,
@@ -20,17 +18,9 @@ function verifyWebhook(body: any, hmacSecret: string): boolean {
   ]
     .map((v) => (v === undefined || v === null ? "" : String(v)))
     .join("")
-
-  const calculated = crypto
-    .createHmac("sha512", hmacSecret)
-    .update(dataToHash)
-    .digest("hex")
-
+  const calculated = crypto.createHmac("sha512", hmacSecret).update(dataToHash).digest("hex")
   try {
-    return crypto.timingSafeEqual(
-      Buffer.from(calculated, "hex"),
-      Buffer.from(received, "hex")
-    )
+    return crypto.timingSafeEqual(Buffer.from(calculated, "hex"), Buffer.from(received, "hex"))
   } catch {
     return false
   }
@@ -52,36 +42,22 @@ export async function POST(req: NextRequest) {
     }
 
     const obj = body.obj
-    if (!obj) {
-      return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
-    }
+    if (!obj) return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
 
-    const isSuccess =
-      obj.success === true &&
-      obj.error_occured === false &&
-      obj.pending === false
+    const isSuccess = obj.success === true && obj.error_occured === false && obj.pending === false
+    const isFailed  = obj.success === false && obj.pending === false
 
-    const isFailed =
-      obj.success === false &&
-      obj.pending === false
-
-    if (!isSuccess && !isFailed) {
-      return NextResponse.json({ ignored: true })
-    }
+    if (!isSuccess && !isFailed) return NextResponse.json({ ignored: true })
 
     const orderId = obj.order?.extras?.order_id || obj.extras?.order_id
-    if (!orderId) {
-      return NextResponse.json({ error: "No order ID" }, { status: 400 })
-    }
+    if (!orderId) return NextResponse.json({ error: "No order ID" }, { status: 400 })
 
     const order = await db.order.findUnique({
       where: { id: orderId },
       include: { items: true, user: true },
     })
 
-    if (!order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 })
-    }
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 })
 
     const txId = String(obj.id)
 
@@ -89,15 +65,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ignored: true })
     }
 
+    const invoiceNum = order.invoiceNumber
+      ? `INV-${String(order.invoiceNumber).padStart(4, "0")}`
+      : undefined
+
     if (isSuccess) {
       const updated = await db.order.updateMany({
         where: { id: order.id, paymentStatus: { in: ["PENDING", "FAILED"] } },
         data: { paymentStatus: "PAID", status: "PAID", paymobTransactionId: txId },
       })
 
-      if (updated.count === 0) {
-        return NextResponse.json({ received: true })
-      }
+      if (updated.count === 0) return NextResponse.json({ received: true })
 
       const customerGuard = await db.order.updateMany({
         where: { id: order.id, confirmationEmailSent: false },
@@ -111,6 +89,7 @@ export async function POST(req: NextRequest) {
             await sendOrderConfirmation({
               to: emailTo,
               orderNumber: order.id,
+              invoiceNumber: invoiceNum,
               items: order.items.map((item: typeof order.items[number]) => ({
                 name: item.productNameSnapshot,
                 color: item.colorSnapshot,
@@ -143,6 +122,7 @@ export async function POST(req: NextRequest) {
         try {
           await sendAdminNotification({
             orderNumber: order.id,
+            invoiceNumber: invoiceNum,
             customerName: order.user?.name || "Guest",
             customerEmail: emailTo || "",
             customerPhone: order.phone || "",
@@ -174,9 +154,7 @@ export async function POST(req: NextRequest) {
           where: { id: order.id, paymentStatus: "PENDING" },
           data: { paymentStatus: "FAILED", status: "CANCELLED" },
         })
-
         if (updated.count === 0) return
-
         for (const item of order.items) {
           await tx.productVariant.update({
             where: { id: item.variantId },

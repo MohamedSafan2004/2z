@@ -20,17 +20,17 @@ export type Role = (typeof Role)[keyof typeof Role]
 export const Color = {
   BLACK: 'BLACK',
   WHITE: 'WHITE',
-  NAVY: 'NAVY',
-  GREY: 'GREY'
+  GREY: 'GREY',
+  BEIGE: 'BEIGE'
 } as const
 
 export type Color = (typeof Color)[keyof typeof Color]
 
 
 export const Size = {
-  S: 'S',
   M: 'M',
-  L: 'L'
+  L: 'L',
+  XL: 'XL'
 } as const
 
 export type Size = (typeof Size)[keyof typeof Size]
@@ -38,6 +38,7 @@ export type Size = (typeof Size)[keyof typeof Size]
 
 export const OrderStatus = {
   PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
   PAID: 'PAID',
   SHIPPED: 'SHIPPED',
   DELIVERED: 'DELIVERED',

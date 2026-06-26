@@ -48,6 +48,11 @@ export type Order = Prisma.OrderModel
  */
 export type OrderItem = Prisma.OrderItemModel
 /**
+ * Model InvoiceCounter
+ * 
+ */
+export type InvoiceCounter = Prisma.InvoiceCounterModel
+/**
  * Model PromoCode
  * 
  */

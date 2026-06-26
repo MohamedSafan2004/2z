@@ -81,7 +81,6 @@ export async function POST(req: NextRequest) {
     }
 
     const totalAmount = subtotal - discountAmount
-
     const user = auth.userId ? await db.user.findUnique({ where: { id: auth.userId } }) : null
     const verifyToken = crypto.randomBytes(32).toString("hex")
 
@@ -100,9 +99,16 @@ export async function POST(req: NextRequest) {
         })
       }
 
+      // توليد رقم الفاتورة التسلسلي
+      const counter = await tx.invoiceCounter.update({
+        where: { id: 1 },
+        data: { lastNum: { increment: 1 } },
+      })
+
       const newOrder = await tx.order.create({
         data: {
           ...(auth.userId && { user: { connect: { id: auth.userId } } }),
+          invoiceNumber: counter.lastNum,
           totalAmount,
           discountAmount,
           promoCode: validatedPromoCode,
@@ -142,12 +148,14 @@ export async function POST(req: NextRequest) {
     })
 
     const emailTo = email || user?.email
+    const invoiceNum = `INV-${String(order.invoiceNumber).padStart(4, "0")}`
 
     if (emailTo) {
       try {
         await sendOrderConfirmation({
           to: emailTo,
           orderNumber: order.id,
+          invoiceNumber: invoiceNum,
           items: order.items.map((item: typeof order.items[number]) => ({
             name: item.productNameSnapshot,
             color: item.colorSnapshot,
@@ -168,6 +176,7 @@ export async function POST(req: NextRequest) {
     try {
       await sendAdminNotification({
         orderNumber: order.id,
+        invoiceNumber: invoiceNum,
         customerName: user?.name || "Guest",
         customerEmail: emailTo || "",
         customerPhone: phone || "",

@@ -28,10 +28,12 @@ export type AggregateProductVariant = {
 
 export type ProductVariantAvgAggregateOutputType = {
   stockQuantity: number | null
+  openingStock: number | null
 }
 
 export type ProductVariantSumAggregateOutputType = {
   stockQuantity: number | null
+  openingStock: number | null
 }
 
 export type ProductVariantMinAggregateOutputType = {
@@ -41,6 +43,7 @@ export type ProductVariantMinAggregateOutputType = {
   size: $Enums.Size | null
   sku: string | null
   stockQuantity: number | null
+  openingStock: number | null
 }
 
 export type ProductVariantMaxAggregateOutputType = {
@@ -50,6 +53,7 @@ export type ProductVariantMaxAggregateOutputType = {
   size: $Enums.Size | null
   sku: string | null
   stockQuantity: number | null
+  openingStock: number | null
 }
 
 export type ProductVariantCountAggregateOutputType = {
@@ -59,16 +63,19 @@ export type ProductVariantCountAggregateOutputType = {
   size: number
   sku: number
   stockQuantity: number
+  openingStock: number
   _all: number
 }
 
 
 export type ProductVariantAvgAggregateInputType = {
   stockQuantity?: true
+  openingStock?: true
 }
 
 export type ProductVariantSumAggregateInputType = {
   stockQuantity?: true
+  openingStock?: true
 }
 
 export type ProductVariantMinAggregateInputType = {
@@ -78,6 +85,7 @@ export type ProductVariantMinAggregateInputType = {
   size?: true
   sku?: true
   stockQuantity?: true
+  openingStock?: true
 }
 
 export type ProductVariantMaxAggregateInputType = {
@@ -87,6 +95,7 @@ export type ProductVariantMaxAggregateInputType = {
   size?: true
   sku?: true
   stockQuantity?: true
+  openingStock?: true
 }
 
 export type ProductVariantCountAggregateInputType = {
@@ -96,6 +105,7 @@ export type ProductVariantCountAggregateInputType = {
   size?: true
   sku?: true
   stockQuantity?: true
+  openingStock?: true
   _all?: true
 }
 
@@ -192,6 +202,7 @@ export type ProductVariantGroupByOutputType = {
   size: $Enums.Size
   sku: string | null
   stockQuantity: number
+  openingStock: number
   _count: ProductVariantCountAggregateOutputType | null
   _avg: ProductVariantAvgAggregateOutputType | null
   _sum: ProductVariantSumAggregateOutputType | null
@@ -224,6 +235,7 @@ export type ProductVariantWhereInput = {
   size?: Prisma.EnumSizeFilter<"ProductVariant"> | $Enums.Size
   sku?: Prisma.StringNullableFilter<"ProductVariant"> | string | null
   stockQuantity?: Prisma.IntFilter<"ProductVariant"> | number
+  openingStock?: Prisma.IntFilter<"ProductVariant"> | number
   orderItems?: Prisma.OrderItemListRelationFilter
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
 }
@@ -235,6 +247,7 @@ export type ProductVariantOrderByWithRelationInput = {
   size?: Prisma.SortOrder
   sku?: Prisma.SortOrderInput | Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
+  openingStock?: Prisma.SortOrder
   orderItems?: Prisma.OrderItemOrderByRelationAggregateInput
   product?: Prisma.ProductOrderByWithRelationInput
 }
@@ -249,6 +262,7 @@ export type ProductVariantWhereUniqueInput = Prisma.AtLeast<{
   color?: Prisma.EnumColorFilter<"ProductVariant"> | $Enums.Color
   size?: Prisma.EnumSizeFilter<"ProductVariant"> | $Enums.Size
   stockQuantity?: Prisma.IntFilter<"ProductVariant"> | number
+  openingStock?: Prisma.IntFilter<"ProductVariant"> | number
   orderItems?: Prisma.OrderItemListRelationFilter
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
 }, "id" | "sku">
@@ -260,6 +274,7 @@ export type ProductVariantOrderByWithAggregationInput = {
   size?: Prisma.SortOrder
   sku?: Prisma.SortOrderInput | Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
+  openingStock?: Prisma.SortOrder
   _count?: Prisma.ProductVariantCountOrderByAggregateInput
   _avg?: Prisma.ProductVariantAvgOrderByAggregateInput
   _max?: Prisma.ProductVariantMaxOrderByAggregateInput
@@ -277,6 +292,7 @@ export type ProductVariantScalarWhereWithAggregatesInput = {
   size?: Prisma.EnumSizeWithAggregatesFilter<"ProductVariant"> | $Enums.Size
   sku?: Prisma.StringNullableWithAggregatesFilter<"ProductVariant"> | string | null
   stockQuantity?: Prisma.IntWithAggregatesFilter<"ProductVariant"> | number
+  openingStock?: Prisma.IntWithAggregatesFilter<"ProductVariant"> | number
 }
 
 export type ProductVariantCreateInput = {
@@ -285,6 +301,7 @@ export type ProductVariantCreateInput = {
   size: $Enums.Size
   sku?: string | null
   stockQuantity?: number
+  openingStock?: number
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutVariantInput
   product: Prisma.ProductCreateNestedOneWithoutVariantsInput
 }
@@ -296,6 +313,7 @@ export type ProductVariantUncheckedCreateInput = {
   size: $Enums.Size
   sku?: string | null
   stockQuantity?: number
+  openingStock?: number
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutVariantInput
 }
 
@@ -305,6 +323,7 @@ export type ProductVariantUpdateInput = {
   size?: Prisma.EnumSizeFieldUpdateOperationsInput | $Enums.Size
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  openingStock?: Prisma.IntFieldUpdateOperationsInput | number
   orderItems?: Prisma.OrderItemUpdateManyWithoutVariantNestedInput
   product?: Prisma.ProductUpdateOneRequiredWithoutVariantsNestedInput
 }
@@ -316,6 +335,7 @@ export type ProductVariantUncheckedUpdateInput = {
   size?: Prisma.EnumSizeFieldUpdateOperationsInput | $Enums.Size
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  openingStock?: Prisma.IntFieldUpdateOperationsInput | number
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutVariantNestedInput
 }
 
@@ -326,6 +346,7 @@ export type ProductVariantCreateManyInput = {
   size: $Enums.Size
   sku?: string | null
   stockQuantity?: number
+  openingStock?: number
 }
 
 export type ProductVariantUpdateManyMutationInput = {
@@ -334,6 +355,7 @@ export type ProductVariantUpdateManyMutationInput = {
   size?: Prisma.EnumSizeFieldUpdateOperationsInput | $Enums.Size
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  openingStock?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ProductVariantUncheckedUpdateManyInput = {
@@ -343,6 +365,7 @@ export type ProductVariantUncheckedUpdateManyInput = {
   size?: Prisma.EnumSizeFieldUpdateOperationsInput | $Enums.Size
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  openingStock?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ProductVariantListRelationFilter = {
@@ -362,10 +385,12 @@ export type ProductVariantCountOrderByAggregateInput = {
   size?: Prisma.SortOrder
   sku?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
+  openingStock?: Prisma.SortOrder
 }
 
 export type ProductVariantAvgOrderByAggregateInput = {
   stockQuantity?: Prisma.SortOrder
+  openingStock?: Prisma.SortOrder
 }
 
 export type ProductVariantMaxOrderByAggregateInput = {
@@ -375,6 +400,7 @@ export type ProductVariantMaxOrderByAggregateInput = {
   size?: Prisma.SortOrder
   sku?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
+  openingStock?: Prisma.SortOrder
 }
 
 export type ProductVariantMinOrderByAggregateInput = {
@@ -384,10 +410,12 @@ export type ProductVariantMinOrderByAggregateInput = {
   size?: Prisma.SortOrder
   sku?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
+  openingStock?: Prisma.SortOrder
 }
 
 export type ProductVariantSumOrderByAggregateInput = {
   stockQuantity?: Prisma.SortOrder
+  openingStock?: Prisma.SortOrder
 }
 
 export type ProductVariantScalarRelationFilter = {
@@ -465,6 +493,7 @@ export type ProductVariantCreateWithoutProductInput = {
   size: $Enums.Size
   sku?: string | null
   stockQuantity?: number
+  openingStock?: number
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutVariantInput
 }
 
@@ -474,6 +503,7 @@ export type ProductVariantUncheckedCreateWithoutProductInput = {
   size: $Enums.Size
   sku?: string | null
   stockQuantity?: number
+  openingStock?: number
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutVariantInput
 }
 
@@ -513,6 +543,7 @@ export type ProductVariantScalarWhereInput = {
   size?: Prisma.EnumSizeFilter<"ProductVariant"> | $Enums.Size
   sku?: Prisma.StringNullableFilter<"ProductVariant"> | string | null
   stockQuantity?: Prisma.IntFilter<"ProductVariant"> | number
+  openingStock?: Prisma.IntFilter<"ProductVariant"> | number
 }
 
 export type ProductVariantCreateWithoutOrderItemsInput = {
@@ -521,6 +552,7 @@ export type ProductVariantCreateWithoutOrderItemsInput = {
   size: $Enums.Size
   sku?: string | null
   stockQuantity?: number
+  openingStock?: number
   product: Prisma.ProductCreateNestedOneWithoutVariantsInput
 }
 
@@ -531,6 +563,7 @@ export type ProductVariantUncheckedCreateWithoutOrderItemsInput = {
   size: $Enums.Size
   sku?: string | null
   stockQuantity?: number
+  openingStock?: number
 }
 
 export type ProductVariantCreateOrConnectWithoutOrderItemsInput = {
@@ -555,6 +588,7 @@ export type ProductVariantUpdateWithoutOrderItemsInput = {
   size?: Prisma.EnumSizeFieldUpdateOperationsInput | $Enums.Size
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  openingStock?: Prisma.IntFieldUpdateOperationsInput | number
   product?: Prisma.ProductUpdateOneRequiredWithoutVariantsNestedInput
 }
 
@@ -565,6 +599,7 @@ export type ProductVariantUncheckedUpdateWithoutOrderItemsInput = {
   size?: Prisma.EnumSizeFieldUpdateOperationsInput | $Enums.Size
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  openingStock?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ProductVariantCreateManyProductInput = {
@@ -573,6 +608,7 @@ export type ProductVariantCreateManyProductInput = {
   size: $Enums.Size
   sku?: string | null
   stockQuantity?: number
+  openingStock?: number
 }
 
 export type ProductVariantUpdateWithoutProductInput = {
@@ -581,6 +617,7 @@ export type ProductVariantUpdateWithoutProductInput = {
   size?: Prisma.EnumSizeFieldUpdateOperationsInput | $Enums.Size
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  openingStock?: Prisma.IntFieldUpdateOperationsInput | number
   orderItems?: Prisma.OrderItemUpdateManyWithoutVariantNestedInput
 }
 
@@ -590,6 +627,7 @@ export type ProductVariantUncheckedUpdateWithoutProductInput = {
   size?: Prisma.EnumSizeFieldUpdateOperationsInput | $Enums.Size
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  openingStock?: Prisma.IntFieldUpdateOperationsInput | number
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutVariantNestedInput
 }
 
@@ -599,6 +637,7 @@ export type ProductVariantUncheckedUpdateManyWithoutProductInput = {
   size?: Prisma.EnumSizeFieldUpdateOperationsInput | $Enums.Size
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  openingStock?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 
@@ -639,6 +678,7 @@ export type ProductVariantSelect<ExtArgs extends runtime.Types.Extensions.Intern
   size?: boolean
   sku?: boolean
   stockQuantity?: boolean
+  openingStock?: boolean
   orderItems?: boolean | Prisma.ProductVariant$orderItemsArgs<ExtArgs>
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ProductVariantCountOutputTypeDefaultArgs<ExtArgs>
@@ -651,6 +691,7 @@ export type ProductVariantSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   size?: boolean
   sku?: boolean
   stockQuantity?: boolean
+  openingStock?: boolean
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productVariant"]>
 
@@ -661,6 +702,7 @@ export type ProductVariantSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   size?: boolean
   sku?: boolean
   stockQuantity?: boolean
+  openingStock?: boolean
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productVariant"]>
 
@@ -671,9 +713,10 @@ export type ProductVariantSelectScalar = {
   size?: boolean
   sku?: boolean
   stockQuantity?: boolean
+  openingStock?: boolean
 }
 
-export type ProductVariantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "color" | "size" | "sku" | "stockQuantity", ExtArgs["result"]["productVariant"]>
+export type ProductVariantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "color" | "size" | "sku" | "stockQuantity" | "openingStock", ExtArgs["result"]["productVariant"]>
 export type ProductVariantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orderItems?: boolean | Prisma.ProductVariant$orderItemsArgs<ExtArgs>
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
@@ -699,6 +742,7 @@ export type $ProductVariantPayload<ExtArgs extends runtime.Types.Extensions.Inte
     size: $Enums.Size
     sku: string | null
     stockQuantity: number
+    openingStock: number
   }, ExtArgs["result"]["productVariant"]>
   composites: {}
 }
@@ -1130,6 +1174,7 @@ export interface ProductVariantFieldRefs {
   readonly size: Prisma.FieldRef<"ProductVariant", 'Size'>
   readonly sku: Prisma.FieldRef<"ProductVariant", 'String'>
   readonly stockQuantity: Prisma.FieldRef<"ProductVariant", 'Int'>
+  readonly openingStock: Prisma.FieldRef<"ProductVariant", 'Int'>
 }
     
 

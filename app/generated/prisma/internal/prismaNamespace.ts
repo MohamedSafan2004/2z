@@ -390,6 +390,7 @@ export const ModelName = {
   ProductVariant: 'ProductVariant',
   Order: 'Order',
   OrderItem: 'OrderItem',
+  InvoiceCounter: 'InvoiceCounter',
   PromoCode: 'PromoCode',
   PromoCodeUsage: 'PromoCodeUsage'
 } as const
@@ -407,7 +408,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "category" | "product" | "productVariant" | "order" | "orderItem" | "promoCode" | "promoCodeUsage"
+    modelProps: "user" | "category" | "product" | "productVariant" | "order" | "orderItem" | "invoiceCounter" | "promoCode" | "promoCodeUsage"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -855,6 +856,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    InvoiceCounter: {
+      payload: Prisma.$InvoiceCounterPayload<ExtArgs>
+      fields: Prisma.InvoiceCounterFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InvoiceCounterFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceCounterPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InvoiceCounterFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceCounterPayload>
+        }
+        findFirst: {
+          args: Prisma.InvoiceCounterFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceCounterPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InvoiceCounterFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceCounterPayload>
+        }
+        findMany: {
+          args: Prisma.InvoiceCounterFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceCounterPayload>[]
+        }
+        create: {
+          args: Prisma.InvoiceCounterCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceCounterPayload>
+        }
+        createMany: {
+          args: Prisma.InvoiceCounterCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InvoiceCounterCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceCounterPayload>[]
+        }
+        delete: {
+          args: Prisma.InvoiceCounterDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceCounterPayload>
+        }
+        update: {
+          args: Prisma.InvoiceCounterUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceCounterPayload>
+        }
+        deleteMany: {
+          args: Prisma.InvoiceCounterDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InvoiceCounterUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InvoiceCounterUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceCounterPayload>[]
+        }
+        upsert: {
+          args: Prisma.InvoiceCounterUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceCounterPayload>
+        }
+        aggregate: {
+          args: Prisma.InvoiceCounterAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInvoiceCounter>
+        }
+        groupBy: {
+          args: Prisma.InvoiceCounterGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvoiceCounterGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InvoiceCounterCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvoiceCounterCountAggregateOutputType> | number
+        }
+      }
+    }
     PromoCode: {
       payload: Prisma.$PromoCodePayload<ExtArgs>
       fields: Prisma.PromoCodeFieldRefs
@@ -1091,7 +1166,8 @@ export const ProductVariantScalarFieldEnum = {
   color: 'color',
   size: 'size',
   sku: 'sku',
-  stockQuantity: 'stockQuantity'
+  stockQuantity: 'stockQuantity',
+  openingStock: 'openingStock'
 } as const
 
 export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnum)[keyof typeof ProductVariantScalarFieldEnum]
@@ -1099,6 +1175,7 @@ export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnu
 
 export const OrderScalarFieldEnum = {
   id: 'id',
+  invoiceNumber: 'invoiceNumber',
   userId: 'userId',
   totalAmount: 'totalAmount',
   discountAmount: 'discountAmount',
@@ -1133,6 +1210,14 @@ export const OrderItemScalarFieldEnum = {
 } as const
 
 export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+
+
+export const InvoiceCounterScalarFieldEnum = {
+  id: 'id',
+  lastNum: 'lastNum'
+} as const
+
+export type InvoiceCounterScalarFieldEnum = (typeof InvoiceCounterScalarFieldEnum)[keyof typeof InvoiceCounterScalarFieldEnum]
 
 
 export const PromoCodeScalarFieldEnum = {
@@ -1449,6 +1534,7 @@ export type GlobalOmitConfig = {
   productVariant?: Prisma.ProductVariantOmit
   order?: Prisma.OrderOmit
   orderItem?: Prisma.OrderItemOmit
+  invoiceCounter?: Prisma.InvoiceCounterOmit
   promoCode?: Prisma.PromoCodeOmit
   promoCodeUsage?: Prisma.PromoCodeUsageOmit
 }

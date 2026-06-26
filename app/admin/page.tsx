@@ -6,12 +6,113 @@ import { useRouter } from "next/navigation"
 
 const ITEMS_PER_PAGE = 20
 
+function printPackingSlip(order: any) {
+  const invoiceNum = order.invoiceNumber
+    ? `INV-${String(order.invoiceNumber).padStart(4, "0")}`
+    : `#${order.id.slice(0, 8).toUpperCase()}`
+
+  const itemsHtml = order.items.map((item: any) => `
+    <tr>
+      <td style="padding:8px 0;border-bottom:1px solid #eee;font-size:13px">${item.productNameSnapshot} — ${item.colorSnapshot} / ${item.sizeSnapshot}</td>
+      <td style="padding:8px 0;border-bottom:1px solid #eee;font-size:13px;text-align:center">${item.quantity}</td>
+      <td style="padding:8px 0;border-bottom:1px solid #eee;font-size:13px;text-align:right">${(Number(item.priceSnapshot) * item.quantity).toLocaleString()} EGP</td>
+    </tr>
+  `).join("")
+
+  const promoHtml = order.promoCode && Number(order.discountAmount) > 0 ? `
+    <tr>
+      <td colspan="2" style="padding:6px 0;font-size:12px;color:#888">Promo: ${order.promoCode}</td>
+      <td style="padding:6px 0;font-size:12px;color:#888;text-align:right">− ${Number(order.discountAmount).toLocaleString()} EGP</td>
+    </tr>
+  ` : ""
+
+  const win = window.open("", "_blank")
+  if (!win) return
+
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8"/>
+      <title>Packing Slip — ${invoiceNum}</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; color: #111; padding: 40px; max-width: 600px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 2px solid #111; }
+        .brand { font-size: 28px; font-weight: 700; letter-spacing: -1px; }
+        .brand-sub { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-top: 4px; }
+        .invoice-num { font-size: 13px; font-weight: 600; text-align: right; }
+        .invoice-date { font-size: 11px; color: #888; text-align: right; margin-top: 4px; }
+        .section { margin-bottom: 24px; }
+        .section-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 8px; }
+        .section-value { font-size: 14px; line-height: 1.7; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        th { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #888; padding: 0 0 10px; border-bottom: 1px solid #111; }
+        th:last-child, td:last-child { text-align: right; }
+        th:nth-child(2), td:nth-child(2) { text-align: center; }
+        .total-row td { padding: 12px 0 0; font-size: 16px; font-weight: 700; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 11px; color: #888; text-align: center; }
+        @media print { body { padding: 20px; } }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div>
+          <div class="brand">2Z</div>
+          <div class="brand-sub">Minimal Streetwear</div>
+        </div>
+        <div>
+          <div class="invoice-num">${invoiceNum}</div>
+          <div class="invoice-date">${new Date(order.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Deliver To</div>
+        <div class="section-value">
+          <strong>${order.user?.name || "Guest"}</strong><br/>
+          ${order.phone || order.user?.phone || ""}<br/>
+          ${order.address || ""}
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left">Item</th>
+            <th>Qty</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml}
+          ${promoHtml}
+          <tr class="total-row">
+            <td colspan="2">Total</td>
+            <td>${Number(order.totalAmount).toLocaleString()} EGP</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="footer">
+        2Z Store · Cairo, Egypt · 2zstore.com
+      </div>
+
+      <script>window.onload = () => { window.print() }</script>
+    </body>
+    </html>
+  `)
+  win.document.close()
+}
+
 export default function AdminPage() {
   const { user, token, logout } = useAuth()
   const router = useRouter()
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState("ALL")
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
@@ -26,13 +127,7 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/orders", {
         headers: { Authorization: `Bearer ${token}` },
       })
-
-      if (res.status === 401) {
-        logout()
-        router.push("/login?expired=1")
-        return
-      }
-
+      if (res.status === 401) { logout(); router.push("/login?expired=1"); return }
       const data = await res.json()
       setOrders(Array.isArray(data) ? data : [])
     } finally {
@@ -54,14 +149,30 @@ export default function AdminPage() {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ status }),
     })
-
-    if (res.status === 401) {
-      logout()
-      router.push("/login?expired=1")
-      return
-    }
-
+    if (res.status === 401) { logout(); router.push("/login?expired=1"); return }
     setOrders(orders.map((o) => o.id === orderId ? { ...o, status } : o))
+  }
+
+  const syncInventory = async () => {
+    setSyncing(true)
+    setSyncMsg(null)
+    try {
+      const res = await fetch("/api/admin/sync-inventory", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.status === 401) { logout(); router.push("/login?expired=1"); return }
+      if (res.ok) {
+        setSyncMsg("✓ Synced")
+      } else {
+        setSyncMsg("✗ Failed")
+      }
+    } catch {
+      setSyncMsg("✗ Failed")
+    } finally {
+      setSyncing(false)
+      setTimeout(() => setSyncMsg(null), 3000)
+    }
   }
 
   if (loading) return (
@@ -72,6 +183,7 @@ export default function AdminPage() {
 
   const statusColor: Record<string, string> = {
     PENDING:   "rgba(240,200,100,0.9)",
+    CONFIRMED: "rgba(120,180,255,0.9)",
     PAID:      "rgba(100,200,150,0.9)",
     SHIPPED:   "rgba(100,150,240,0.9)",
     DELIVERED: "rgba(100,220,100,0.9)",
@@ -80,6 +192,7 @@ export default function AdminPage() {
 
   const statusBorder: Record<string, string> = {
     PENDING:   "rgba(240,200,100,0.25)",
+    CONFIRMED: "rgba(120,180,255,0.25)",
     PAID:      "rgba(100,200,150,0.25)",
     SHIPPED:   "rgba(100,150,240,0.25)",
     DELIVERED: "rgba(100,220,100,0.25)",
@@ -92,8 +205,6 @@ export default function AdminPage() {
     FAILED:  "rgba(220,100,100,0.7)",
   }
 
-  // Revenue follows ORDER status (PAID / DELIVERED) — not payment status —
-  // to stay consistent with the same logic used for the Google Sheets sync.
   const revenue = orders
     .filter(o => o.status === "PAID" || o.status === "DELIVERED")
     .reduce((sum, o) => sum + Number(o.totalAmount), 0)
@@ -117,7 +228,7 @@ export default function AdminPage() {
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
-  const statuses = ["ALL", "PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]
+  const statuses = ["ALL", "PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr)
@@ -130,51 +241,36 @@ export default function AdminPage() {
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "80px 16px 60px" }}>
 
         {/* Welcome */}
-        <div style={{
-          marginBottom: "48px",
-          paddingBottom: "40px",
-          borderBottom: "1px solid rgba(240,237,230,0.06)",
-        }}>
-          <p style={{
-            fontSize: "9px",
-            letterSpacing: "0.3em",
-            textTransform: "uppercase",
-            color: "rgb(179 149 26)",
-            marginBottom: "12px",
-          }}>
-            Admin Dashboard
-          </p>
-          <h1 style={{
-            fontFamily: "Cormorant Garamond, serif",
-            fontSize: "clamp(42px, 7vw, 72px)",
-            fontWeight: 300,
-            lineHeight: 1,
-            margin: 0,
-            color: "#f0ede6",
-          }}>
-            Welcome{" "}
-            <em style={{
-              fontStyle: "italic",
-              color: "rgba(240,237,230,0.35)",
-            }}>
-              Mr.7dido
-            </em>
+        <div style={{ marginBottom: "48px", paddingBottom: "40px", borderBottom: "1px solid rgba(240,237,230,0.06)" }}>
+          <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgb(179 149 26)", marginBottom: "12px" }}>Admin Dashboard</p>
+          <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "clamp(42px, 7vw, 72px)", fontWeight: 300, lineHeight: 1, margin: 0, color: "#f0ede6" }}>
+            Welcome <em style={{ fontStyle: "italic", color: "rgba(240,237,230,0.35)" }}>Mr.7dido</em>
           </h1>
         </div>
 
         {/* Buttons */}
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "32px", flexWrap: "wrap", gap: "8px" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "32px", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
           <button onClick={() => fetchOrders(true)} disabled={refreshing} style={{ padding: "9px 18px", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: refreshing ? "not-allowed" : "pointer", background: "transparent", color: refreshing ? "rgba(240,237,230,0.3)" : "rgba(240,237,230,0.6)", border: "1px solid rgba(240,237,230,0.15)" }}>
             {refreshing ? "..." : "↻ Refresh"}
           </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button
+              onClick={syncInventory}
+              disabled={syncing}
+              style={{ padding: "9px 18px", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: syncing ? "not-allowed" : "pointer", background: "transparent", color: syncing ? "rgba(240,237,230,0.3)" : "rgba(100,200,150,0.8)", border: "1px solid rgba(100,200,150,0.25)" }}
+            >
+              {syncing ? "..." : "⇅ Sync Inventory"}
+            </button>
+            {syncMsg && (
+              <span style={{ fontSize: "9px", letterSpacing: "0.15em", color: syncMsg.startsWith("✓") ? "rgba(100,200,150,0.8)" : "rgba(220,100,100,0.8)" }}>
+                {syncMsg}
+              </span>
+            )}
+          </div>
           <button
             onClick={async () => {
               const res = await fetch("/api/admin/export", { headers: { Authorization: `Bearer ${token}` } })
-              if (res.status === 401) {
-                logout()
-                router.push("/login?expired=1")
-                return
-              }
+              if (res.status === 401) { logout(); router.push("/login?expired=1"); return }
               if (!res.ok) return
               const blob = await res.blob()
               const url = URL.createObjectURL(blob)
@@ -195,7 +291,7 @@ export default function AdminPage() {
           {[
             { label: "Total Orders",    value: orders.length },
             { label: "Pending Payment", value: orders.filter(o => o.paymentStatus === "PENDING" && o.status !== "CANCELLED").length },
-            { label: "To Ship",         value: orders.filter(o => o.status === "PAID").length },
+            { label: "To Ship",         value: orders.filter(o => o.status === "PAID" || o.status === "CONFIRMED").length },
             { label: "Revenue",         value: revenue.toLocaleString() + " EGP" },
           ].map((stat) => (
             <div key={stat.label} style={{ border: "1px solid rgba(240,237,230,0.08)", padding: "16px 20px" }}>
@@ -227,12 +323,22 @@ export default function AdminPage() {
               const customerPhone = order.phone || order.user?.phone
               const customerName  = order.user?.name || "Guest"
               const customerEmail = order.guestEmail || order.user?.email
+              const invoiceNum = order.invoiceNumber
+                ? `INV-${String(order.invoiceNumber).padStart(4, "0")}`
+                : null
 
               return (
                 <div key={order.id} style={{ border: "1px solid rgba(240,237,230,0.08)", padding: "20px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
                     <div>
-                      <p style={{ fontSize: "12px", color: "#f0ede6", letterSpacing: "0.1em", marginBottom: "4px" }}>#{order.id.slice(0, 8).toUpperCase()}</p>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                        <p style={{ fontSize: "12px", color: "#f0ede6", letterSpacing: "0.1em", margin: 0 }}>#{order.id.slice(0, 8).toUpperCase()}</p>
+                        {invoiceNum && (
+                          <span style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", border: "1px solid rgba(240,237,230,0.12)", padding: "2px 7px" }}>
+                            {invoiceNum}
+                          </span>
+                        )}
+                      </div>
                       <p style={{ fontSize: "8px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.1em" }}>{formatDate(order.createdAt)}</p>
                     </div>
                     <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
@@ -271,7 +377,7 @@ export default function AdminPage() {
                   <div style={{ borderTop: "1px solid rgba(240,237,230,0.06)", paddingTop: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
                     <div>
                       {order.promoCode && Number(order.discountAmount) > 0 && (
-                        <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.35)", marginBottom: "4px", letterSpacing: "0.05em" }}>
+                        <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.35)", marginBottom: "4px" }}>
                           Original: {(Number(order.totalAmount) + Number(order.discountAmount)).toLocaleString()} EGP
                         </p>
                       )}
@@ -280,11 +386,19 @@ export default function AdminPage() {
                         <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)", fontFamily: "Space Mono, monospace", marginLeft: "6px" }}>EGP</span>
                       </p>
                     </div>
-                    <select value={order.status} onChange={(e) => updateStatus(order.id, e.target.value)} style={{ background: "#111", color: "#f0ede6", border: "1px solid rgba(240,237,230,0.15)", padding: "8px 12px", fontSize: "8px", fontFamily: "Space Mono, monospace", cursor: "pointer", letterSpacing: "0.1em", outline: "none" }}>
-                      {["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"].map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                      <button
+                        onClick={() => printPackingSlip(order)}
+                        style={{ padding: "8px 14px", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: "pointer", background: "transparent", color: "rgba(240,237,230,0.5)", border: "1px solid rgba(240,237,230,0.15)" }}
+                      >
+                        🖨 Print
+                      </button>
+                      <select value={order.status} onChange={(e) => updateStatus(order.id, e.target.value)} style={{ background: "#111", color: "#f0ede6", border: "1px solid rgba(240,237,230,0.15)", padding: "8px 12px", fontSize: "8px", fontFamily: "Space Mono, monospace", cursor: "pointer", letterSpacing: "0.1em", outline: "none" }}>
+                        {["PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"].map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
               )
