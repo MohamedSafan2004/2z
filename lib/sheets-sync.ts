@@ -43,6 +43,11 @@ export async function appendToSalesSheet(order: any) {
     let nextRow = lastDataRow + 3
 
     for (const item of order.items) {
+      // جيب الـ SKU من الداتابيز
+      const variant = await db.productVariant.findUnique({
+        where: { id: item.variantId },
+      })
+
       const unitPrice  = Number(item.priceSnapshot)
       const quantity   = item.quantity
       const discount   = order.discountAmount && order.promoCode
@@ -55,9 +60,13 @@ export async function appendToSalesSheet(order: any) {
         day: "2-digit", month: "2-digit", year: "numeric",
       })
 
+      const invoiceNum = order.invoiceNumber
+        ? `INV-${String(order.invoiceNumber).padStart(4, "0")}`
+        : order.id.slice(0, 8).toUpperCase()
+
       const row = [
         date,
-        item.variantId.slice(0, 8).toUpperCase(),
+        variant?.sku || item.variantId.slice(0, 8).toUpperCase(),
         item.productNameSnapshot,
         item.colorSnapshot,
         item.sizeSnapshot,
@@ -66,7 +75,7 @@ export async function appendToSalesSheet(order: any) {
         discount.toFixed(1),
         finalPrice.toFixed(2),
         revenue.toFixed(2),
-        order.id.slice(0, 8).toUpperCase(),
+        invoiceNum,
       ]
 
       await sheets.spreadsheets.values.update({
