@@ -140,6 +140,8 @@ export const OrderScalarFieldEnum = {
   userId: 'userId',
   totalAmount: 'totalAmount',
   discountAmount: 'discountAmount',
+  shippingCost: 'shippingCost',
+  shippingZone: 'shippingZone',
   promoCode: 'promoCode',
   status: 'status',
   paymentMethod: 'paymentMethod',

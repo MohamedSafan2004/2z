@@ -37,6 +37,7 @@ export type Size = (typeof Size)[keyof typeof Size]
 
 
 export const OrderStatus = {
+  PENDING_PAYMENT: 'PENDING_PAYMENT',
   PENDING: 'PENDING',
   CONFIRMED: 'CONFIRMED',
   PAID: 'PAID',

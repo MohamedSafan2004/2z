@@ -4,6 +4,7 @@ import { requireAuth, optionalAuth } from "@/lib/middleware"
 import { orderRatelimit } from "@/lib/ratelimit"
 import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 import { sanitize } from "@/lib/validation"
+import { getShippingCost, type ShippingZone } from "@/lib/shipping"
 import crypto from "crypto"
 
 type CartItem = { variantId: string; quantity: number }
@@ -21,19 +22,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null)
     if (!body) return NextResponse.json({ error: "Invalid request" }, { status: 400 })
 
-    const { items, address, phone, email, clientOrderId, promoCode, paymentMethod, instapayRef } = body
+    const { items, address, phone, email, clientOrderId, promoCode, paymentMethod, shippingZone } = body
 
     if (!items || items.length === 0) return NextResponse.json({ error: "No items in order" }, { status: 400 })
     if (!email || !phone || !address) return NextResponse.json({ error: "Email, phone, and address are required" }, { status: 400 })
 
-    const method = paymentMethod === "instapay" ? "INSTAPAY" : "COD"
-
-    if (method === "INSTAPAY") {
-      const ref = instapayRef?.trim()
-      if (!ref || ref.length < 6) {
-        return NextResponse.json({ error: "Please enter a valid InstaPay reference number" }, { status: 400 })
-      }
+    if (shippingZone !== "cairo" && shippingZone !== "giza") {
+      return NextResponse.json({ error: "Please select a valid delivery zone" }, { status: 400 })
     }
+
+    const method = paymentMethod === "instapay" ? "INSTAPAY" : "COD"
 
     for (const item of items) {
       if (!item.variantId || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 99) {
@@ -89,9 +87,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const totalAmount = subtotal - discountAmount
+    const shippingCost = getShippingCost(shippingZone as ShippingZone)
+    const totalAmount = subtotal - discountAmount + shippingCost
     const user = auth.userId ? await db.user.findUnique({ where: { id: auth.userId } }) : null
     const verifyToken = crypto.randomBytes(32).toString("hex")
+
+    // InstaPay: الأوردر يتحفظ كـ PENDING_PAYMENT لحد ما العميل يبعت رقم الحوالة
+    // COD: يتحفظ PENDING عادي
+    const initialStatus = method === "INSTAPAY" ? "PENDING_PAYMENT" : "PENDING"
 
     const order = await db.$transaction(async (tx) => {
       for (const item of items) {
@@ -119,6 +122,8 @@ export async function POST(req: NextRequest) {
           invoiceNumber: counter.lastNum,
           totalAmount,
           discountAmount,
+          shippingCost,
+          shippingZone,
           promoCode: validatedPromoCode,
           guestEmail: email || null,
           address: sanitize(address),
@@ -126,7 +131,7 @@ export async function POST(req: NextRequest) {
           clientOrderId: clientOrderId || null,
           verifyToken,
           paymentMethod: method,
-          instapayRef: method === "INSTAPAY" ? sanitize(instapayRef.trim()) : null,
+          status: initialStatus,
           paymentStatus: "PENDING",
           items: {
             create: items.map((item: CartItem) => {
@@ -158,15 +163,43 @@ export async function POST(req: NextRequest) {
       return newOrder
     })
 
-    const emailTo = email || user?.email
-    const invoiceNum = `INV-${String(order.invoiceNumber).padStart(4, "0")}`
+    // لو InstaPay: مفيش إيميلات أو تأكيد لسه — هيتبعتوا بعد ما يبعت الـ ref
+    // لو COD: الإيميلات تتبعت فورًا زي العادي
+    if (method === "COD") {
+      const emailTo = email || user?.email
+      const invoiceNum = `INV-${String(order.invoiceNumber).padStart(4, "0")}`
 
-    if (emailTo) {
+      if (emailTo) {
+        try {
+          await sendOrderConfirmation({
+            to: emailTo,
+            orderNumber: order.id,
+            invoiceNumber: invoiceNum,
+            items: order.items.map((item: typeof order.items[number]) => ({
+              name: item.productNameSnapshot,
+              color: item.colorSnapshot,
+              size: item.sizeSnapshot,
+              quantity: item.quantity,
+              price: Number(item.priceSnapshot),
+            })),
+            total: totalAmount,
+            address: address || "",
+            promoCode: validatedPromoCode ?? undefined,
+            discountAmount: discountAmount > 0 ? discountAmount : undefined,
+          })
+        } catch (error) {
+          console.error("Customer email failed:", error)
+        }
+      }
+
       try {
-        await sendOrderConfirmation({
-          to: emailTo,
+        await sendAdminNotification({
           orderNumber: order.id,
           invoiceNumber: invoiceNum,
+          customerName: user?.name || "Guest",
+          customerEmail: emailTo || "",
+          customerPhone: phone || "",
+          address: address || "",
           items: order.items.map((item: typeof order.items[number]) => ({
             name: item.productNameSnapshot,
             color: item.colorSnapshot,
@@ -175,36 +208,12 @@ export async function POST(req: NextRequest) {
             price: Number(item.priceSnapshot),
           })),
           total: totalAmount,
-          address: address || "",
           promoCode: validatedPromoCode ?? undefined,
           discountAmount: discountAmount > 0 ? discountAmount : undefined,
         })
       } catch (error) {
-        console.error("Customer email failed:", error)
+        console.error("Admin notification failed:", error)
       }
-    }
-
-    try {
-      await sendAdminNotification({
-        orderNumber: order.id,
-        invoiceNumber: invoiceNum,
-        customerName: user?.name || "Guest",
-        customerEmail: emailTo || "",
-        customerPhone: phone || "",
-        address: address || "",
-        items: order.items.map((item: typeof order.items[number]) => ({
-          name: item.productNameSnapshot,
-          color: item.colorSnapshot,
-          size: item.sizeSnapshot,
-          quantity: item.quantity,
-          price: Number(item.priceSnapshot),
-        })),
-        total: totalAmount,
-        promoCode: validatedPromoCode ?? undefined,
-        discountAmount: discountAmount > 0 ? discountAmount : undefined,
-      })
-    } catch (error) {
-      console.error("Admin notification failed:", error)
     }
 
     return NextResponse.json({ ...order, verifyToken }, { status: 201 })

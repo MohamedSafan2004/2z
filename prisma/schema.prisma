@@ -64,6 +64,8 @@ model Order {
   userId                String?
   totalAmount           Decimal
   discountAmount        Decimal       @default(0)
+  shippingCost          Decimal       @default(0)
+  shippingZone          String?
   promoCode             String?
   status                OrderStatus   @default(PENDING)
   paymentMethod         PaymentMethod @default(COD)
@@ -151,6 +153,7 @@ enum Size {
 }
 
 enum OrderStatus {
+  PENDING_PAYMENT
   PENDING
   CONFIRMED
   PAID

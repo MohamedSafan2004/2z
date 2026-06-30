@@ -5,6 +5,7 @@ import { useCart } from "@/lib/store/cart"
 import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { SHIPPING_RATES, SHIPPING_LABELS, type ShippingZone } from "@/lib/shipping"
 
 type PaymentMethod = "cod" | "instapay"
 
@@ -12,6 +13,8 @@ const paymentMethods = [
   { id: "cod",      label: "Cash on Delivery", sub: "Pay when you receive" },
   { id: "instapay", label: "InstaPay",          sub: "Transfer & confirm instantly" },
 ]
+
+const zones: ShippingZone[] = ["cairo", "giza"]
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -24,8 +27,8 @@ export default function CheckoutPage() {
   const [email, setEmail]         = useState("")
   const [phone, setPhone]         = useState("")
   const [address, setAddress]     = useState("")
+  const [zone, setZone]           = useState<ShippingZone | "">("")
   const [payment, setPayment]     = useState<PaymentMethod>("cod")
-  const [instapayRef, setInstapayRef] = useState("")
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState("")
 
@@ -53,7 +56,8 @@ export default function CheckoutPage() {
 
   const subtotal      = total()
   const discountValue = promoApplied ? Math.round((subtotal * promoDiscount) / 100) : 0
-  const finalTotal    = subtotal - discountValue
+  const shippingCost  = zone ? SHIPPING_RATES[zone] : 0
+  const finalTotal     = subtotal - discountValue + shippingCost
 
   const handleApplyPromo = async () => {
     if (promoLoading) return
@@ -113,7 +117,6 @@ export default function CheckoutPage() {
     const trimmedEmail   = email.trim()
     const trimmedPhone   = phone.trim()
     const trimmedAddress = address.trim()
-    const trimmedRef     = instapayRef.trim()
 
     if (!trimmedName || !trimmedEmail || !trimmedPhone || !trimmedAddress) {
       setError("Please fill in all required fields")
@@ -127,8 +130,8 @@ export default function CheckoutPage() {
       setError("Please enter a valid Egyptian phone number (01XXXXXXXXX)")
       return
     }
-    if (payment === "instapay" && trimmedRef.length < 6) {
-      setError("Please enter your InstaPay transaction reference number")
+    if (!zone) {
+      setError("Please select your delivery zone")
       return
     }
 
@@ -148,14 +151,22 @@ export default function CheckoutPage() {
           phone: trimmedPhone,
           email: trimmedEmail,
           paymentMethod: payment,
-          instapayRef: payment === "instapay" ? trimmedRef : undefined,
+          shippingZone: zone,
           promoCode: promoApplied || undefined,
         }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error); return }
+
       clearCart()
-      if (user) { router.push("/orders") } else { router.push(`/order-confirmed?email=${encodeURIComponent(trimmedEmail)}`) }
+
+      if (payment === "instapay") {
+        router.push(`/instapay-payment/${data.id}?token=${data.verifyToken}`)
+      } else if (user) {
+        router.push("/orders")
+      } else {
+        router.push(`/order-confirmed?email=${encodeURIComponent(trimmedEmail)}`)
+      }
     } catch {
       setError("Something went wrong")
     } finally {
@@ -224,6 +235,33 @@ export default function CheckoutPage() {
               <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} placeholder="Street, Area, City, Governorate" style={{ ...inputStyle, resize: "none" }} />
             </div>
 
+            <div style={{ marginBottom: "14px" }}>
+              <label style={labelStyle}>Delivery Zone *</label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {zones.map((z) => {
+                  const isSelected = zone === z
+                  return (
+                    <button
+                      key={z}
+                      onClick={() => setZone(z)}
+                      style={{
+                        flex: 1, padding: "12px", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
+                        background: isSelected ? "rgba(240,237,230,0.06)" : "transparent",
+                        border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.15)",
+                        cursor: "pointer", fontFamily: "Space Mono, monospace", transition: "all 0.15s",
+                      }}
+                    >
+                      <span style={{ fontSize: "10px", color: "#f0ede6", letterSpacing: "0.1em" }}>{SHIPPING_LABELS[z]}</span>
+                      <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)" }}>{SHIPPING_RATES[z]} EGP</span>
+                    </button>
+                  )
+                })}
+              </div>
+              <p style={{ fontSize: "8px", color: "rgba(240,237,230,0.3)", marginTop: "8px", letterSpacing: "0.05em" }}>
+                We currently deliver to Cairo and Giza only
+              </p>
+            </div>
+
             <div style={{ borderTop: "1px solid rgba(240,237,230,0.08)", margin: "24px 0" }} />
 
             <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "16px" }}>Payment Method</p>
@@ -258,41 +296,10 @@ export default function CheckoutPage() {
               })}
             </div>
 
-            {/* InstaPay Details */}
             {payment === "instapay" && (
-              <div style={{ marginTop: "0", border: "1px solid rgba(240,237,230,0.12)", borderTop: "none", padding: "20px" }}>
-                <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "16px" }}>Transfer Details</p>
-
-                <div style={{ background: "rgba(240,237,230,0.03)", border: "1px solid rgba(240,237,230,0.08)", padding: "16px", marginBottom: "20px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-                    <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.1em" }}>InstaPay Number</span>
-                    <span style={{ fontSize: "11px", color: "#f0ede6", letterSpacing: "0.05em" }}>01553594689</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-                    <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.1em" }}>Name</span>
-                    <span style={{ fontSize: "11px", color: "#f0ede6" }}>MOHAMED ABDELHAMID</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "10px", borderTop: "1px solid rgba(240,237,230,0.08)" }}>
-                    <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.1em" }}>Amount</span>
-                    <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "20px", color: "#f0ede6" }}>{finalTotal} <span style={{ fontSize: "10px", fontFamily: "Space Mono, monospace", color: "rgba(240,237,230,0.4)" }}>EGP</span></span>
-                  </div>
-                </div>
-
-                <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", letterSpacing: "0.08em", lineHeight: 1.8, marginBottom: "16px" }}>
-                  1. Transfer the exact amount above via InstaPay<br />
-                  2. Copy the transaction reference number<br />
-                  3. Paste it below — your order is confirmed instantly
-                </p>
-
-                <label style={labelStyle}>Transaction Reference Number *</label>
-                <input
-                  type="text"
-                  value={instapayRef}
-                  onChange={(e) => setInstapayRef(e.target.value)}
-                  placeholder="e.g. TXN123456789"
-                  style={inputStyle}
-                />
-              </div>
+              <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.08em", lineHeight: 1.8, marginTop: "16px", padding: "14px", border: "1px solid rgba(240,237,230,0.08)" }}>
+                After placing your order, you'll be taken to a payment page with our InstaPay number and the exact amount. You'll transfer and enter your transaction reference there.
+              </p>
             )}
 
             {error && <p style={{ fontSize: "10px", color: "#ff6b6b", marginTop: "16px", letterSpacing: "0.1em" }}>{error}</p>}
@@ -365,19 +372,24 @@ export default function CheckoutPage() {
 
             {/* Totals */}
             <div style={{ borderTop: "1px solid rgba(240,237,230,0.08)", paddingTop: "16px", marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Subtotal</span>
+                <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.5)" }}>{subtotal} EGP</span>
+              </div>
+
               {promoApplied && (
-                <>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                    <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Subtotal</span>
-                    <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.5)" }}>{subtotal} EGP</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                    <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(80,200,120,0.7)" }}>Discount ({promoDiscount}%)</span>
-                    <span style={{ fontSize: "11px", color: "rgba(80,200,120,0.8)" }}>− {discountValue} EGP</span>
-                  </div>
-                </>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(80,200,120,0.7)" }}>Discount ({promoDiscount}%)</span>
+                  <span style={{ fontSize: "11px", color: "rgba(80,200,120,0.8)" }}>− {discountValue} EGP</span>
+                </div>
               )}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Shipping {zone && `(${SHIPPING_LABELS[zone]})`}</span>
+                <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.5)" }}>{zone ? `${shippingCost} EGP` : "—"}</span>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid rgba(240,237,230,0.08)" }}>
                 <span style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Total</span>
                 <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "26px", color: "#f0ede6" }}>
                   {finalTotal} <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.4)" }}>EGP</span>
@@ -390,7 +402,7 @@ export default function CheckoutPage() {
               disabled={loading}
               style={{ width: "100%", padding: "14px", fontSize: "10px", letterSpacing: "0.25em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", background: "#f0ede6", color: "#080808", border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, transition: "all 0.3s", marginBottom: "16px" }}
             >
-              {loading ? "Please wait..." : payment === "cod" ? "Place Order" : "Confirm Order"}
+              {loading ? "Please wait..." : payment === "cod" ? "Place Order" : "Continue to Payment"}
             </button>
 
             <div style={{ display: "flex", justifyContent: "space-between" }}>
