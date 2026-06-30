@@ -182,6 +182,7 @@ export default function AdminPage() {
   )
 
   const statusColor: Record<string, string> = {
+    PENDING_PAYMENT: "rgba(240,150,100,0.9)",
     PENDING:   "rgba(240,200,100,0.9)",
     CONFIRMED: "rgba(120,180,255,0.9)",
     PAID:      "rgba(100,200,150,0.9)",
@@ -191,6 +192,7 @@ export default function AdminPage() {
   }
 
   const statusBorder: Record<string, string> = {
+    PENDING_PAYMENT: "rgba(240,150,100,0.25)",
     PENDING:   "rgba(240,200,100,0.25)",
     CONFIRMED: "rgba(120,180,255,0.25)",
     PAID:      "rgba(100,200,150,0.25)",
@@ -228,7 +230,7 @@ export default function AdminPage() {
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
-  const statuses = ["ALL", "PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]
+  const statuses = ["ALL", "PENDING_PAYMENT", "PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr)
@@ -289,10 +291,10 @@ export default function AdminPage() {
         {/* Stats */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", marginBottom: "32px" }}>
           {[
-            { label: "Total Orders",    value: orders.length },
-            { label: "Pending Payment", value: orders.filter(o => o.paymentStatus === "PENDING" && o.status !== "CANCELLED").length },
-            { label: "To Ship",         value: orders.filter(o => o.status === "PAID" || o.status === "CONFIRMED").length },
-            { label: "Revenue",         value: revenue.toLocaleString() + " EGP" },
+            { label: "Total Orders",      value: orders.length },
+            { label: "Awaiting InstaPay", value: orders.filter(o => o.paymentMethod === "INSTAPAY" && o.paymentStatus !== "PAID" && o.status !== "CANCELLED").length },
+            { label: "To Ship",           value: orders.filter(o => o.status === "PAID" || o.status === "CONFIRMED").length },
+            { label: "Revenue",           value: revenue.toLocaleString() + " EGP" },
           ].map((stat) => (
             <div key={stat.label} style={{ border: "1px solid rgba(240,237,230,0.08)", padding: "16px 20px" }}>
               <p style={{ fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "8px" }}>{stat.label}</p>
@@ -362,6 +364,11 @@ export default function AdminPage() {
                     {customerPhone && <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.6)", marginBottom: "2px" }}>{customerPhone}</p>}
                     {customerEmail && <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.35)", marginBottom: "2px" }}>{customerEmail}</p>}
                     {order.address && <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", marginTop: "6px", lineHeight: 1.7 }}>{order.address}</p>}
+                    {order.shippingZone && (
+                      <p style={{ fontSize: "9px", color: "rgba(240,200,150,0.7)", marginTop: "4px", letterSpacing: "0.05em" }}>
+                        📍 {order.shippingZone === "cairo" ? "Cairo" : "Giza"} · {Number(order.shippingCost).toLocaleString()} EGP shipping
+                      </p>
+                    )}
                   </div>
 
                   <div style={{ borderTop: "1px solid rgba(240,237,230,0.06)", paddingTop: "14px", marginBottom: "14px" }}>
@@ -424,7 +431,7 @@ export default function AdminPage() {
                     )}
 
                     <select value={order.status} onChange={(e) => updateStatus(order.id, e.target.value)} style={{ background: "#111", color: "#f0ede6", border: "1px solid rgba(240,237,230,0.15)", padding: "8px 12px", fontSize: "8px", fontFamily: "Space Mono, monospace", cursor: "pointer", letterSpacing: "0.1em", outline: "none" }}>
-                      {["PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"].map((s) => (
+                      {["PENDING_PAYMENT", "PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"].map((s) => (
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>

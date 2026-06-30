@@ -188,4 +188,4 @@ export default function InstapayPaymentPage() {
       </div>
     </div>
   )
-} 
+}

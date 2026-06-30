@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { SHIPPING_RATES, SHIPPING_LABELS, type ShippingZone } from "@/lib/shipping"
+import { saveGuestOrderToken } from "@/lib/store/orderTracking"
 
 type PaymentMethod = "cod" | "instapay"
 
@@ -161,6 +162,7 @@ export default function CheckoutPage() {
       clearCart()
 
       if (payment === "instapay") {
+        saveGuestOrderToken(data.id, data.verifyToken)
         router.push(`/instapay-payment/${data.id}?token=${data.verifyToken}`)
       } else if (user) {
         router.push("/orders")
@@ -237,25 +239,32 @@ export default function CheckoutPage() {
 
             <div style={{ marginBottom: "14px" }}>
               <label style={labelStyle}>Delivery Zone *</label>
-              <div style={{ display: "flex", gap: "8px" }}>
-                {zones.map((z) => {
-                  const isSelected = zone === z
-                  return (
-                    <button
-                      key={z}
-                      onClick={() => setZone(z)}
-                      style={{
-                        flex: 1, padding: "12px", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
-                        background: isSelected ? "rgba(240,237,230,0.06)" : "transparent",
-                        border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.15)",
-                        cursor: "pointer", fontFamily: "Space Mono, monospace", transition: "all 0.15s",
-                      }}
-                    >
-                      <span style={{ fontSize: "10px", color: "#f0ede6", letterSpacing: "0.1em" }}>{SHIPPING_LABELS[z]}</span>
-                      <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)" }}>{SHIPPING_RATES[z]} EGP</span>
-                    </button>
-                  )
-                })}
+              <div style={{ position: "relative" }}>
+                <select
+                  value={zone}
+                  onChange={(e) => setZone(e.target.value as ShippingZone)}
+                  style={{
+                    width: "100%", padding: "12px 36px 12px 12px", background: "transparent",
+                    border: zone ? "1px solid rgba(240,237,230,0.4)" : "1px solid rgba(240,237,230,0.15)",
+                    color: zone ? "#f0ede6" : "rgba(240,237,230,0.4)",
+                    fontFamily: "Space Mono, monospace", fontSize: "11px", outline: "none",
+                    boxSizing: "border-box", appearance: "none", cursor: "pointer", letterSpacing: "0.05em",
+                    transition: "border 0.15s",
+                  }}
+                >
+                  <option value="" disabled style={{ background: "#080808", color: "rgba(240,237,230,0.4)" }}>Select your area</option>
+                  {zones.map((z) => (
+                    <option key={z} value={z} style={{ background: "#080808", color: "#f0ede6" }}>
+                      {SHIPPING_LABELS[z]} — {SHIPPING_RATES[z]} EGP
+                    </option>
+                  ))}
+                </select>
+                <svg
+                  width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.5)" strokeWidth="2"
+                  style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </div>
               <p style={{ fontSize: "8px", color: "rgba(240,237,230,0.3)", marginTop: "8px", letterSpacing: "0.05em" }}>
                 We currently deliver to Cairo and Giza only
