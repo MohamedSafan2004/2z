@@ -6,13 +6,11 @@ import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
-type PaymentMethod = "cod" | "vodafone" | "card"
+type PaymentMethod = "cod" | "instapay"
 
 const paymentMethods = [
-  { id: "cod",      label: "Cash on Delivery",   sub: "Pay when you receive",  available: true,  comingSoon: false },
-  { id: "vodafone", label: "Vodafone Cash",       sub: "Pay online instantly",  available: true,  comingSoon: false },
-  { id: "card",     label: "Credit / Debit Card", sub: "Visa & Mastercard",     available: true,  comingSoon: false },
-  { id: "instapay", label: "InstaPay",            sub: "Pay via InstaPay",      available: false, comingSoon: true  },
+  { id: "cod",      label: "Cash on Delivery", sub: "Pay when you receive" },
+  { id: "instapay", label: "InstaPay",          sub: "Transfer & confirm instantly" },
 ]
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -22,18 +20,18 @@ export default function CheckoutPage() {
   const { user, token } = useAuth()
   const router = useRouter()
 
-  const [name, setName]       = useState("")
-  const [email, setEmail]     = useState("")
-  const [phone, setPhone]     = useState("")
-  const [address, setAddress] = useState("")
-  const [payment, setPayment] = useState<PaymentMethod>("cod")
-  const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState("")
+  const [name, setName]           = useState("")
+  const [email, setEmail]         = useState("")
+  const [phone, setPhone]         = useState("")
+  const [address, setAddress]     = useState("")
+  const [payment, setPayment]     = useState<PaymentMethod>("cod")
+  const [instapayRef, setInstapayRef] = useState("")
+  const [loading, setLoading]     = useState(false)
+  const [error, setError]         = useState("")
 
-  // promo state
   const [promoInput, setPromoInput]       = useState("")
-  const [promoApplied, setPromoApplied]   = useState("")   // الكود المتحقق منه
-  const [promoDiscount, setPromoDiscount] = useState(0)    // النسبة — 10
+  const [promoApplied, setPromoApplied]   = useState("")
+  const [promoDiscount, setPromoDiscount] = useState(0)
   const [promoLoading, setPromoLoading]   = useState(false)
   const [promoError, setPromoError]       = useState("")
   const [promoSuccess, setPromoSuccess]   = useState("")
@@ -44,7 +42,6 @@ export default function CheckoutPage() {
     if (user?.phone) setPhone(user.phone)
   }, [user])
 
-  // لو غير الفون بعد ما طبق الكود — نمسح الكود
   useEffect(() => {
     if (promoApplied) {
       setPromoApplied("")
@@ -116,6 +113,7 @@ export default function CheckoutPage() {
     const trimmedEmail   = email.trim()
     const trimmedPhone   = phone.trim()
     const trimmedAddress = address.trim()
+    const trimmedRef     = instapayRef.trim()
 
     if (!trimmedName || !trimmedEmail || !trimmedPhone || !trimmedAddress) {
       setError("Please fill in all required fields")
@@ -129,35 +127,16 @@ export default function CheckoutPage() {
       setError("Please enter a valid Egyptian phone number (01XXXXXXXXX)")
       return
     }
+    if (payment === "instapay" && trimmedRef.length < 6) {
+      setError("Please enter your InstaPay transaction reference number")
+      return
+    }
 
     setLoading(true)
     setError("")
 
     try {
-      if (payment === "cod") {
-        const res = await fetch("/api/orders", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-          body: JSON.stringify({
-            items: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
-            address: trimmedAddress,
-            phone: trimmedPhone,
-            email: trimmedEmail,
-            paymentMethod: "cod",
-            promoCode: promoApplied || undefined,
-          }),
-        })
-        const data = await res.json()
-        if (!res.ok) { setError(data.error); return }
-        clearCart()
-        if (user) { router.push("/orders") } else { router.push(`/order-confirmed?email=${encodeURIComponent(trimmedEmail)}`) }
-        return
-      }
-
-      const res = await fetch("/api/paymob/intention", {
+      const res = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -169,23 +148,14 @@ export default function CheckoutPage() {
           phone: trimmedPhone,
           email: trimmedEmail,
           paymentMethod: payment,
+          instapayRef: payment === "instapay" ? trimmedRef : undefined,
           promoCode: promoApplied || undefined,
         }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error); return }
-
-      if (!data.clientSecret) {
-        setError("Payment session failed. Please try again.")
-        return
-      }
-
-      localStorage.setItem("pending_order_id", data.orderId)
-      localStorage.setItem("pending_verify_token", data.verifyToken)
-      localStorage.setItem("pending_order_email", trimmedEmail)
-
-      window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${process.env.NEXT_PUBLIC_PAYMOB_PUBLIC_KEY}&clientSecret=${data.clientSecret}`
-
+      clearCart()
+      if (user) { router.push("/orders") } else { router.push(`/order-confirmed?email=${encodeURIComponent(trimmedEmail)}`) }
     } catch {
       setError("Something went wrong")
     } finally {
@@ -230,7 +200,7 @@ export default function CheckoutPage() {
             <div style={{ marginBottom: "14px" }}>
               <label style={labelStyle}>Email *</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} placeholder="your@email.com" />
-              <p style={{ fontSize: "8px", color: "rgb(255, 255, 255)", marginTop: "6px", letterSpacing: "0.1em" }}>
+              <p style={{ fontSize: "8px", color: "rgb(255,255,255)", marginTop: "6px", letterSpacing: "0.1em" }}>
                 Order updates will be sent to this email — no account needed
               </p>
             </div>
@@ -261,20 +231,16 @@ export default function CheckoutPage() {
             <div style={{ display: "flex", flexDirection: "column" }}>
               {paymentMethods.map((m, i) => {
                 const isSelected = payment === m.id
-                const isDisabled = !m.available
                 return (
                   <button
                     key={m.id}
-                    onClick={() => !isDisabled && setPayment(m.id as PaymentMethod)}
-                    disabled={isDisabled}
+                    onClick={() => setPayment(m.id as PaymentMethod)}
                     style={{
                       display: "flex", alignItems: "center", gap: "16px", padding: "16px",
                       background: isSelected ? "rgba(240,237,230,0.04)" : "transparent",
                       border: "1px solid rgba(240,237,230,0.12)",
                       borderTop: i === 0 ? "1px solid rgba(240,237,230,0.12)" : "none",
-                      cursor: isDisabled ? "default" : "pointer",
-                      textAlign: "left", width: "100%", transition: "background 0.15s",
-                      opacity: isDisabled ? 0.5 : 1,
+                      cursor: "pointer", textAlign: "left", width: "100%", transition: "background 0.15s",
                     }}
                   >
                     <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "border 0.15s" }}>
@@ -284,18 +250,50 @@ export default function CheckoutPage() {
                       <p style={{ fontSize: "11px", color: "#f0ede6", fontFamily: "Space Mono, monospace", margin: 0 }}>{m.label}</p>
                       <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", fontFamily: "Space Mono, monospace", margin: "3px 0 0", letterSpacing: "0.05em" }}>{m.sub}</p>
                     </div>
-                    {isSelected && !isDisabled && (
+                    {isSelected && (
                       <div style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>Selected</div>
-                    )}
-                    {m.comingSoon && (
-                      <div style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", border: "1px solid rgba(240,237,230,0.15)", padding: "2px 6px" }}>
-                        Coming Soon
-                      </div>
                     )}
                   </button>
                 )
               })}
             </div>
+
+            {/* InstaPay Details */}
+            {payment === "instapay" && (
+              <div style={{ marginTop: "0", border: "1px solid rgba(240,237,230,0.12)", borderTop: "none", padding: "20px" }}>
+                <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "16px" }}>Transfer Details</p>
+
+                <div style={{ background: "rgba(240,237,230,0.03)", border: "1px solid rgba(240,237,230,0.08)", padding: "16px", marginBottom: "20px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+                    <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.1em" }}>InstaPay Number</span>
+                    <span style={{ fontSize: "11px", color: "#f0ede6", letterSpacing: "0.05em" }}>01553594689</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+                    <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.1em" }}>Name</span>
+                    <span style={{ fontSize: "11px", color: "#f0ede6" }}>MOHAMED ABDELHAMID</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "10px", borderTop: "1px solid rgba(240,237,230,0.08)" }}>
+                    <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.1em" }}>Amount</span>
+                    <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "20px", color: "#f0ede6" }}>{finalTotal} <span style={{ fontSize: "10px", fontFamily: "Space Mono, monospace", color: "rgba(240,237,230,0.4)" }}>EGP</span></span>
+                  </div>
+                </div>
+
+                <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", letterSpacing: "0.08em", lineHeight: 1.8, marginBottom: "16px" }}>
+                  1. Transfer the exact amount above via InstaPay<br />
+                  2. Copy the transaction reference number<br />
+                  3. Paste it below — your order is confirmed instantly
+                </p>
+
+                <label style={labelStyle}>Transaction Reference Number *</label>
+                <input
+                  type="text"
+                  value={instapayRef}
+                  onChange={(e) => setInstapayRef(e.target.value)}
+                  placeholder="e.g. TXN123456789"
+                  style={inputStyle}
+                />
+              </div>
+            )}
 
             {error && <p style={{ fontSize: "10px", color: "#ff6b6b", marginTop: "16px", letterSpacing: "0.1em" }}>{error}</p>}
           </div>
@@ -355,10 +353,7 @@ export default function CheckoutPage() {
                     <p style={{ fontSize: "10px", color: "rgba(80,200,120,0.9)", letterSpacing: "0.15em", fontFamily: "Space Mono, monospace" }}>{promoApplied}</p>
                     <p style={{ fontSize: "9px", color: "rgba(80,200,120,0.6)", marginTop: "2px", letterSpacing: "0.05em" }}>{promoDiscount}% off</p>
                   </div>
-                  <button
-                    onClick={handleRemovePromo}
-                    style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)", background: "transparent", border: "none", cursor: "pointer", fontFamily: "Space Mono, monospace", letterSpacing: "0.1em" }}
-                  >
+                  <button onClick={handleRemovePromo} style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)", background: "transparent", border: "none", cursor: "pointer", fontFamily: "Space Mono, monospace", letterSpacing: "0.1em" }}>
                     Remove
                   </button>
                 </div>
@@ -395,12 +390,12 @@ export default function CheckoutPage() {
               disabled={loading}
               style={{ width: "100%", padding: "14px", fontSize: "10px", letterSpacing: "0.25em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", background: "#f0ede6", color: "#080808", border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, transition: "all 0.3s", marginBottom: "16px" }}
             >
-              {loading ? "Please wait..." : payment === "cod" ? "Place Order" : "Pay Now"}
+              {loading ? "Please wait..." : payment === "cod" ? "Place Order" : "Confirm Order"}
             </button>
 
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               {["Secure", "Egypt Only", "Easy Returns"].map((t) => (
-                <p key={t} style={{ fontSize: "8px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgb(255, 255, 255)" }}>{t}</p>
+                <p key={t} style={{ fontSize: "8px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgb(255,255,255)" }}>{t}</p>
               ))}
             </div>
           </div>

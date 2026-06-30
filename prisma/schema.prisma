@@ -66,8 +66,10 @@ model Order {
   discountAmount        Decimal       @default(0)
   promoCode             String?
   status                OrderStatus   @default(PENDING)
+  paymentMethod         PaymentMethod @default(COD)
   paymentId             String?
   paymentStatus         PaymentStatus @default(PENDING)
+  instapayRef           String?
   createdAt             DateTime      @default(now())
   guestEmail            String?
   user                  User?         @relation(fields: [userId], references: [id])
@@ -80,7 +82,7 @@ model Order {
   paymobTransactionId   String?
   confirmationEmailSent Boolean       @default(false)
   adminEmailSent        Boolean       @default(false)
-  sheetSynced Boolean @default(false)
+  sheetSynced           Boolean       @default(false)
 
   @@index([paymentStatus])
   @@index([createdAt])
@@ -161,4 +163,9 @@ enum PaymentStatus {
   PENDING
   PAID
   FAILED
+}
+
+enum PaymentMethod {
+  COD
+  INSTAPAY
 }

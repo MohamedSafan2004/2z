@@ -14,8 +14,37 @@ export async function PATCH(
     if ("error" in auth) return auth.error
 
     const { id } = await params
-    const { status } = await req.json()
+    const body = await req.json()
+    const { status, action } = body
 
+    // confirm instapay payment
+    if (action === "confirm_instapay") {
+      const current = await db.order.findUnique({ where: { id } })
+      if (!current) return NextResponse.json({ error: "Order not found" }, { status: 404 })
+      if (current.paymentMethod !== "INSTAPAY") return NextResponse.json({ error: "Not an InstaPay order" }, { status: 400 })
+      if (current.paymentStatus === "PAID") return NextResponse.json({ error: "Already confirmed" }, { status: 400 })
+
+      const updated = await db.order.update({
+        where: { id },
+        data: {
+          paymentStatus: "PAID",
+          status: "PAID",
+          ...(!current.sheetSynced && { sheetSynced: true }),
+        },
+        include: {
+          user: { select: { id: true, name: true, email: true, phone: true } },
+          items: true,
+        },
+      })
+
+      if (!current.sheetSynced) {
+        await syncToSheets(updated)
+      }
+
+      return NextResponse.json(updated)
+    }
+
+    // update order status
     if (!status || !VALID_STATUSES.includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 })
     }
@@ -29,12 +58,16 @@ export async function PATCH(
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
     }
 
-    const isCancelling =
-      status === "CANCELLED" && currentOrder.status !== "CANCELLED"
+    const isCancelling = status === "CANCELLED" && currentOrder.status !== "CANCELLED"
 
     const isNewPaidOrDelivered =
+      (status === "PAID" || status === "DELIVERED") && !currentOrder.sheetSynced
+
+    // COD: لما الأدمن يحول status لـ PAID أو DELIVERED، paymentStatus يتحول تلقائياً
+    const isCodAutoConfirm =
+      currentOrder.paymentMethod === "COD" &&
       (status === "PAID" || status === "DELIVERED") &&
-      !currentOrder.sheetSynced
+      currentOrder.paymentStatus !== "PAID"
 
     const order = await db.$transaction(async (tx) => {
       const updated = await tx.order.update({
@@ -42,6 +75,7 @@ export async function PATCH(
         data: {
           status,
           ...(isNewPaidOrDelivered && { sheetSynced: true }),
+          ...(isCodAutoConfirm && { paymentStatus: "PAID" }),
         },
         include: {
           user: { select: { id: true, name: true, email: true, phone: true } },

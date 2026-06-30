@@ -386,19 +386,49 @@ export default function AdminPage() {
                         <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)", fontFamily: "Space Mono, monospace", marginLeft: "6px" }}>EGP</span>
                       </p>
                     </div>
-                    <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                   <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => printPackingSlip(order)}
+                      style={{ padding: "8px 14px", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: "pointer", background: "transparent", color: "rgba(240,237,230,0.5)", border: "1px solid rgba(240,237,230,0.15)" }}
+                    >
+                      🖨 Print
+                    </button>
+
+                    {order.paymentMethod === "INSTAPAY" && order.paymentStatus !== "PAID" && (
                       <button
-                        onClick={() => printPackingSlip(order)}
-                        style={{ padding: "8px 14px", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: "pointer", background: "transparent", color: "rgba(240,237,230,0.5)", border: "1px solid rgba(240,237,230,0.15)" }}
+                        onClick={async () => {
+                          const res = await fetch(`/api/admin/orders/${order.id}`, {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                            body: JSON.stringify({ action: "confirm_instapay" }),
+                          })
+                          if (res.status === 401) { logout(); router.push("/login?expired=1"); return }
+                          if (res.ok) {
+                            setOrders(orders.map((o) =>
+                              o.id === order.id
+                                ? { ...o, paymentStatus: "PAID", status: "PAID" }
+                                : o
+                            ))
+                          }
+                        }}
+                        style={{ padding: "8px 14px", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: "pointer", background: "rgba(100,200,150,0.1)", color: "rgba(100,200,150,0.9)", border: "1px solid rgba(100,200,150,0.3)" }}
                       >
-                        🖨 Print
+                        ✓ Confirm InstaPay
                       </button>
-                      <select value={order.status} onChange={(e) => updateStatus(order.id, e.target.value)} style={{ background: "#111", color: "#f0ede6", border: "1px solid rgba(240,237,230,0.15)", padding: "8px 12px", fontSize: "8px", fontFamily: "Space Mono, monospace", cursor: "pointer", letterSpacing: "0.1em", outline: "none" }}>
-                        {["PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"].map((s) => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </select>
-                    </div>
+                    )}
+
+                    {order.paymentMethod === "INSTAPAY" && order.instapayRef && (
+                      <span style={{ fontSize: "8px", color: "rgba(240,237,230,0.35)", letterSpacing: "0.08em", fontFamily: "Space Mono, monospace" }}>
+                        Ref: {order.instapayRef}
+                      </span>
+                    )}
+
+                    <select value={order.status} onChange={(e) => updateStatus(order.id, e.target.value)} style={{ background: "#111", color: "#f0ede6", border: "1px solid rgba(240,237,230,0.15)", padding: "8px 12px", fontSize: "8px", fontFamily: "Space Mono, monospace", cursor: "pointer", letterSpacing: "0.1em", outline: "none" }}>
+                      {["PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"].map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
                   </div>
                 </div>
               )

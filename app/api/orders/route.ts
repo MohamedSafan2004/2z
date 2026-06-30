@@ -21,10 +21,19 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null)
     if (!body) return NextResponse.json({ error: "Invalid request" }, { status: 400 })
 
-    const { items, address, phone, email, clientOrderId, promoCode } = body
+    const { items, address, phone, email, clientOrderId, promoCode, paymentMethod, instapayRef } = body
 
     if (!items || items.length === 0) return NextResponse.json({ error: "No items in order" }, { status: 400 })
     if (!email || !phone || !address) return NextResponse.json({ error: "Email, phone, and address are required" }, { status: 400 })
+
+    const method = paymentMethod === "instapay" ? "INSTAPAY" : "COD"
+
+    if (method === "INSTAPAY") {
+      const ref = instapayRef?.trim()
+      if (!ref || ref.length < 6) {
+        return NextResponse.json({ error: "Please enter a valid InstaPay reference number" }, { status: 400 })
+      }
+    }
 
     for (const item of items) {
       if (!item.variantId || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 99) {
@@ -99,7 +108,6 @@ export async function POST(req: NextRequest) {
         })
       }
 
-      // توليد رقم الفاتورة التسلسلي
       const counter = await tx.invoiceCounter.update({
         where: { id: 1 },
         data: { lastNum: { increment: 1 } },
@@ -117,6 +125,9 @@ export async function POST(req: NextRequest) {
           phone: sanitize(phone),
           clientOrderId: clientOrderId || null,
           verifyToken,
+          paymentMethod: method,
+          instapayRef: method === "INSTAPAY" ? sanitize(instapayRef.trim()) : null,
+          paymentStatus: "PENDING",
           items: {
             create: items.map((item: CartItem) => {
               const variant = variants.find((v: typeof variants[number]) => v.id === item.variantId)!
