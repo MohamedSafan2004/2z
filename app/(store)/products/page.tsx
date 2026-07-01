@@ -62,8 +62,8 @@ export default function ProductsPage() {
               fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase",
               color: "rgba(240,237,230,0.3)", lineHeight: 2, margin: 0,
             }}>
-              Black · White · Navy · Grey<br />
-              350 EGP
+              Black · White · Grey · Beige<br />
+              550 EGP
             </p>
           </div>
         </div>
@@ -127,9 +127,20 @@ export default function ProductsPage() {
                       }}>
                         {p.category?.name}
                       </span>
-                      <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)" }}>
-                        {Number(p.price)} EGP
-                      </span>
+                      {p.originalPrice && Number(p.originalPrice) > Number(p.price) ? (
+                        <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span style={{ fontSize: "8px", color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>
+                            {Number(p.originalPrice)}
+                          </span>
+                          <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.7)" }}>
+                            {Number(p.price)} EGP
+                          </span>
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)" }}>
+                          {Number(p.price)} EGP
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

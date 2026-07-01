@@ -21,7 +21,8 @@ const STOCK_ADD: Record<string, Record<string, number>> = {
   BEIGE: { M: 0, L: 0, XL: 0 },
 }
 
-const NEW_PRICE: number | null = null
+const NEW_PRICE: number | null = 550
+const NEW_ORIGINAL_PRICE: number | null = 700
 // ────────────────────────────────────────────────────────────────
 
 function skuCode(color: string): string {
@@ -124,9 +125,12 @@ async function main() {
 
   if (NEW_PRICE !== null) {
     await prisma.product.updateMany({
-      data: { price: NEW_PRICE },
+      data: {
+        price: NEW_PRICE,
+        ...(NEW_ORIGINAL_PRICE !== null && { originalPrice: NEW_ORIGINAL_PRICE }),
+      },
     })
-    console.log(`✓ السعر اتحدد → ${NEW_PRICE} EGP`)
+    console.log(`✓ السعر اتحدد → ${NEW_PRICE} EGP (السعر الأصلي: ${NEW_ORIGINAL_PRICE} EGP)`)
   }
 
   console.log(`\n✓ تم تحديث ${updated} variant`)

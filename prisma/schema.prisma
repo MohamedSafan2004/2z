@@ -35,15 +35,16 @@ model Category {
 }
 
 model Product {
-  id          String           @id @default(cuid())
-  categoryId  String
-  name        String
-  description String?
-  price       Decimal
-  isActive    Boolean          @default(true)
-  createdAt   DateTime         @default(now())
-  category    Category         @relation(fields: [categoryId], references: [id])
-  variants    ProductVariant[]
+  id            String           @id @default(cuid())
+  categoryId    String
+  name          String
+  description   String?
+  price         Decimal
+  originalPrice Decimal?
+  isActive      Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  category      Category         @relation(fields: [categoryId], references: [id])
+  variants      ProductVariant[]
 }
 
 model ProductVariant {

@@ -51,14 +51,15 @@ export async function GET(req: NextRequest) {
     const data = hasNextPage ? products.slice(0, limit) : products
     const nextCursor = hasNextPage ? data[data.length - 1].id : null
 
-    return NextResponse.json({
-      products: data.map((p: typeof data[number]) => ({
-        ...p,
-        price: Number(p.price),
-      })),
-      nextCursor,
-      hasNextPage,
-    })
+   return NextResponse.json({
+  products: data.map((p) => ({
+    ...p,
+    price: Number(p.price),
+    originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+  })),
+  nextCursor,
+  hasNextPage,
+})
   } catch (error) {
     console.error("Get products error:", error)
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })

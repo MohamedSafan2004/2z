@@ -71,6 +71,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const isSoldOut       = selectedSize ? stockQuantity === 0 : false
   const isLowStock      = selectedSize ? stockQuantity > 0 && stockQuantity <= LOW_STOCK_THRESHOLD : false
   const quantityDisabled = !selectedSize || isSoldOut
+  const hasDiscount     = product.originalPrice && Number(product.originalPrice) > Number(product.price)
+
+  const img = categoryImages[product.category?.slug] || categoryImages["t-shirts"]
 
   const handleAdd = () => {
     const variant = variants.find((v) => v.size === selectedSize)
@@ -88,45 +91,20 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     setTimeout(() => setAdded(false), 2000)
   }
 
-  const handleBuyNow = () => {
-    const variant = variants.find((v) => v.size === selectedSize)
-    if (!variant || variant.stockQuantity === 0) return
-    const existingItem = items.find((i: any) => i.variantId === variant.id)
-    if (!existingItem) handleAdd()
-    setTimeout(() => router.push("/checkout"), 100)
-  }
-
-  const img = categoryImages[product.category?.slug] || categoryImages["t-shirts"]
+  const inCartQuantity = items.find((i) => i.variantId === selectedVariant?.id)?.quantity ?? 0
+  const availableToAdd = maxStock - inCartQuantity
 
   return (
-    <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>
-      <style>{`
-        @media (min-width: 768px) {
-          .product-grid { grid-template-columns: 1fr 1fr !important; gap: 64px !important; }
-          .more-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 32px !important; }
-        }
-        .size-btn:hover { border-color: rgba(240,237,230,0.6) !important; }
-        .add-btn:hover { opacity: 0.85 !important; }
-        @keyframes lowStockPulse {
-          0%, 100% { opacity: 0.7; }
-          50% { opacity: 1; }
-        }
-        .low-stock-badge { animation: lowStockPulse 2s ease infinite; }
-      `}</style>
-
+    <div style={{ background: "#080808", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>
+      <style>{`@media (min-width: 768px) { .product-grid { grid-template-columns: 1fr 1fr !important; gap: 64px !important; } }`}</style>
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "70px 20px 80px" }}>
 
-        <div style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(240,237,230,0.3)", marginBottom: "32px", textTransform: "uppercase", display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
-          <Link href="/" style={{ color: "rgba(240,237,230,0.3)", textDecoration: "none" }}>Home</Link>
-          <span style={{ opacity: 0.3 }}>/</span>
-          <Link href="/products" style={{ color: "rgba(240,237,230,0.3)", textDecoration: "none" }}>Shop</Link>
-          <span style={{ opacity: 0.3 }}>/</span>
-          <span style={{ color: "#f0ede6" }}>{product.name}</span>
-        </div>
+        <Link href="/products" style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", textDecoration: "none", marginBottom: "32px", display: "inline-block" }}>
+          ← Back to Products
+        </Link>
 
-        <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px" }}>
+        <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", marginTop: "24px" }}>
 
-          {/* Image */}
           <div style={{ position: "relative", aspectRatio: "4/5", overflow: "hidden", background: "#0d0d0d" }}>
             <img
               src={img}
@@ -149,9 +127,19 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "clamp(36px, 6vw, 52px)", fontWeight: 300, lineHeight: 1, marginBottom: "16px", color: "#f0ede6", letterSpacing: "-0.01em" }}>
                 {product.name}
               </h1>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "10px", flexWrap: "wrap" }}>
+                {hasDiscount && (
+                  <span style={{ fontSize: "16px", color: "rgba(240,237,230,0.3)", textDecoration: "line-through", fontFamily: "Cormorant Garamond, serif" }}>
+                    {Number(product.originalPrice)}
+                  </span>
+                )}
                 <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "32px", fontWeight: 300, color: "#f0ede6" }}>{Number(product.price)}</span>
                 <span style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,237,230,0.4)" }}>EGP</span>
+                {hasDiscount && (
+                  <span style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", border: "1px solid #c8f04f", color: "#c8f04f", padding: "4px 9px" }}>
+                    First Drop
+                  </span>
+                )}
               </div>
             </div>
 
@@ -163,141 +151,82 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </p>
             )}
 
-            {/* Size */}
-            <div style={{ marginBottom: "24px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Size</p>
-                {selectedSize && (
-                  isSoldOut ? (
-                    <p style={{ fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(220,60,60,1)", fontWeight: 400 }}>
-                      Sold Out
-                    </p>
-                  ) : isLowStock ? (
-                    <p className="low-stock-badge" style={{ fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(220,60,60,0.9)" }}>
-                      Only {stockQuantity} left!
-                    </p>
-                  ) : null
-                )}
-              </div>
+            <div style={{ marginBottom: "12px" }}>
+              <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", marginBottom: "12px" }}>Size</p>
               <div style={{ display: "flex", gap: "8px" }}>
-                {sizes.map((s) => {
-                  const variant    = variants.find((v) => v.size === s)
-                  const outOfStock = !variant || variant.stockQuantity === 0
-                  const lowStock   = variant && variant.stockQuantity > 0 && variant.stockQuantity <= LOW_STOCK_THRESHOLD
-                  const isSelected = selectedSize === s
+                {sizes.map((size) => {
+                  const variant = variants.find((v) => v.size === size)
+                  const stock = variant?.stockQuantity ?? 0
+                  const disabled = stock === 0
+                  const isSelected = selectedSize === size
                   return (
-                    <button key={s} className="size-btn"
-                      onClick={() => { if (!outOfStock) { setSelectedSize(s); setQuantity(1) } }}
+                    <button
+                      key={size}
+                      onClick={() => { if (!disabled) { setSelectedSize(size); setQuantity(1) } }}
+                      disabled={disabled}
                       style={{
-                        flex: 1, height: "48px", fontSize: "11px", letterSpacing: "0.15em",
-                        border: isSelected
-                          ? "1px solid #f0ede6"
-                          : lowStock
-                          ? "1px solid rgba(220,60,60,0.4)"
-                          : "1px solid rgba(240,237,230,0.12)",
-                        color: outOfStock
-                          ? "rgba(240,237,230,0.15)"
-                          : isSelected
-                          ? "#f0ede6"
-                          : lowStock
-                          ? "rgba(220,80,80,0.8)"
-                          : "rgba(240,237,230,0.5)",
-                        background: isSelected ? "rgba(240,237,230,0.06)" : "transparent",
-                        cursor: outOfStock ? "not-allowed" : "pointer",
-                        fontFamily: "Space Mono, monospace",
+                        flex: 1, padding: "14px 0", fontSize: "11px", fontFamily: "Space Mono, monospace",
+                        letterSpacing: "0.1em", cursor: disabled ? "not-allowed" : "pointer",
+                        background: isSelected ? "#f0ede6" : "transparent",
+                        color: disabled ? "rgba(240,237,230,0.15)" : isSelected ? "#080808" : "#f0ede6",
+                        border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.15)",
+                        textDecoration: disabled ? "line-through" : "none",
                         transition: "all 0.2s",
-                        textDecoration: outOfStock ? "line-through" : "none",
                       }}
-                    >{s}</button>
+                    >
+                      {size}
+                    </button>
                   )
                 })}
               </div>
             </div>
 
-            {/* Quantity */}
+            {selectedSize && isLowStock && !isSoldOut && (
+              <p style={{ fontSize: "9px", letterSpacing: "0.1em", color: "rgba(220,120,80,0.85)", marginBottom: "20px", display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "rgba(220,120,80,0.85)", display: "inline-block", animation: "pulse 1.5s ease infinite" }} />
+                Only {stockQuantity} left in stock
+              </p>
+            )}
+
+            <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+
             <div style={{ marginBottom: "28px" }}>
-              <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: quantityDisabled ? "rgba(240,237,230,0.2)" : "rgba(240,237,230,0.4)", marginBottom: "12px", transition: "color 0.2s" }}>Quantity</p>
-              <div style={{ display: "flex", alignItems: "center", width: "fit-content", border: `1px solid ${quantityDisabled ? "rgba(240,237,230,0.06)" : "rgba(240,237,230,0.12)"}`, opacity: quantityDisabled ? 0.4 : 1, transition: "all 0.2s" }}>
+              <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", marginBottom: "12px" }}>Quantity</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px", opacity: quantityDisabled ? 0.3 : 1 }}>
                 <button
-                  onClick={() => !quantityDisabled && setQuantity(q => Math.max(1, q - 1))}
-                  disabled={quantityDisabled || quantity === 1}
-                  style={{ width: "44px", height: "44px", background: "transparent", border: "none", color: quantityDisabled || quantity === 1 ? "rgba(240,237,230,0.2)" : "rgba(240,237,230,0.7)", cursor: quantityDisabled || quantity === 1 ? "not-allowed" : "pointer", fontSize: "18px", fontFamily: "Space Mono, monospace", transition: "color 0.2s" }}
-                >−</button>
-                <span style={{ width: "44px", height: "44px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "#f0ede6", borderLeft: "1px solid rgba(240,237,230,0.12)", borderRight: "1px solid rgba(240,237,230,0.12)" }}>{quantity}</span>
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  disabled={quantityDisabled}
+                  style={{ width: "36px", height: "36px", background: "transparent", border: "1px solid rgba(240,237,230,0.15)", color: "#f0ede6", cursor: quantityDisabled ? "not-allowed" : "pointer", fontSize: "14px" }}
+                >
+                  −
+                </button>
+                <span style={{ fontSize: "13px", minWidth: "20px", textAlign: "center" }}>{quantity}</span>
                 <button
-                  onClick={() => !quantityDisabled && setQuantity(q => Math.min(maxStock, q + 1))}
-                  disabled={quantityDisabled || quantity === maxStock}
-                  style={{ width: "44px", height: "44px", background: "transparent", border: "none", color: quantityDisabled || quantity === maxStock ? "rgba(240,237,230,0.2)" : "rgba(240,237,230,0.7)", cursor: quantityDisabled || quantity === maxStock ? "not-allowed" : "pointer", fontSize: "18px", fontFamily: "Space Mono, monospace", transition: "color 0.2s" }}
-                >+</button>
+                  onClick={() => setQuantity((q) => Math.min(99, maxStock, q + 1))}
+                  disabled={quantityDisabled || quantity >= maxStock || quantity >= 99}
+                  style={{ width: "36px", height: "36px", background: "transparent", border: "1px solid rgba(240,237,230,0.15)", color: "#f0ede6", cursor: (quantityDisabled || quantity >= maxStock) ? "not-allowed" : "pointer", fontSize: "14px" }}
+                >
+                  +
+                </button>
               </div>
             </div>
 
-            <div style={{ height: "1px", background: "rgba(240,237,230,0.06)", marginBottom: "28px" }} />
-
-            {/* Buttons */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {isSoldOut ? (
-                <>
-                  <div style={{ width: "100%", padding: "16px", fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", color: "rgba(220,60,60,0.5)", border: "1px solid rgba(220,60,60,0.15)", textAlign: "center" }}>
-                    Sold Out
-                  </div>
-                  <div style={{ width: "100%", padding: "16px", fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", color: "rgba(240,237,230,0.15)", border: "1px solid rgba(240,237,230,0.06)", textAlign: "center" }}>
-                    Sold Out
-                  </div>
-                </>
-              ) : (
-                <>
-                  <button className="add-btn" onClick={handleAdd} disabled={!selectedSize}
-                    style={{ width: "100%", padding: "16px", fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", background: selectedSize ? "#f0ede6" : "transparent", color: selectedSize ? "#080808" : "rgba(240,237,230,0.2)", border: selectedSize ? "none" : "1px solid rgba(240,237,230,0.1)", cursor: selectedSize ? "pointer" : "not-allowed", transition: "all 0.3s" }}>
-                    {added ? "✓ Added to Cart" : selectedSize ? "Add to Cart" : "Select a Size"}
-                  </button>
-                  <button onClick={handleBuyNow} disabled={!selectedSize}
-                    style={{ width: "100%", padding: "16px", fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", background: "transparent", color: selectedSize ? "rgba(240,237,230,0.8)" : "rgba(240,237,230,0.15)", border: selectedSize ? "1px solid rgba(240,237,230,0.25)" : "1px solid rgba(240,237,230,0.08)", cursor: selectedSize ? "pointer" : "not-allowed", transition: "all 0.3s" }}>
-                    Buy it Now
-                  </button>
-                </>
-              )}
-            </div>
-
-            <div style={{ display: "flex", gap: "24px", marginTop: "28px" }}>
-              {["Free returns", "Egypt only", "Fast delivery"].map((t) => (
-                <p key={t} style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgb(240, 237, 230)" }}>{t}</p>
-              ))}
-            </div>
+            <button
+              onClick={handleAdd}
+              disabled={quantityDisabled}
+              style={{
+                width: "100%", padding: "16px", fontSize: "10px", letterSpacing: "0.25em", textTransform: "uppercase",
+                fontFamily: "Space Mono, monospace", cursor: quantityDisabled ? "not-allowed" : "pointer",
+                background: added ? "rgba(100,200,150,0.9)" : quantityDisabled ? "rgba(240,237,230,0.1)" : "#f0ede6",
+                color: added ? "#080808" : quantityDisabled ? "rgba(240,237,230,0.3)" : "#080808",
+                border: "none", transition: "all 0.3s",
+              }}
+            >
+              {added ? "✓ Added to Cart" : isSoldOut ? "Sold Out" : !selectedSize ? "Select a Size" : "Add to Cart"}
+            </button>
           </div>
+
         </div>
-
-        {/* More from 2Z */}
-        <div style={{ marginTop: "80px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
-            <div style={{ height: "1px", flex: 1, background: "rgba(240,237,230,0.06)" }} />
-            <p style={{ fontSize: "9px", letterSpacing: "0.35em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", whiteSpace: "nowrap" }}>More from 2Z</p>
-            <div style={{ height: "1px", flex: 1, background: "rgba(240,237,230,0.06)" }} />
-          </div>
-          <div className="more-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
-            {[
-              { slug: "t-shirts", name: "Essential Tee", price: 350 },
-              { slug: "sweatpants", name: "Sweatpants", price: 650 },
-              { slug: "t-shirts", name: "Essential Tee", price: 350 },
-            ].map((item, i) => (
-              <Link href="/products" key={i} style={{ textDecoration: "none" }}>
-                <div style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden", background: "#0d0d0d", marginBottom: "12px" }}>
-                  <img src={categoryImages[item.slug]} alt={item.name} loading="lazy"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.55, transition: "opacity 0.6s, transform 0.8s" }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLImageElement; el.style.opacity = "0.8"; el.style.transform = "scale(1.04)" }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLImageElement; el.style.opacity = "0.55"; el.style.transform = "scale(1)" }}
-                  />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, transparent 60%)" }} />
-                  <div style={{ position: "absolute", bottom: "14px", left: "14px", right: "14px" }}>
-                    <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "18px", fontWeight: 300, color: "#f0ede6", marginBottom: "4px" }}>{item.name}</p>
-                    <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)" }}>{item.price} EGP</p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
       </div>
     </div>
   )

@@ -1,12 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import React, { useEffect, useRef } from "react"
-
-const products = [
-  { id: "1", name: "Essential Tee", price: 350, color: "Black", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=50&fm=webp" },
-  { id: "2", name: "Essential Tee", price: 350, color: "White", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=50&fm=webp" },
-]
+import React, { useEffect, useRef, useState } from "react"
 
 function RevealSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -33,6 +28,18 @@ function RevealSection({ children, delay = 0 }: { children: React.ReactNode; del
 }
 
 export default function Home() {
+  const [products, setProducts] = useState<any[]>([])
+
+  useEffect(() => {
+    fetch("/api/products?limit=2")
+      .then((r) => r.json())
+      .then((data) => {
+        const all = data.products || data
+        setProducts(all.slice(0, 2))
+      })
+      .catch(() => setProducts([]))
+  }, [])
+
   return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh" }}>
       <style>{`
@@ -89,9 +96,7 @@ export default function Home() {
         }
 
         .shop-btn:hover {
-          background: #f0ede6 !important;
-          color: #080808 !important;
-          border-color: #f0ede6 !important;
+          opacity: 0.85;
         }
       `}</style>
 
@@ -116,24 +121,22 @@ export default function Home() {
         {/* Gradient */}
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, rgba(8,8,8,0.25) 0%, transparent 35%, rgba(8,8,8,0.8) 80%, #080808 100%)",
+          background: "linear-gradient(to bottom, rgba(8,8,8,0.15) 0%, transparent 30%, rgba(8,8,8,0.9) 82%, #080808 100%)",
         }} />
 
-        {/* Top-left label */}
+        {/* Top bar */}
         <div className="hero-tag" style={{
-          position: "absolute", top: "24px", left: "24px",
-          display: "flex", alignItems: "center", gap: "10px",
+          position: "absolute", top: "24px", left: "24px", right: "24px",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
         }}>
-          <div style={{ width: "20px", height: "1px", background: "rgba(240,237,230,0.35)" }} />
-          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.35em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>
-            Cairo, Egypt — 2026
-          </span>
-        </div>
-
-        {/* Top-right label */}
-        <div className="hero-tag" style={{ position: "absolute", top: "24px", right: "24px" }}>
-          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.35em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>
-            SS 26
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ width: "20px", height: "1px", background: "rgba(240,237,230,0.3)" }} />
+            <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>
+              Cairo · SS26
+            </span>
+          </div>
+          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>
+            2Z
           </span>
         </div>
 
@@ -148,15 +151,16 @@ export default function Home() {
             fontFamily: "Cormorant Garamond, serif",
             fontSize: "clamp(56px, 14vw, 140px)",
             fontWeight: 300,
-            lineHeight: 0.88,
+            lineHeight: 0.86,
             letterSpacing: "-0.03em",
             color: "#f0ede6",
             margin: "0 0 32px",
           }}>
-            Wear<br />
-            <em style={{ fontStyle: "italic", color: "rgba(240,237,230,0.4)" }}>Nothing</em><br />
-            Extra.
+            Wear nothing<br />
+            extra.
           </h1>
+
+          <div className="hero-desc" style={{ height: "1px", background: "rgba(240,237,230,0.12)", marginBottom: "20px" }} />
 
           <div className="hero-desc" style={{
             display: "flex",
@@ -168,27 +172,27 @@ export default function Home() {
             <p style={{
               fontFamily: "Space Mono, monospace",
               fontSize: "10px",
-              letterSpacing: "0.22em",
+              letterSpacing: "0.18em",
               textTransform: "uppercase",
-              color: "rgba(240,237,230,0.4)",
-              lineHeight: 2.2,
+              color: "rgba(240,237,230,0.45)",
+              lineHeight: 2,
               margin: 0,
             }}>
               Oversized T-Shirts<br />
-              Black · White · Navy · Grey
+              Black · White · Grey · Beige
             </p>
 
             <Link href="/products" className="shop-btn" style={{
               fontFamily: "Space Mono, monospace",
               fontSize: "9px",
-              letterSpacing: "0.3em",
+              letterSpacing: "0.25em",
               textTransform: "uppercase",
-              color: "#f0ede6",
+              color: "#080808",
               textDecoration: "none",
-              border: "1px solid rgba(240,237,230,0.3)",
+              background: "#f0ede6",
               padding: "13px 28px",
               display: "inline-block",
-              transition: "background 0.25s, color 0.25s, border-color 0.25s",
+              transition: "opacity 0.25s",
             }}>
               Shop Now
             </Link>
@@ -210,19 +214,19 @@ export default function Home() {
       {/* ── NEW IN ── */}
       <section style={{ padding: "64px 24px 40px" }}>
         <RevealSection>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>New In</span>
-            <Link href="/products" style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", textDecoration: "none" }}>View All →</Link>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "28px" }}>
+            <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "#f0ede6" }}>New In</span>
+            <Link href="/products" style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", textDecoration: "none", borderBottom: "1px solid rgba(240,237,230,0.2)", paddingBottom: "1px" }}>View All</Link>
           </div>
         </RevealSection>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: "rgba(240,237,230,0.06)" }}>
           {products.map((p, i) => (
             <RevealSection key={p.id} delay={i * 100}>
               <Link href={`/products/${p.id}`} className="product-card" style={{ display: "block", textDecoration: "none" }}>
                 <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
                   <img
-                    src={p.img}
-                    alt={`${p.name} ${p.color}`}
+                    src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=50&fm=webp"
+                    alt={p.name}
                     loading="lazy"
                     className="card-img"
                     style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
@@ -230,9 +234,18 @@ export default function Home() {
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, transparent 60%)" }} />
                   <div style={{ position: "absolute", bottom: "14px", left: "14px", right: "14px" }}>
                     <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "18px", fontWeight: 300, color: "#f0ede6", margin: "0 0 4px" }}>{p.name}</p>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>{p.color}</span>
-                      <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", color: "rgba(240,237,230,0.5)" }}>{p.price} EGP</span>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>
+                        {p.variants?.[0]?.color || ""}
+                      </span>
+                      {p.originalPrice && Number(p.originalPrice) > Number(p.price) ? (
+                        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "7px", color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>{Number(p.originalPrice)}</span>
+                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", color: "rgba(240,237,230,0.6)" }}>{Number(p.price)} EGP</span>
+                        </span>
+                      ) : (
+                        <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", color: "rgba(240,237,230,0.5)" }}>{Number(p.price)} EGP</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -245,38 +258,45 @@ export default function Home() {
       {/* ── STATEMENT ── */}
       <section style={{ padding: "80px 24px", textAlign: "center" }}>
         <RevealSection>
-          <p style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.35em", textTransform: "uppercase", color: "rgba(240,237,230,0.28)", marginBottom: "24px" }}>
-            The 2Z Philosophy
-          </p>
-          <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "clamp(34px, 8vw, 66px)", fontWeight: 300, lineHeight: 1.1, color: "#f0ede6", margin: 0 }}>
-            Less noise.<br />
-            <em style={{ color: "rgba(240,237,230,0.38)" }}>More presence.</em>
-          </h2>
+          <div style={{ display: "flex", alignItems: "center", gap: "20px", maxWidth: "600px", margin: "0 auto" }}>
+            <div style={{ flex: 1, height: "1px", background: "rgba(240,237,230,0.08)" }} />
+            <div>
+              <p style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.28)", marginBottom: "20px", whiteSpace: "nowrap" }}>
+                The 2Z Philosophy
+              </p>
+              <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "clamp(28px, 7vw, 52px)", fontWeight: 300, lineHeight: 1.2, color: "#f0ede6", margin: 0, whiteSpace: "nowrap" }}>
+                Less noise. <em style={{ color: "rgba(240,237,230,0.38)" }}>More presence.</em>
+              </h2>
+            </div>
+            <div style={{ flex: 1, height: "1px", background: "rgba(240,237,230,0.08)" }} />
+          </div>
         </RevealSection>
       </section>
 
       {/* ── COMING SOON TEASER ── */}
       <section style={{ padding: "0 24px 24px" }}>
         <RevealSection delay={100}>
-          <div style={{ border: "1px solid rgba(240,237,230,0.07)", position: "relative", overflow: "hidden" }}>
-            <img
-              src="https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&q=50&fm=webp"
-              alt="Sweatpants coming soon"
-              loading="lazy"
-              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.07, filter: "grayscale(100%)" }}
-            />
-            <div style={{ position: "relative", padding: "56px 32px", textAlign: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", marginBottom: "28px" }}>
+          <div style={{ border: "1px solid rgba(240,237,230,0.1)", display: "flex", alignItems: "stretch" }}>
+            <div style={{ flex: 1, padding: "40px 28px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
                 <div className="coming-soon-dot" style={{ width: "5px", height: "5px", borderRadius: "50%", background: "rgba(240,237,230,0.45)" }} />
-                <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.4em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>Next Drop</span>
+                <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.35em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>Next Drop</span>
               </div>
-              <h2 className="shimmer-text" style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "clamp(32px, 8vw, 64px)", fontWeight: 300, letterSpacing: "-0.02em", marginBottom: "28px" }}>
+              <h2 className="shimmer-text" style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "clamp(28px, 6vw, 48px)", fontWeight: 300, letterSpacing: "-0.02em", marginBottom: "20px" }}>
                 Sweatpants.
               </h2>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid rgba(240,237,230,0.12)", padding: "10px 24px" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid rgba(240,237,230,0.12)", padding: "9px 20px", width: "fit-content" }}>
                 <div className="coming-soon-dot" style={{ width: "4px", height: "4px", borderRadius: "50%", background: "rgba(240,237,230,0.4)" }} />
-                <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Coming Soon</span>
+                <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Coming Soon</span>
               </div>
+            </div>
+            <div style={{ width: "clamp(90px, 26%, 160px)", position: "relative", overflow: "hidden", borderLeft: "1px solid rgba(240,237,230,0.08)" }}>
+              <img
+                src="https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&q=50&fm=webp"
+                alt="Sweatpants coming soon"
+                loading="lazy"
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.18, filter: "grayscale(100%)" }}
+              />
             </div>
           </div>
         </RevealSection>

@@ -14,11 +14,15 @@ export async function GET(
       include: { category: true, variants: true },
     })
 
-    if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 })
-    }
+   if (!product) {
+  return NextResponse.json({ error: "Product not found" }, { status: 404 })
+}
 
-    return NextResponse.json(product)
+return NextResponse.json({
+  ...product,
+  price: Number(product.price),
+  originalPrice: product.originalPrice ? Number(product.originalPrice) : null,
+})
   } catch {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
