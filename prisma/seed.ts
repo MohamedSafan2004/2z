@@ -1,9 +1,10 @@
+import * as dotenv from "dotenv"
+dotenv.config()
+
 // @ts-ignore
 const { PrismaClient } = require("../app/generated/prisma/client")
 const { PrismaPg } = require("@prisma/adapter-pg")
 const { Pool } = require("pg")
-import * as dotenv from "dotenv"
-dotenv.config()
 
 const colorCodes: Record<string, string> = {
   BLACK: "B",

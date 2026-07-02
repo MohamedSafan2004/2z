@@ -1,5 +1,8 @@
 export {}
 /// <reference types="node" />
+import * as dotenv from "dotenv"
+dotenv.config()
+
 // @ts-ignore
 const { PrismaClient } = require("../app/generated/prisma/client")
 // @ts-ignore
@@ -7,13 +10,9 @@ const { PrismaPg } = require("@prisma/adapter-pg")
 // @ts-ignore
 const { Pool } = require("pg")
 // @ts-ignore
-import * as dotenv from "dotenv"
-// @ts-ignore
 const { google } = require("googleapis")
 
-dotenv.config()
-
-// ─── عدّل هنا بس ───────────────────────────────────────────────
+// ─── عدّل هنا بس ─────────────────────────────
 const STOCK_ADD: Record<string, Record<string, number>> = {
   BLACK: { M: 0, L: 0, XL: 0 },
   WHITE: { M: 0, L: 0, XL: 0 },
