@@ -1,77 +1,13 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
+import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { useCart } from "@/lib/store/cart"
 import Link from "next/link"
 
 function OrderConfirmedContent() {
   const searchParams = useSearchParams()
   const email = searchParams.get("email")
-  const success = searchParams.get("success")
   const orderId = searchParams.get("id")
-  const { clearCart } = useCart()
-  const [verified, setVerified] = useState(false)
-
-  useEffect(() => {
-    const storedOrderId = localStorage.getItem("pending_order_id")
-    const storedVerifyToken = localStorage.getItem("pending_verify_token")
-
-    if (!storedOrderId) return
-
-    const successParam = new URLSearchParams(window.location.search).get("success")
-
-    if (successParam !== "true") {
-      localStorage.removeItem("pending_order_id")
-      localStorage.removeItem("pending_verify_token")
-      localStorage.removeItem("pending_order_email")
-      return
-    }
-
-    localStorage.removeItem("pending_order_id")
-    localStorage.removeItem("pending_verify_token")
-    localStorage.removeItem("pending_order_email")
-
-  fetch("/api/orders/verify-payment", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      orderId: storedOrderId,
-      verifyToken: storedVerifyToken || "",
-      paymobParams: window.location.search,
-  }),
-})
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "PAID") {
-          clearCart()
-          setVerified(true)
-        }
-      })
-      .catch((error) => {
-        console.error("Payment verification failed:", error)
-      })
-  }, [])
-
-  if (success === "false") {
-    return (
-      <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace", padding: "24px", textAlign: "center" }}>
-        <div style={{ width: "64px", height: "64px", border: "1px solid rgba(240,237,230,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "24px" }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.7)" strokeWidth="1.5">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </div>
-        <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "8px" }}>Payment Failed</p>
-        <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "36px", fontWeight: 300, color: "#f0ede6", marginBottom: "16px" }}>Something went wrong</h1>
-        <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)", lineHeight: 2, marginBottom: "32px" }}>
-          Your payment was not completed. Your order has been cancelled.
-        </p>
-        <Link href="/cart" style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#f0ede6", border: "1px solid rgba(240,237,230,0.3)", padding: "12px 24px", textDecoration: "none" }}>
-          Try Again
-        </Link>
-      </div>
-    )
-  }
 
   return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace", padding: "24px", textAlign: "center" }}>

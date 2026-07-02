@@ -7,7 +7,7 @@ const { PrismaPg } = require("@prisma/adapter-pg")
 // @ts-ignore
 const { Pool } = require("pg")
 // @ts-ignore
-const dotenv = require("dotenv")
+import * as dotenv from "dotenv"
 // @ts-ignore
 const { google } = require("googleapis")
 

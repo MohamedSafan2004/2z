@@ -1,8 +1,7 @@
 // @ts-ignore
 const { v2: cloudinary } = require("cloudinary")
 // @ts-ignore
-const dotenv = require("dotenv")
-// @ts-ignore
+import * as dotenv from "dotenv"// @ts-ignore
 const path = require("path")
 
 dotenv.config()
