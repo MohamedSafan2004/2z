@@ -2,6 +2,19 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
+  },
+
   async headers() {
     return [
       {
@@ -19,7 +32,7 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
               "font-src 'self' https://fonts.gstatic.com; " +
-              "img-src 'self' data: https://images.unsplash.com; " +
+              "img-src 'self' data: https://images.unsplash.com https://res.cloudinary.com; " +
               "connect-src 'self' https://api.anthropic.com https://*.prisma.io https://*.upstash.io;"
           }
         ]
