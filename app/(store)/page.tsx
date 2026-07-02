@@ -246,12 +246,12 @@ export default function Home() {
                         {p.variants?.[0]?.color || ""}
                       </span>
                       {p.originalPrice && Number(p.originalPrice) > Number(p.price) ? (
-                        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "7px", color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>{Number(p.originalPrice)}</span>
-                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", color: "rgba(240,237,230,0.6)" }}>{Number(p.price)} EGP</span>
+                        <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "18px", color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>{Number(p.originalPrice)}</span>
+                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "20px", color: "rgba(240,237,230,0.6)" }}>{Number(p.price)} EGP</span>
                         </span>
                       ) : (
-                        <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", color: "rgba(240,237,230,0.5)" }}>{Number(p.price)} EGP</span>
+                        <span style={{ fontFamily: "Space Mono, monospace", fontSize: "20px", color: "rgba(240,237,230,0.5)" }}>{Number(p.price)} EGP</span>
                       )}
                     </div>
                   </div>

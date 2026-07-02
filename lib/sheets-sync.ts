@@ -49,6 +49,15 @@ export async function appendToSalesSheet(order: any) {
     let nextRow = lastDataRow + 3
     const sheetId = await getSheetId(sheets, spreadsheetId, SALES_SHEET)
 
+    // subtotal الحقيقي بتاع المنتجات بس (من غير شحن) — عشان نحسب نسبة الخصم صح
+    const productsSubtotal = order.items.reduce(
+      (sum: number, it: any) => sum + Number(it.priceSnapshot) * it.quantity,
+      0
+    )
+    const discount = order.discountAmount && order.promoCode && productsSubtotal > 0
+      ? Number(order.discountAmount) / productsSubtotal * 100
+      : 0
+
     for (const item of order.items) {
       const variant = await db.productVariant.findUnique({
         where: { id: item.variantId },
@@ -56,9 +65,6 @@ export async function appendToSalesSheet(order: any) {
 
       const unitPrice  = Number(item.priceSnapshot)
       const quantity   = item.quantity
-      const discount   = order.discountAmount && order.promoCode
-        ? Number(order.discountAmount) / (Number(order.totalAmount) + Number(order.discountAmount)) * 100
-        : 0
       const finalPrice = unitPrice * quantity * (1 - discount / 100)
       const revenue    = finalPrice
 
