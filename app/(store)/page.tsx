@@ -156,8 +156,8 @@ export default function Home() {
             color: "#f0ede6",
             margin: "0 0 32px",
           }}>
-            Wear nothing<br />
-            extra.
+            Wear Nothing<br />
+            Extra
           </h1>
 
           <div className="hero-desc" style={{ height: "1px", background: "rgba(240,237,230,0.12)", marginBottom: "20px" }} />
