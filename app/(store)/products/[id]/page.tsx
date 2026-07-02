@@ -6,9 +6,11 @@ import { useCart } from "@/lib/store/cart"
 import { useRouter } from "next/navigation"
 import { SkeletonBlock, SkeletonLine } from "@/components/Skeleton"
 
-const categoryImages: Record<string, string> = {
-  "t-shirts": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=50&fm=webp",
-  "sweatpants": "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=400&q=50&fm=webp",
+const colorImages: Record<string, string> = {
+  BLACK: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992648/2z-store/tee-black.jpg",
+  WHITE: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992648/2z-store/tee-white.jpg",
+  GREY:  "https://res.cloudinary.com/ghetnovd/image/upload/v1782992649/2z-store/tee-grey.jpg",
+  BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992650/2z-store/tee-beige.jpg",
 }
 
 const sizes = ["M", "L", "XL"]
@@ -73,7 +75,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const quantityDisabled = !selectedSize || isSoldOut
   const hasDiscount     = product.originalPrice && Number(product.originalPrice) > Number(product.price)
 
-  const img = categoryImages[product.category?.slug] || categoryImages["t-shirts"]
+  const productColor = variants[0]?.color || "BLACK"
+  const img = colorImages[productColor] || colorImages.BLACK
 
   const handleAdd = () => {
     const variant = variants.find((v) => v.size === selectedSize)

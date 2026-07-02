@@ -4,8 +4,11 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { SkeletonCard } from "@/components/Skeleton"
 
-const categoryImages: Record<string, string> = {
-  "t-shirts": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=70&fm=webp",
+const colorImages: Record<string, string> = {
+  BLACK: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992648/2z-store/tee-black.jpg",
+  WHITE: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992648/2z-store/tee-white.jpg",
+  GREY:  "https://res.cloudinary.com/ghetnovd/image/upload/v1782992649/2z-store/tee-grey.jpg",
+  BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992650/2z-store/tee-beige.jpg",
 }
 
 export default function ProductsPage() {
@@ -96,7 +99,7 @@ export default function ProductsPage() {
                 {/* Image */}
                 <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "#111", position: "relative" }}>
                   <img
-                    src={categoryImages[p.category?.slug] || categoryImages["t-shirts"]}
+                    src={colorImages[p.variants?.[0]?.color] || colorImages.BLACK}
                     alt={p.name}
                     loading="lazy"
                     className="p-img"

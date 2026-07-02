@@ -3,6 +3,13 @@
 import Link from "next/link"
 import React, { useEffect, useRef, useState } from "react"
 
+const colorImages: Record<string, string> = {
+  BLACK: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992648/2z-store/tee-black.jpg",
+  WHITE: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992648/2z-store/tee-white.jpg",
+  GREY:  "https://res.cloudinary.com/ghetnovd/image/upload/v1782992649/2z-store/tee-grey.jpg",
+  BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992650/2z-store/tee-beige.jpg",
+}
+
 function RevealSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -225,7 +232,7 @@ export default function Home() {
               <Link href={`/products/${p.id}`} className="product-card" style={{ display: "block", textDecoration: "none" }}>
                 <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
                   <img
-                    src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=50&fm=webp"
+                    src={colorImages[p.variants?.[0]?.color] || colorImages.BLACK}
                     alt={p.name}
                     loading="lazy"
                     className="card-img"
