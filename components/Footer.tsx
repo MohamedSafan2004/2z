@@ -64,7 +64,7 @@ export default function Footer() {
               Minimal Streetwear<br />6th of October, Egypt
             </p>
             <div className="f-socials">
-              <a href="https://www.instagram.com/2z_offical?igsh=MWh3dWZiYWN1ZzdrZA%3D%3D" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="f-social"
+              <a href="https://www.instagram.com/2z.official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="f-social"
                 style={{ width: "38px", height: "38px", border: "1px solid rgba(240,237,230,0.12)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(240,237,230,0.4)", transition: "border-color 0.2s, color 0.2s" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
