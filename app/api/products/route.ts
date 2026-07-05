@@ -3,12 +3,19 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { requireAdmin } from "@/lib/middleware"
 import { sanitize } from "@/lib/validation"
+import { apiRatelimit } from "@/lib/ratelimit"
 
 const MAX_LIMIT = 50
 const DEFAULT_LIMIT = 20
 
 export async function GET(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"
+    const { success } = await apiRatelimit.limit(ip)
+    if (!success) {
+      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 })
+    }
+
     const { searchParams } = new URL(req.url)
 
     const categorySlug = searchParams.get("category")
@@ -37,13 +44,12 @@ export async function GET(req: NextRequest) {
             id: true,
             color: true,
             size: true,
-            // بنبعت بس في حاجة تفيد الـ frontend — مش الـ stockQuantity الحقيقي
             stockQuantity: true,
           },
         },
       },
       orderBy: { createdAt: "desc" },
-      take: limit + 1, // نجيب واحد زيادة عشان نعرف في next page ولا لأ
+      take: limit + 1,
       ...(cursor && { cursor: { id: cursor }, skip: 1 }),
     })
 
@@ -85,7 +91,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid price" }, { status: 400 })
     }
 
-    // تأكد إن الـ category موجودة
     const category = await db.category.findUnique({ where: { id: categoryId } })
     if (!category) {
       return NextResponse.json({ error: "Category not found" }, { status: 404 })

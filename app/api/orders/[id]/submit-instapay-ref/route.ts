@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 import { sanitize } from "@/lib/validation"
+import { sensitiveRatelimit } from "@/lib/ratelimit"
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"
+    const { success } = await sensitiveRatelimit.limit(ip)
+    if (!success) {
+      return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 })
+    }
+
     const { id } = await params
     const body = await req.json().catch(() => null)
     if (!body) return NextResponse.json({ error: "Invalid request" }, { status: 400 })

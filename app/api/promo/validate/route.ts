@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { optionalAuth } from "@/lib/middleware"
+import { sensitiveRatelimit } from "@/lib/ratelimit"
 
 // Egyptian phone numbers only — strips leading +2 or 2 country code
 // Normalizes to 01XXXXXXXXX (11 digits) to prevent format variations
@@ -15,6 +16,12 @@ function normalizeEgyptianPhone(raw: string): string | null {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"
+    const { success } = await sensitiveRatelimit.limit(ip)
+    if (!success) {
+      return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 })
+    }
+
     const auth = optionalAuth(req)
 
     const body: unknown = await req.json().catch(() => null)

@@ -26,3 +26,19 @@ export const orderRatelimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(5, "10 m"),
   prefix: "order",
 })
+
+// 10 requests كل 10 دقايق لكل IP — للـ endpoints الحساسة اللي مش محمية بـ auth
+// (submit-instapay-ref, promo/validate, validate-cart)
+export const sensitiveRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, "10 m"),
+  prefix: "sensitive",
+})
+
+// 5 محاولات كل 15 دقيقة لكل EMAIL — طبقة تانية بجانب الـ IP limit
+// بتوقف brute-force على حساب معين حتى لو الهجوم جاي من IPs مختلفة
+export const emailLoginRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, "15 m"),
+  prefix: "login-email",
+})

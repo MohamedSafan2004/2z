@@ -1,6 +1,9 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
+const MAX_QUANTITY = 99
+const CART_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
+
 interface CartItem {
   variantId: string
   productName: string
@@ -14,6 +17,7 @@ interface CartItem {
 
 interface CartStore {
   items: CartItem[]
+  expiresAt: number | null
   addItem: (item: CartItem) => void
   removeItem: (variantId: string) => void
   updateQuantity: (variantId: string, quantity: number) => void
@@ -21,10 +25,13 @@ interface CartStore {
   total: () => number
 }
 
+const freshExpiry = () => Date.now() + CART_TTL_MS
+
 export const useCart = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      expiresAt: null,
 
       addItem: (item) => {
         const items = get().items
@@ -34,12 +41,16 @@ export const useCart = create<CartStore>()(
           set({
             items: items.map((i) =>
               i.variantId === item.variantId
-                ? { ...i, quantity: i.quantity + item.quantity }
+                ? { ...i, quantity: Math.min(i.quantity + item.quantity, MAX_QUANTITY) }
                 : i
             ),
+            expiresAt: freshExpiry(),
           })
         } else {
-          set({ items: [...items, item] })
+          set({
+            items: [...items, { ...item, quantity: Math.min(item.quantity, MAX_QUANTITY) }],
+            expiresAt: freshExpiry(),
+          })
         }
       },
 
@@ -52,18 +63,29 @@ export const useCart = create<CartStore>()(
           get().removeItem(variantId)
           return
         }
+        const clamped = Math.min(quantity, MAX_QUANTITY)
         set({
           items: get().items.map((i) =>
-            i.variantId === variantId ? { ...i, quantity } : i
+            i.variantId === variantId ? { ...i, quantity: clamped } : i
           ),
+          expiresAt: freshExpiry(),
         })
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], expiresAt: null }),
 
       total: () =>
         get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
     }),
-    { name: "cart-storage" }
+    {
+      name: "cart-storage",
+      onRehydrateStorage: () => (state) => {
+        // لو الكارت عدى عليه أكتر من 7 أيام من آخر تعديل، امسحه أوتوماتيك
+        if (state && state.expiresAt && Date.now() > state.expiresAt) {
+          state.items = []
+          state.expiresAt = null
+        }
+      },
+    }
   )
 )

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { comparePassword, generateToken } from "@/lib/auth"
-import { loginRatelimit } from "@/lib/ratelimit"
+import { loginRatelimit, emailLoginRatelimit } from "@/lib/ratelimit"
 import { validateEmail } from "@/lib/validation"
 
 export async function POST(req: NextRequest) {
@@ -17,7 +17,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // safe JSON parsing — malformed body يرجع 400 مش 500
     let body: unknown
     try {
       body = await req.json()
@@ -37,7 +36,6 @@ export async function POST(req: NextRequest) {
 
     const raw = body as Record<string, unknown>
 
-    // strict type extraction — منع أي حاجة مش string
     const email    = typeof raw.email    === "string" ? raw.email.toLowerCase().trim() : null
     const password = typeof raw.password === "string" ? raw.password                   : null
 
@@ -55,10 +53,18 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // طبقة تانية على مستوى الـ email — بتوقف credential stuffing / brute-force
+    // موزع على IPs مختلفة على نفس الحساب
+    const emailCheck = await emailLoginRatelimit.limit(email)
+    if (!emailCheck.success) {
+      return NextResponse.json(
+        { error: "Too many attempts on this account. Please try again later." },
+        { status: 429 }
+      )
+    }
+
     const user = await db.user.findUnique({ where: { email } })
 
-    // نفس الـ error للـ user مش موجود والـ password غلط
-    // عشان نمنع user enumeration
     if (!user) {
       return NextResponse.json(
         { error: "Invalid email or password" },
@@ -75,8 +81,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // تحقق من الـ email verification بعد password check
-    // عشان نمنع timing-based user enumeration
     if (!user.emailVerified) {
       return NextResponse.json(
         { error: "Please verify your email before logging in" },

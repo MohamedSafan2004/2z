@@ -1,11 +1,18 @@
 // app/api/products/validate-cart/route.ts
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import { sensitiveRatelimit } from "@/lib/ratelimit"
 
 type CartItem = { variantId: string; quantity: number }
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"
+    const { success } = await sensitiveRatelimit.limit(ip)
+    if (!success) {
+      return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 })
+    }
+
     const { items } = await req.json()
 
     if (!items || !Array.isArray(items) || items.length === 0) {
