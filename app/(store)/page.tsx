@@ -1,7 +1,6 @@
-"use client"
-
 import Link from "next/link"
-import React, { useEffect, useRef, useState } from "react"
+import { db } from "@/lib/db"
+import { RevealSection } from "@/components/RevealSection"
 
 const colorImages: Record<string, string> = {
   BLACK: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992648/2z-store/tee-black.jpg",
@@ -10,42 +9,31 @@ const colorImages: Record<string, string> = {
   BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992650/2z-store/tee-beige.jpg",
 }
 
-function RevealSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    el.style.opacity = "0"
-    el.style.transform = "translateY(28px)"
-    el.style.transition = `opacity 0.8s ease ${delay}ms, transform 0.8s ease ${delay}ms`
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.style.opacity = "1"
-          el.style.transform = "translateY(0)"
-          observer.disconnect()
-        }
+async function getFeaturedProducts() {
+  const products = await db.product.findMany({
+    where: { isActive: true },
+    include: {
+      category: { select: { id: true, name: true, slug: true } },
+      variants: {
+        select: { id: true, color: true, size: true, stockQuantity: true },
       },
-      { threshold: 0.1 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [delay])
-  return <div ref={ref}>{children}</div>
+    },
+    orderBy: { createdAt: "desc" },
+    take: 2,
+  })
+
+  return products
+    .filter((p) => p.category?.slug !== "sweatpants")
+    .slice(0, 2)
+    .map((p) => ({
+      ...p,
+      price: Number(p.price),
+      originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+    }))
 }
 
-export default function Home() {
-  const [products, setProducts] = useState<any[]>([])
-
-  useEffect(() => {
-    fetch("/api/products?limit=2")
-      .then((r) => r.json())
-      .then((data) => {
-        const all = data.products || data
-        setProducts(all.slice(0, 2))
-      })
-      .catch(() => setProducts([]))
-  }, [])
+export default async function Home() {
+  const products = await getFeaturedProducts()
 
   return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh" }}>
@@ -110,7 +98,6 @@ export default function Home() {
       {/* ── HERO ── */}
       <section style={{ position: "relative", height: "100svh", minHeight: "600px", overflow: "hidden" }}>
 
-        {/* BG image */}
         <img
           src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=1200&q=80&fm=webp"
           alt="2Z Minimal Streetwear"
@@ -125,13 +112,11 @@ export default function Home() {
           }}
         />
 
-        {/* Gradient */}
         <div style={{
           position: "absolute", inset: 0,
           background: "linear-gradient(to bottom, rgba(8,8,8,0.15) 0%, transparent 30%, rgba(8,8,8,0.9) 82%, #080808 100%)",
         }} />
 
-        {/* Top bar */}
         <div className="hero-tag" style={{
           position: "absolute", top: "24px", left: "24px", right: "24px",
           display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -147,7 +132,6 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Main content */}
         <div style={{
           position: "absolute", inset: 0,
           display: "flex", flexDirection: "column", justifyContent: "flex-end",
@@ -206,7 +190,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Scroll indicator */}
         <div className="hero-line" style={{
           position: "absolute", bottom: "28px", left: "50%",
           transform: "translateX(-50%)",
@@ -245,13 +228,13 @@ export default function Home() {
                       <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>
                         {p.variants?.[0]?.color || ""}
                       </span>
-                      {p.originalPrice && Number(p.originalPrice) > Number(p.price) ? (
+                      {p.originalPrice && p.originalPrice > p.price ? (
                         <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "18px", color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>{Number(p.originalPrice)}</span>
-                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "20px", color: "rgba(240,237,230,0.6)" }}>{Number(p.price)} EGP</span>
+                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "18px", color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>{p.originalPrice}</span>
+                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "20px", color: "rgba(240,237,230,0.6)" }}>{p.price} EGP</span>
                         </span>
                       ) : (
-                        <span style={{ fontFamily: "Space Mono, monospace", fontSize: "20px", color: "rgba(240,237,230,0.5)" }}>{Number(p.price)} EGP</span>
+                        <span style={{ fontFamily: "Space Mono, monospace", fontSize: "20px", color: "rgba(240,237,230,0.5)" }}>{p.price} EGP</span>
                       )}
                     </div>
                   </div>
