@@ -26,9 +26,9 @@ export default function Navbar() {
           {/* Desktop */}
           <div className="hidden md:flex" style={{ alignItems: "center", gap: "32px", fontSize: "10px", letterSpacing: "0.2em" }}>
             <Link href="/products" style={{ color: "#f0ede6", textDecoration: "none", textTransform: "uppercase" }}>Shop</Link>
+            <Link href="/orders" style={{ color: "#f0ede6", textDecoration: "none", textTransform: "uppercase" }}>Orders</Link>
             {user ? (
               <>
-                <Link href="/orders" style={{ color: "#f0ede6", textDecoration: "none", textTransform: "uppercase" }}>Orders</Link>
                 {user.role === "ADMIN" && (
                   <Link href="/admin" style={{ color: "#f0ede6", textDecoration: "none", textTransform: "uppercase" }}>Admin</Link>
                 )}
@@ -47,15 +47,9 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile */}
+          {/* Mobile — hamburger only, everything lives in the menu */}
           <div className="flex md:hidden" style={{ alignItems: "center", gap: "16px" }}>
-            <Link href="/cart" style={{ color: "#f0ede6", textDecoration: "none", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", position: "relative" }}>
-              Cart
-              {itemCount > 0 && (
-                <span style={{ position: "absolute", top: "-8px", right: "-12px", background: "#f0ede6", color: "#080808", fontSize: "8px", width: "14px", height: "14px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>{itemCount}</span>
-              )}
-            </Link>
-            <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", color: "#f0ede6", padding: "4px" }}>
+            <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", color: "#f0ede6", padding: "4px", position: "relative" }}>
               {menuOpen ? (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -65,18 +59,27 @@ export default function Navbar() {
                   <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
                 </svg>
               )}
+              {itemCount > 0 && !menuOpen && (
+                <span style={{ position: "absolute", top: "-2px", right: "-4px", background: "#f0ede6", color: "#080808", fontSize: "8px", width: "13px", height: "13px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>{itemCount}</span>
+              )}
             </button>
           </div>
 
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu — Cart + Orders live here too, guest or logged in */}
         {menuOpen && (
           <div className="md:hidden" style={{ borderTop: "1px solid rgba(240,237,230,0.06)", padding: "20px", display: "flex", flexDirection: "column", gap: "20px" }}>
             <Link href="/products" onClick={() => setMenuOpen(false)} style={{ color: "#f0ede6", textDecoration: "none", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase" }}>Shop</Link>
+            <Link href="/cart" onClick={() => setMenuOpen(false)} style={{ color: "#f0ede6", textDecoration: "none", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "8px" }}>
+              Cart
+              {itemCount > 0 && (
+                <span style={{ background: "#f0ede6", color: "#080808", fontSize: "8px", width: "14px", height: "14px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>{itemCount}</span>
+              )}
+            </Link>
+            <Link href="/orders" onClick={() => setMenuOpen(false)} style={{ color: "#f0ede6", textDecoration: "none", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase" }}>Orders</Link>
             {user ? (
               <>
-                <Link href="/orders" onClick={() => setMenuOpen(false)} style={{ color: "#f0ede6", textDecoration: "none", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase" }}>Orders</Link>
                 {user.role === "ADMIN" && (
                   <Link href="/admin" onClick={() => setMenuOpen(false)} style={{ color: "#f0ede6", textDecoration: "none", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase" }}>Admin</Link>
                 )}

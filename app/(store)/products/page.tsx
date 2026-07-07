@@ -45,7 +45,18 @@ export default async function ProductsPage() {
         .p-card:hover .p-img { transform: scale(1.04); opacity: 0.75 !important; }
         .p-card:hover .p-name { color: rgba(240,237,230,0.7) !important; }
 
-        @media (min-width: 640px)  { .p-grid { grid-template-columns: repeat(3, 1fr) !important; } }
+        .p-name  { font-size: 15px; }
+        .p-cat   { font-size: 7px; }
+        .p-price { font-size: 12px; }
+        .p-orig  { font-size: 10px; }
+
+        @media (min-width: 640px) {
+          .p-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .p-name  { font-size: 19px; }
+          .p-cat   { font-size: 8px; }
+          .p-price { font-size: 13px; }
+          .p-orig  { font-size: 11px; }
+        }
         @media (min-width: 1024px) { .p-grid { grid-template-columns: repeat(4, 1fr) !important; } }
       `}</style>
 
@@ -65,15 +76,15 @@ export default async function ProductsPage() {
               fontWeight: 300, lineHeight: 1,
               color: "#f0ede6", margin: 0,
             }}>
-              Essential<br />
-              <em style={{ color: "rgba(240,237,230,0.35)", fontStyle: "italic" }}>Tees</em>
+              Oversize<br />
+              <em style={{ color: "rgba(240,237,230,0.35)", fontStyle: "italic" }}>T-Shirts</em>
             </h1>
             <p style={{
               fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase",
               color: "rgba(240,237,230,0.3)", lineHeight: 2, margin: 0,
             }}>
               Black · White · Grey · Beige<br />
-              550 EGP
+             
             </p>
           </div>
         </div>
@@ -82,7 +93,7 @@ export default async function ProductsPage() {
           fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase",
           color: "rgba(240,237,230,0.25)", marginBottom: "24px",
         }}>
-          {products.length} {products.length === 1 ? "product" : "products"}
+          Our Products
         </p>
 
         <div
@@ -109,36 +120,38 @@ export default async function ProductsPage() {
                   background: "linear-gradient(to top, #080808 0%, transparent 55%)",
                 }} />
 
-                <div style={{ position: "absolute", bottom: "16px", left: "16px", right: "16px" }}>
+                <div style={{ position: "absolute", bottom: "14px", left: "14px", right: "14px" }}>
                   <p
                     className="p-name"
                     style={{
                       fontFamily: "Cormorant Garamond, serif",
-                      fontSize: "20px", fontWeight: 300,
-                      color: "#f0ede6", margin: "0 0 6px",
+                      fontWeight: 300,
+                      color: "#f0ede6", margin: "0 0 5px",
+                      lineHeight: 1.15,
                       transition: "color 0.3s",
                     }}
                   >
-                    {p.name}
+                    Oversize T-Shirt<br />
+                    <span style={{ color: "rgba(240,237,230,0.5)" }}>— {p.variants?.[0]?.color ? p.variants[0].color.charAt(0) + p.variants[0].color.slice(1).toLowerCase() : ""}</span>
                   </p>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{
-                      fontSize: "8px", letterSpacing: "0.2em",
+                    <span className="p-cat" style={{
+                      letterSpacing: "0.2em",
                       textTransform: "uppercase", color: "rgba(240,237,230,0.4)",
                     }}>
                       {p.category?.name}
                     </span>
                     {p.originalPrice && p.originalPrice > p.price ? (
-                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <span style={{ fontSize: "8px", color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <span className="p-orig" style={{ color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>
                           {p.originalPrice}
                         </span>
-                        <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.7)" }}>
+                        <span className="p-price" style={{ color: "rgba(240,237,230,0.7)" }}>
                           {p.price} EGP
                         </span>
                       </span>
                     ) : (
-                      <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)" }}>
+                      <span className="p-price" style={{ color: "rgba(240,237,230,0.5)" }}>
                         {p.price} EGP
                       </span>
                     )}
