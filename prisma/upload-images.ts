@@ -13,7 +13,7 @@ const IMAGES_FOLDER = "D:\\2Z"
 const images: Record<string, string> = {
   black: "black.jpeg",
   white: "white.jpeg",
-  grey:  "rsasy.jpeg",
+  grey:  "gray.jpeg",
   beige: "bage.jpeg",
 }
 
