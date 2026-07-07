@@ -5,10 +5,10 @@ import Link from "next/link"
 import { useCart } from "@/lib/store/cart"
 
 const colorImages: Record<string, string> = {
-  BLACK: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992648/2z-store/tee-black.jpg",
-  WHITE: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992648/2z-store/tee-white.jpg",
-  GREY:  "https://res.cloudinary.com/ghetnovd/image/upload/v1782992649/2z-store/tee-grey.jpg",
-  BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/v1782992650/2z-store/tee-beige.jpg",
+  BLACK: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black.jpg",
+  WHITE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-white.jpg",
+  GREY:  "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey.jpg",
+  BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige.jpg",
 }
 
 const sizes = ["M", "L", "XL"]
