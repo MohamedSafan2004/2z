@@ -353,7 +353,8 @@ export default async function Home() {
                   <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
                     <img
                       src={colorImages[color] || colorImages.BLACK}
-                      alt={`Oversize T-Shirt — ${colorLabel}`}
+                      alt=""
+                      aria-hidden="true"
                       loading="lazy"
                       className="card-img"
                       style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
@@ -366,6 +367,7 @@ export default async function Home() {
                       </p>
                       <div className="newin-meta-row">
                         <span className="newin-cat">T-Shirts</span>
+                        <span aria-hidden="true"> </span>
                         {p.originalPrice && p.originalPrice > p.price ? (
                           <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                             <span className="newin-orig">{p.originalPrice}</span>
