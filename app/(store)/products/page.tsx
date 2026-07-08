@@ -46,9 +46,10 @@ export default async function ProductsPage() {
         .p-card:hover .p-name { color: rgba(240,237,230,0.7) !important; }
 
         .p-name  { font-size: 15px; }
-        .p-cat   { font-size: 7px; }
-        .p-price { font-size: 13px; }
-        .p-orig  { font-size: 10.5px; }
+        .p-cat   { font-size: 7px; white-space: nowrap; }
+        .p-price { font-size: 13px; white-space: nowrap; }
+        .p-orig  { font-size: 10.5px; white-space: nowrap; }
+        .p-meta-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
 
         @media (min-width: 480px) {
           .p-name  { font-size: 17px; }
@@ -88,8 +89,7 @@ export default async function ProductsPage() {
               fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase",
               color: "rgba(240,237,230,0.3)", lineHeight: 2, margin: 0,
             }}>
-              Black · White · Grey · Beige<br />
-              
+              Black · White · Grey · Beige
             </p>
           </div>
         </div>
@@ -142,7 +142,7 @@ export default async function ProductsPage() {
                     Oversize T-Shirt<br />
                     <span style={{ color: "rgba(240,237,230,0.5)" }}>— {colorLabel}</span>
                   </p>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div className="p-meta-row">
                     <span className="p-cat" style={{
                       letterSpacing: "0.2em",
                       textTransform: "uppercase", color: "rgba(240,237,230,0.4)",
