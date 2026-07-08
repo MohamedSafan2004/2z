@@ -78,8 +78,8 @@ export default async function Home() {
           overflow: hidden;
           width: 100%;
           max-width: 100%;
-          height: 78vh;
-          min-height: 460px;
+          height: 88vh;
+          min-height: 560px;
         }
         @media (min-width: 768px) {
           .hero-section { height: 100vh; min-height: 560px; max-height: 900px; }
@@ -123,8 +123,8 @@ export default async function Home() {
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
-          padding: 20px;
-          padding-bottom: 40px;
+          padding: 24px;
+          padding-bottom: 56px;
           max-width: 100%;
         }
         @media (min-width: 640px) {
@@ -140,7 +140,7 @@ export default async function Home() {
           line-height: 0.9;
           letter-spacing: -0.03em;
           color: #f0ede6;
-          margin: 0 0 24px;
+          margin: 0 0 36px;
           font-size: 44px;
           animation: fadeUp 1.0s ease 0.5s both;
         }
@@ -152,15 +152,18 @@ export default async function Home() {
         .hero-divider {
           height: 1px;
           background: rgba(240,237,230,0.12);
-          margin-bottom: 20px;
+          margin-bottom: 32px;
           animation: fadeUp 0.8s ease 0.8s both;
+        }
+        @media (min-width: 640px) {
+          .hero-divider { margin-bottom: 20px; }
         }
 
         .hero-bottom-row {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          gap: 16px;
+          gap: 24px;
           animation: fadeUp 0.8s ease 1.0s both;
         }
         @media (min-width: 560px) {
@@ -168,6 +171,7 @@ export default async function Home() {
             flex-direction: row;
             justify-content: space-between;
             align-items: flex-end;
+            gap: 16px;
           }
         }
 
