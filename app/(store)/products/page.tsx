@@ -7,7 +7,7 @@ const colorImages: Record<string, string> = {
   GREY:  "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey.jpg",
   BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige.jpg",
 }
-
+//fra5 banih
 async function getProducts() {
   const products = await db.product.findMany({
     where: { isActive: true },
