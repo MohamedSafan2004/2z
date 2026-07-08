@@ -238,7 +238,7 @@ export default function ProductDetailClient({
                 <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", margin: 0 }}>Size</p>
                 <button
                   onClick={() => setSizeChartOpen(true)}
-                  style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", background: "none", border: "none", borderBottom: "1px solid rgba(240,237,230,0.3)", cursor: "pointer", padding: 0 }}
+                  style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgb(161 6 233 / 92%)", background: "none", border: "none", borderBottom: "1px solid rgb(161 6 233 / 92%)", cursor: "pointer", padding: 0 }}
                 >
                   Size Chart
                 </button>

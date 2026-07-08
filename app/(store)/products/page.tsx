@@ -89,7 +89,7 @@ export default async function ProductsPage() {
               color: "rgba(240,237,230,0.3)", lineHeight: 2, margin: 0,
             }}>
               Black · White · Grey · Beige<br />
-              550 EGP
+              
             </p>
           </div>
         </div>
@@ -98,7 +98,7 @@ export default async function ProductsPage() {
           fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase",
           color: "rgba(240,237,230,0.25)", marginBottom: "24px",
         }}>
-          {products.length} {products.length === 1 ? "product" : "products"}
+          Our Products
         </p>
 
         <div
