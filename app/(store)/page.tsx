@@ -19,12 +19,12 @@ async function getFeaturedProducts() {
       },
     },
     orderBy: { createdAt: "desc" },
-    take: 2,
+    take: 8,
   })
 
   return products
     .filter((p) => p.category?.slug !== "sweatpants")
-    .slice(0, 2)
+    .slice(0, 4)
     .map((p) => ({
       ...p,
       price: Number(p.price),
@@ -92,6 +92,24 @@ export default async function Home() {
 
         .shop-btn:hover {
           opacity: 0.85;
+        }
+
+        .newin-name  { font-size: 14px; }
+        .newin-cat   { font-size: 7px; }
+        .newin-price { font-size: 12px; }
+        .newin-orig  { font-size: 10px; }
+
+        @media (min-width: 480px) {
+          .newin-name  { font-size: 16px; }
+          .newin-price { font-size: 13px; }
+        }
+
+        @media (min-width: 640px) {
+          .newin-grid  { grid-template-columns: repeat(4, 1fr) !important; }
+          .newin-name  { font-size: 18px; }
+          .newin-cat   { font-size: 8px; }
+          .newin-price { font-size: 14px; }
+          .newin-orig  { font-size: 11px; }
         }
       `}</style>
 
@@ -209,39 +227,46 @@ export default async function Home() {
             <Link href="/products" style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", textDecoration: "none", borderBottom: "1px solid rgba(240,237,230,0.2)", paddingBottom: "1px" }}>View All</Link>
           </div>
         </RevealSection>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: "rgba(240,237,230,0.06)" }}>
-          {products.map((p, i) => (
-            <RevealSection key={p.id} delay={i * 100}>
-              <Link href={`/products/${p.id}`} className="product-card" style={{ display: "block", textDecoration: "none" }}>
-                <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
-                  <img
-                    src={colorImages[p.variants?.[0]?.color] || colorImages.BLACK}
-                    alt={p.name}
-                    loading="lazy"
-                    className="card-img"
-                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
-                  />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, transparent 60%)" }} />
-                  <div style={{ position: "absolute", bottom: "14px", left: "14px", right: "14px" }}>
-                    <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "18px", fontWeight: 300, color: "#f0ede6", margin: "0 0 4px" }}>{p.name}</p>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>
-                        {p.variants?.[0]?.color || ""}
-                      </span>
-                      {p.originalPrice && p.originalPrice > p.price ? (
-                        <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "18px", color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>{p.originalPrice}</span>
-                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "20px", color: "rgba(240,237,230,0.6)" }}>{p.price} EGP</span>
+        <div className="newin-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: "rgba(240,237,230,0.06)" }}>
+          {products.map((p, i) => {
+            const color = p.variants?.[0]?.color || ""
+            const colorLabel = color ? color.charAt(0) + color.slice(1).toLowerCase() : ""
+            return (
+              <RevealSection key={p.id} delay={i * 100}>
+                <Link href={`/products/${p.id}`} className="product-card" style={{ display: "block", textDecoration: "none" }}>
+                  <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
+                    <img
+                      src={colorImages[color] || colorImages.BLACK}
+                      alt={`Oversize T-Shirt — ${colorLabel}`}
+                      loading="lazy"
+                      className="card-img"
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
+                    />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, transparent 60%)" }} />
+                    <div style={{ position: "absolute", bottom: "12px", left: "12px", right: "12px" }}>
+                      <p className="newin-name" style={{ fontFamily: "Cormorant Garamond, serif", fontWeight: 300, color: "#f0ede6", margin: "0 0 4px", lineHeight: 1.15 }}>
+                        Oversize T-Shirt<br />
+                        <span style={{ color: "rgba(240,237,230,0.5)" }}>— {colorLabel}</span>
+                      </p>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span className="newin-cat" style={{ fontFamily: "Space Mono, monospace", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>
+                          {colorLabel}
                         </span>
-                      ) : (
-                        <span style={{ fontFamily: "Space Mono, monospace", fontSize: "20px", color: "rgba(240,237,230,0.5)" }}>{p.price} EGP</span>
-                      )}
+                        {p.originalPrice && p.originalPrice > p.price ? (
+                          <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                            <span className="newin-orig" style={{ fontFamily: "Space Mono, monospace", color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>{p.originalPrice}</span>
+                            <span className="newin-price" style={{ fontFamily: "Space Mono, monospace", color: "rgba(240,237,230,0.7)" }}>{p.price} EGP</span>
+                          </span>
+                        ) : (
+                          <span className="newin-price" style={{ fontFamily: "Space Mono, monospace", color: "rgba(240,237,230,0.5)" }}>{p.price} EGP</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            </RevealSection>
-          ))}
+                </Link>
+              </RevealSection>
+            )
+          })}
         </div>
       </section>
 
