@@ -45,7 +45,23 @@ export default async function ProductsPage() {
         .p-card:hover .p-img { transform: scale(1.04); opacity: 0.75 !important; }
         .p-card:hover .p-name { color: rgba(240,237,230,0.7) !important; }
 
-        @media (min-width: 640px)  { .p-grid { grid-template-columns: repeat(3, 1fr) !important; } }
+        .p-name  { font-size: 15px; }
+        .p-cat   { font-size: 7px; }
+        .p-price { font-size: 13px; }
+        .p-orig  { font-size: 10.5px; }
+
+        @media (min-width: 480px) {
+          .p-name  { font-size: 17px; }
+          .p-price { font-size: 14px; }
+        }
+
+        @media (min-width: 640px) {
+          .p-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .p-name  { font-size: 19px; }
+          .p-cat   { font-size: 8px; }
+          .p-price { font-size: 15px; }
+          .p-orig  { font-size: 12px; }
+        }
         @media (min-width: 1024px) { .p-grid { grid-template-columns: repeat(4, 1fr) !important; } }
       `}</style>
 
@@ -65,8 +81,8 @@ export default async function ProductsPage() {
               fontWeight: 300, lineHeight: 1,
               color: "#f0ede6", margin: 0,
             }}>
-              Essential<br />
-              <em style={{ color: "rgba(240,237,230,0.35)", fontStyle: "italic" }}>Tees</em>
+              Oversize<br />
+              <em style={{ color: "rgba(240,237,230,0.35)", fontStyle: "italic" }}>T-Shirts</em>
             </h1>
             <p style={{
               fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase",
@@ -89,7 +105,10 @@ export default async function ProductsPage() {
           className="p-grid"
           style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "2px" }}
         >
-          {products.map((p, i) => (
+          {products.map((p, i) => {
+            const color = p.variants?.[0]?.color || "BLACK"
+            const colorLabel = color ? color.charAt(0) + color.slice(1).toLowerCase() : ""
+            return (
             <Link
               href={`/products/${p.id}`}
               key={p.id}
@@ -98,8 +117,8 @@ export default async function ProductsPage() {
             >
               <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "#111", position: "relative" }}>
                 <img
-                  src={colorImages[p.variants?.[0]?.color] || colorImages.BLACK}
-                  alt={p.name}
+                  src={colorImages[color] || colorImages.BLACK}
+                  alt={`Oversize T-Shirt — ${colorLabel}`}
                   loading="lazy"
                   className="p-img"
                   style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.65 }}
@@ -114,31 +133,33 @@ export default async function ProductsPage() {
                     className="p-name"
                     style={{
                       fontFamily: "Cormorant Garamond, serif",
-                      fontSize: "20px", fontWeight: 300,
+                      fontWeight: 300,
                       color: "#f0ede6", margin: "0 0 6px",
+                      lineHeight: 1.15,
                       transition: "color 0.3s",
                     }}
                   >
-                    {p.name}
+                    Oversize T-Shirt<br />
+                    <span style={{ color: "rgba(240,237,230,0.5)" }}>— {colorLabel}</span>
                   </p>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{
-                      fontSize: "8px", letterSpacing: "0.2em",
+                    <span className="p-cat" style={{
+                      letterSpacing: "0.2em",
                       textTransform: "uppercase", color: "rgba(240,237,230,0.4)",
                     }}>
-                      {p.category?.name}
+                      T-Shirts
                     </span>
                     {p.originalPrice && p.originalPrice > p.price ? (
                       <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <span style={{ fontSize: "8px", color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>
+                        <span className="p-orig" style={{ color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>
                           {p.originalPrice}
                         </span>
-                        <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.7)" }}>
+                        <span className="p-price" style={{ color: "rgba(240,237,230,0.7)" }}>
                           {p.price} EGP
                         </span>
                       </span>
                     ) : (
-                      <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)" }}>
+                      <span className="p-price" style={{ color: "rgba(240,237,230,0.5)" }}>
                         {p.price} EGP
                       </span>
                     )}
@@ -146,7 +167,8 @@ export default async function ProductsPage() {
                 </div>
               </div>
             </Link>
-          ))}
+            )
+          })}
         </div>
 
         {products.length === 0 && (

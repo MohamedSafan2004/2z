@@ -94,30 +94,30 @@ export default async function Home() {
           opacity: 0.85;
         }
 
-        .newin-name  { font-size: 14px; }
+        .newin-name  { font-size: 15px; }
         .newin-cat   { font-size: 7px; }
-        .newin-price { font-size: 12px; }
-        .newin-orig  { font-size: 10px; }
+        .newin-price { font-size: 13px; }
+        .newin-orig  { font-size: 10.5px; }
 
         @media (min-width: 480px) {
-          .newin-name  { font-size: 16px; }
-          .newin-price { font-size: 13px; }
+          .newin-name  { font-size: 17px; }
+          .newin-price { font-size: 14px; }
         }
 
         @media (min-width: 640px) {
           .newin-grid  { grid-template-columns: repeat(4, 1fr) !important; }
-          .newin-name  { font-size: 18px; }
+          .newin-name  { font-size: 19px; }
           .newin-cat   { font-size: 8px; }
-          .newin-price { font-size: 14px; }
-          .newin-orig  { font-size: 11px; }
+          .newin-price { font-size: 15px; }
+          .newin-orig  { font-size: 12px; }
         }
       `}</style>
 
       {/* ── HERO ── */}
-      <section style={{ position: "relative", height: "100svh", minHeight: "600px", overflow: "hidden" }}>
+      <section style={{ position: "relative", height: "100vh", minHeight: "560px", maxHeight: "900px", overflow: "hidden" }}>
 
         <img
-          src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=1200&q=80&fm=webp"
+          src="https://res.cloudinary.com/ghetnovd/image/upload/2z-store/hero.png"
           alt="2Z Minimal Streetwear"
           fetchPriority="high"
           loading="eager"
@@ -153,17 +153,18 @@ export default async function Home() {
         <div style={{
           position: "absolute", inset: 0,
           display: "flex", flexDirection: "column", justifyContent: "flex-end",
-          padding: "clamp(24px, 5vw, 60px)",
-          paddingBottom: "clamp(48px, 9vh, 90px)",
+          padding: "clamp(20px, 5vw, 60px)",
+          paddingBottom: "clamp(40px, 7vh, 90px)",
         }}>
           <h1 className="hero-title" style={{
             fontFamily: "Cormorant Garamond, serif",
-            fontSize: "clamp(56px, 14vw, 140px)",
+            fontSize: "clamp(44px, 12vw, 120px)",
             fontWeight: 300,
-            lineHeight: 0.86,
+            lineHeight: 0.9,
             letterSpacing: "-0.03em",
             color: "#f0ede6",
-            margin: "0 0 32px",
+            margin: "0 0 28px",
+            wordBreak: "keep-all",
           }}>
             Wear Nothing<br />
             Extra
@@ -249,8 +250,8 @@ export default async function Home() {
                         <span style={{ color: "rgba(240,237,230,0.5)" }}>— {colorLabel}</span>
                       </p>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span className="newin-cat" style={{ fontFamily: "Space Mono, monospace", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>
-                          {colorLabel}
+                        <span className="newin-cat" style={{ fontFamily: "Space Mono, monospace", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>
+                          T-Shirts
                         </span>
                         {p.originalPrice && p.originalPrice > p.price ? (
                           <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>

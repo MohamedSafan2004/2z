@@ -22,11 +22,37 @@ async function getProduct(id: string) {
   }
 }
 
+async function getSuggestedProducts(currentId: string, currentCategoryId: string) {
+  const products = await db.product.findMany({
+    where: {
+      isActive: true,
+      id: { not: currentId },
+    },
+    include: {
+      category: { select: { id: true, name: true, slug: true } },
+      variants: {
+        select: { id: true, color: true, size: true, stockQuantity: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  })
+
+  return products
+    .filter((p) => p.category?.slug !== "sweatpants")
+    .map((p) => ({
+      ...p,
+      price: Number(p.price),
+      originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+    }))
+}
+
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const product = await getProduct(id)
 
   if (!product) notFound()
 
-  return <ProductDetailClient product={product} />
+  const suggestedProducts = await getSuggestedProducts(id, product.categoryId)
+
+  return <ProductDetailClient product={product} suggestedProducts={suggestedProducts} />
 }
