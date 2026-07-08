@@ -36,7 +36,7 @@ export default async function Home() {
   const products = await getFeaturedProducts()
 
   return (
-    <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh" }}>
+    <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", overflowX: "hidden", width: "100%", maxWidth: "100vw" }}>
       <style>{`
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(30px); }
@@ -66,6 +66,14 @@ export default async function Home() {
         .hero-desc  { animation: fadeUp  0.8s ease 0.8s both; }
         .hero-cta   { animation: fadeUp  0.8s ease 1.0s both; }
         .hero-img   { animation: fadeIn  1.5s ease 0.0s both; }
+
+        .hero-section { height: 78vh; min-height: 460px; }
+        .hero-img-el  { object-position: 78% center; opacity: 0.55 !important; }
+
+        @media (min-width: 768px) {
+          .hero-section { height: 100vh; min-height: 560px; max-height: 900px; }
+          .hero-img-el  { object-position: center 30%; opacity: 0.38 !important; }
+        }
         .hero-line  { animation: fadeIn  1.0s ease 1.2s both; }
         .scroll-line { animation: scrollLine 2s ease 1.5s infinite; }
 
@@ -114,23 +122,23 @@ export default async function Home() {
       `}</style>
 
       {/* ── HERO ── */}
-      <section style={{ position: "relative", height: "100vh", minHeight: "560px", maxHeight: "900px", overflow: "hidden" }}>
+      <section className="hero-section" style={{ position: "relative", overflow: "hidden", width: "100%" }}>
 
         <img
           src="https://res.cloudinary.com/ghetnovd/image/upload/2z-store/hero.png"
           alt="2Z Minimal Streetwear"
           fetchPriority="high"
           loading="eager"
-          className="hero-img"
+          className="hero-img hero-img-el"
           style={{
             position: "absolute", inset: 0,
             width: "100%", height: "100%",
-            objectFit: "cover", objectPosition: "center 30%",
-            opacity: 0.38, filter: "grayscale(20%)",
+            objectFit: "cover",
+            filter: "grayscale(20%)",
           }}
         />
 
-        <div style={{
+        <div className="hero-overlay" style={{
           position: "absolute", inset: 0,
           background: "linear-gradient(to bottom, rgba(8,8,8,0.15) 0%, transparent 30%, rgba(8,8,8,0.9) 82%, #080808 100%)",
         }} />

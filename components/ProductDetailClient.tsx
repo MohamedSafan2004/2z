@@ -107,6 +107,8 @@ export default function ProductDetailClient({
     }
   }
 
+  const inCartQuantity = items.find((i) => i.variantId === selectedVariant?.id)?.quantity ?? 0
+
   const handleAdd = () => {
     const item = buildCartItem()
     if (!item) return
@@ -116,16 +118,30 @@ export default function ProductDetailClient({
   }
 
   const handleBuyNow = () => {
-    const item = buildCartItem()
-    if (!item) return
     if (buying) return // منع الدوسة المزدوجة
+    const variant = variants.find((v) => v.size === selectedSize)
+    if (!variant || variant.stockQuantity === 0) return
+
+    // لو الكمية المطلوبة أكبر من اللي موجود بالفعل في الكارت لنفس الـ variant،
+    // نضيف بس الفرق. لو هو أصلاً حاطط كل الكمية دي في الكارت قبل كده، منضيفش حاجة تانية.
+    const alreadyInCart = items.find((i) => i.variantId === variant.id)?.quantity ?? 0
+    const toAdd = quantity - alreadyInCart
+
+    if (toAdd > 0) {
+      addItem({
+        variantId: variant.id,
+        productName: product.name,
+        price: Number(product.price),
+        color: variant.color,
+        size: variant.size,
+        quantity: toAdd,
+        imageUrl: images[0],
+      })
+    }
+
     setBuying(true)
-    addItem(item) // نفس addItem بتاع الكارت — لو الـ variant موجود بيعمل merge مش تكرار
     router.push("/checkout")
   }
-
-  const inCartQuantity = items.find((i) => i.variantId === selectedVariant?.id)?.quantity ?? 0
-  const availableToAdd = maxStock - inCartQuantity
 
   return (
     <div style={{ background: "#080808", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>
@@ -238,7 +254,7 @@ export default function ProductDetailClient({
                 <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", margin: 0 }}>Size</p>
                 <button
                   onClick={() => setSizeChartOpen(true)}
-                  style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgb(161 6 233 / 92%)", background: "none", border: "none", borderBottom: "1px solid rgb(161 6 233 / 92%)", cursor: "pointer", padding: 0 }}
+                  style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", background: "none", border: "none", borderBottom: "1px solid rgba(240,237,230,0.3)", cursor: "pointer", padding: 0 }}
                 >
                   Size Chart
                 </button>
