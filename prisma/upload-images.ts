@@ -9,36 +9,40 @@ const path = require("path")
 cloudinary.config(true)
 
 const IMAGES_FOLDER = "D:\\2Z"
-
-const images: Record<string, string> = {
-  "tee-grey": "gray.jpeg",
-}
+const PUBLIC_ID = "2z-store/tee-grey"
+const FILENAME = "gray.jpeg"
 
 async function main() {
-  const results: Record<string, string> = {}
-
-  for (const [key, filename] of Object.entries(images)) {
-    const filePath = path.join(IMAGES_FOLDER, filename)
-
-    try {
-      const result = await cloudinary.uploader.upload(filePath, {
-        folder: "2z-store",
-        public_id: key,
-        overwrite: true,
-        invalidate: true,
-        resource_type: "image",
-      })
-
-      results[key] = result.secure_url
-      console.log(`✓ ${key} → ${result.secure_url}`)
-      console.log(`  version: ${result.version}`)
-    } catch (error: any) {
-      console.log(`✗ فشل رفع ${filename}: ${error.message}`)
-    }
+  try {
+    console.log("🗑️  بمسح النسخة القديمة...")
+    const destroyResult = await cloudinary.uploader.destroy(PUBLIC_ID, { resource_type: "image", invalidate: true })
+    console.log("   نتيجة المسح:", destroyResult.result)
+  } catch (error: any) {
+    console.log("   تحذير أثناء المسح (ممكن يكون عادي لو الملف مش موجود):", error.message)
   }
 
-  console.log("\n=== الروابط النهائية ===")
-  console.log(JSON.stringify(results, null, 2))
+  console.log("\n⏳ بستنى 3 ثواني...")
+  await new Promise((r) => setTimeout(r, 3000))
+
+  console.log("\n📤 برفع الصورة الجديدة...")
+  const filePath = path.join(IMAGES_FOLDER, FILENAME)
+
+  try {
+    const result = await cloudinary.uploader.upload(filePath, {
+      folder: "2z-store",
+      public_id: "tee-grey",
+      overwrite: true,
+      invalidate: true,
+      resource_type: "image",
+    })
+
+    console.log(`✓ نجح الرفع → ${result.secure_url}`)
+    console.log(`  version: ${result.version}`)
+    console.log(`  bytes: ${result.bytes}`)
+    console.log(`  created_at: ${result.created_at}`)
+  } catch (error: any) {
+    console.log(`✗ فشل الرفع: ${error.message}`)
+  }
 }
 
 main().catch(console.error)

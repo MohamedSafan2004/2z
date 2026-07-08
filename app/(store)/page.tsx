@@ -36,8 +36,19 @@ export default async function Home() {
   const products = await getFeaturedProducts()
 
   return (
-    <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", overflowX: "hidden", width: "100%", maxWidth: "100vw" }}>
+    <div className="home-root">
       <style>{`
+        * { box-sizing: border-box; }
+
+        .home-root {
+          background: #080808;
+          color: #f0ede6;
+          min-height: 100vh;
+          width: 100%;
+          max-width: 100vw;
+          overflow-x: hidden;
+        }
+
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(30px); }
           to   { opacity: 1; transform: translateY(0);    }
@@ -61,92 +72,228 @@ export default async function Home() {
           100% { transform: scaleY(0); transform-origin: bottom; }
         }
 
-        .hero-tag   { animation: fadeUp  0.8s ease 0.2s both; }
-        .hero-title { animation: fadeUp  1.0s ease 0.5s both; }
-        .hero-desc  { animation: fadeUp  0.8s ease 0.8s both; }
-        .hero-cta   { animation: fadeUp  0.8s ease 1.0s both; }
-        .hero-img   { animation: fadeIn  1.5s ease 0.0s both; }
-
-        .hero-section { height: 78vh; min-height: 460px; }
-        .hero-img-el  { object-position: 78% center; opacity: 0.55 !important; }
-
+        /* ── HERO ── */
+        .hero-section {
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+          max-width: 100%;
+          height: 78vh;
+          min-height: 460px;
+        }
         @media (min-width: 768px) {
           .hero-section { height: 100vh; min-height: 560px; max-height: 900px; }
-          .hero-img-el  { object-position: center 30%; opacity: 0.38 !important; }
         }
-        .hero-line  { animation: fadeIn  1.0s ease 1.2s both; }
-        .scroll-line { animation: scrollLine 2s ease 1.5s infinite; }
+
+        .hero-img {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          max-width: 100%;
+          object-fit: cover;
+          object-position: 78% center;
+          opacity: 0.55;
+          filter: grayscale(20%);
+          animation: fadeIn 1.5s ease 0s both;
+        }
+        @media (min-width: 768px) {
+          .hero-img { object-position: center 30%; opacity: 0.38; }
+        }
+
+        .hero-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(to bottom, rgba(8,8,8,0.15) 0%, transparent 30%, rgba(8,8,8,0.9) 82%, #080808 100%);
+        }
+
+        .hero-topbar {
+          position: absolute;
+          top: 20px; left: 20px; right: 20px;
+          display: flex; justify-content: space-between; align-items: center;
+          animation: fadeUp 0.8s ease 0.2s both;
+        }
+        @media (min-width: 640px) {
+          .hero-topbar { top: 24px; left: 24px; right: 24px; }
+        }
+
+        .hero-content {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          padding: 20px;
+          padding-bottom: 40px;
+          max-width: 100%;
+        }
+        @media (min-width: 640px) {
+          .hero-content { padding: 40px; padding-bottom: 60px; }
+        }
+        @media (min-width: 768px) {
+          .hero-content { padding: 60px; padding-bottom: 90px; }
+        }
+
+        .hero-title {
+          font-family: 'Cormorant Garamond', serif;
+          font-weight: 300;
+          line-height: 0.9;
+          letter-spacing: -0.03em;
+          color: #f0ede6;
+          margin: 0 0 24px;
+          font-size: 44px;
+          animation: fadeUp 1.0s ease 0.5s both;
+        }
+        @media (min-width: 480px) { .hero-title { font-size: 60px; } }
+        @media (min-width: 640px) { .hero-title { font-size: 80px; margin-bottom: 28px; } }
+        @media (min-width: 900px) { .hero-title { font-size: 110px; } }
+        @media (min-width: 1200px) { .hero-title { font-size: 120px; } }
+
+        .hero-divider {
+          height: 1px;
+          background: rgba(240,237,230,0.12);
+          margin-bottom: 20px;
+          animation: fadeUp 0.8s ease 0.8s both;
+        }
+
+        .hero-bottom-row {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 16px;
+          animation: fadeUp 0.8s ease 1.0s both;
+        }
+        @media (min-width: 560px) {
+          .hero-bottom-row {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: flex-end;
+          }
+        }
+
+        .hero-desc {
+          font-family: 'Space Mono', monospace;
+          font-size: 9px;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: rgba(240,237,230,0.45);
+          line-height: 1.9;
+          margin: 0;
+        }
+        @media (min-width: 480px) { .hero-desc { font-size: 10px; } }
+
+        .shop-btn {
+          font-family: 'Space Mono', monospace;
+          font-size: 9px;
+          letter-spacing: 0.25em;
+          text-transform: uppercase;
+          color: #080808;
+          text-decoration: none;
+          background: #f0ede6;
+          padding: 13px 26px;
+          display: inline-block;
+          transition: opacity 0.25s;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .shop-btn:hover { opacity: 0.85; }
+
+        .scroll-indicator {
+          position: absolute;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: none;
+        }
+        @media (min-width: 768px) {
+          .scroll-indicator { display: block; }
+        }
+        .scroll-track { width: 1px; height: 44px; background: rgba(240,237,230,0.1); overflow: hidden; }
+        .scroll-line { width: 100%; height: 100%; background: rgba(240,237,230,0.45); animation: scrollLine 2s ease 1.5s infinite; }
+
+        /* ── NEW IN ── */
+        .newin-section { padding: 56px 20px 40px; max-width: 100%; }
+        @media (min-width: 640px) { .newin-section { padding: 64px 24px 40px; } }
+
+        .newin-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; flex-wrap: wrap; gap: 10px; }
+        .newin-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: #f0ede6; }
+        .newin-viewall { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.3); text-decoration: none; border-bottom: 1px solid rgba(240,237,230,0.2); padding-bottom: 1px; }
+
+        .newin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(240,237,230,0.06); max-width: 100%; }
+        @media (min-width: 640px) { .newin-grid { grid-template-columns: repeat(4, 1fr); } }
 
         .card-img { transition: transform 0.8s ease, opacity 0.6s ease; }
         .product-card:hover .card-img { transform: scale(1.05); opacity: 0.7; }
 
-        .cat-img { transition: transform 0.8s ease, opacity 0.6s ease; }
-        .cat-link:hover .cat-img { transform: scale(1.04); opacity: 0.45; }
+        .newin-name  { font-family: 'Cormorant Garamond', serif; font-weight: 300; color: #f0ede6; margin: 0 0 4px; line-height: 1.15; font-size: 15px; }
+        .newin-cat   { font-family: 'Space Mono', monospace; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.4); font-size: 7px; white-space: nowrap; }
+        .newin-price { font-family: 'Space Mono', monospace; color: rgba(240,237,230,0.7); font-size: 13px; white-space: nowrap; }
+        .newin-orig  { font-family: 'Space Mono', monospace; color: rgba(240,237,230,0.3); text-decoration: line-through; font-size: 10.5px; white-space: nowrap; }
+        .newin-meta-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
 
-        .coming-soon-dot { animation: pulse 2s ease infinite; }
+        @media (min-width: 480px) {
+          .newin-name  { font-size: 17px; }
+          .newin-price { font-size: 14px; }
+        }
+        @media (min-width: 640px) {
+          .newin-name  { font-size: 19px; }
+          .newin-cat   { font-size: 8px; }
+          .newin-price { font-size: 15px; }
+          .newin-orig  { font-size: 12px; }
+        }
+
+        /* ── STATEMENT ── */
+        .statement-section { padding: 64px 20px; text-align: center; max-width: 100%; overflow: hidden; }
+        @media (min-width: 640px) { .statement-section { padding: 80px 24px; } }
+        .statement-row { display: flex; align-items: center; gap: 16px; max-width: 600px; margin: 0 auto; }
+        .statement-line { flex: 1; height: 1px; background: rgba(240,237,230,0.08); min-width: 12px; }
+        .statement-label { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(240,237,230,0.28); margin-bottom: 16px; }
+        .statement-heading { font-family: 'Cormorant Garamond', serif; font-weight: 300; line-height: 1.25; color: #f0ede6; margin: 0; font-size: 22px; }
+        @media (min-width: 480px) { .statement-heading { font-size: 28px; } .statement-label { font-size: 9px; } }
+        @media (min-width: 640px) { .statement-heading { font-size: 38px; } }
+        @media (min-width: 900px)  { .statement-heading { font-size: 48px; } }
+
+        /* ── COMING SOON ── */
+        .comingsoon-section { padding: 0 20px 20px; max-width: 100%; }
+        @media (min-width: 640px) { .comingsoon-section { padding: 0 24px 24px; } }
+        .comingsoon-box { border: 1px solid rgba(240,237,230,0.1); display: flex; align-items: stretch; max-width: 100%; overflow: hidden; }
+        .comingsoon-dot { animation: pulse 2s ease infinite; border-radius: 50%; background: rgba(240,237,230,0.45); }
 
         .shimmer-text {
-          background: linear-gradient(90deg,
-            rgba(240,237,230,0.3)  0%,
-            rgba(240,237,230,0.85) 50%,
-            rgba(240,237,230,0.3)  100%
-          );
+          font-family: 'Cormorant Garamond', serif;
+          font-weight: 300;
+          letter-spacing: -0.02em;
+          margin-bottom: 18px;
+          font-size: 24px;
+          background: linear-gradient(90deg, rgba(240,237,230,0.3) 0%, rgba(240,237,230,0.85) 50%, rgba(240,237,230,0.3) 100%);
           background-size: 200% auto;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
           animation: shimmer 3s linear infinite;
         }
+        @media (min-width: 480px) { .shimmer-text { font-size: 30px; } }
+        @media (min-width: 640px) { .shimmer-text { font-size: 40px; } }
 
-        .shop-btn:hover {
-          opacity: 0.85;
-        }
-
-        .newin-name  { font-size: 15px; }
-        .newin-cat   { font-size: 7px; }
-        .newin-price { font-size: 13px; }
-        .newin-orig  { font-size: 10.5px; }
-
-        @media (min-width: 480px) {
-          .newin-name  { font-size: 17px; }
-          .newin-price { font-size: 14px; }
-        }
-
-        @media (min-width: 640px) {
-          .newin-grid  { grid-template-columns: repeat(4, 1fr) !important; }
-          .newin-name  { font-size: 19px; }
-          .newin-cat   { font-size: 8px; }
-          .newin-price { font-size: 15px; }
-          .newin-orig  { font-size: 12px; }
-        }
+        /* ── CATEGORIES ── */
+        .categories-section { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 8px; max-width: 100%; }
+        .cat-img { transition: transform 0.8s ease, opacity 0.6s ease; }
+        .cat-link:hover .cat-img { transform: scale(1.04); opacity: 0.45; }
       `}</style>
 
       {/* ── HERO ── */}
-      <section className="hero-section" style={{ position: "relative", overflow: "hidden", width: "100%" }}>
-
+      <section className="hero-section">
         <img
           src="https://res.cloudinary.com/ghetnovd/image/upload/2z-store/hero.png"
           alt="2Z Minimal Streetwear"
           fetchPriority="high"
           loading="eager"
-          className="hero-img hero-img-el"
-          style={{
-            position: "absolute", inset: 0,
-            width: "100%", height: "100%",
-            objectFit: "cover",
-            filter: "grayscale(20%)",
-          }}
+          className="hero-img"
         />
 
-        <div className="hero-overlay" style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, rgba(8,8,8,0.15) 0%, transparent 30%, rgba(8,8,8,0.9) 82%, #080808 100%)",
-        }} />
+        <div className="hero-overlay" />
 
-        <div className="hero-tag" style={{
-          position: "absolute", top: "24px", left: "24px", right: "24px",
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-        }}>
+        <div className="hero-topbar">
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{ width: "20px", height: "1px", background: "rgba(240,237,230,0.3)" }} />
             <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>
@@ -158,85 +305,42 @@ export default async function Home() {
           </span>
         </div>
 
-        <div style={{
-          position: "absolute", inset: 0,
-          display: "flex", flexDirection: "column", justifyContent: "flex-end",
-          padding: "clamp(20px, 5vw, 60px)",
-          paddingBottom: "clamp(40px, 7vh, 90px)",
-        }}>
-          <h1 className="hero-title" style={{
-            fontFamily: "Cormorant Garamond, serif",
-            fontSize: "clamp(44px, 12vw, 120px)",
-            fontWeight: 300,
-            lineHeight: 0.9,
-            letterSpacing: "-0.03em",
-            color: "#f0ede6",
-            margin: "0 0 28px",
-            wordBreak: "keep-all",
-          }}>
+        <div className="hero-content">
+          <h1 className="hero-title">
             Wear Nothing<br />
             Extra
           </h1>
 
-          <div className="hero-desc" style={{ height: "1px", background: "rgba(240,237,230,0.12)", marginBottom: "20px" }} />
+          <div className="hero-divider" />
 
-          <div className="hero-desc" style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            flexWrap: "wrap",
-            gap: "20px",
-          }}>
-            <p style={{
-              fontFamily: "Space Mono, monospace",
-              fontSize: "10px",
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-              color: "rgba(240,237,230,0.45)",
-              lineHeight: 2,
-              margin: 0,
-            }}>
+          <div className="hero-bottom-row">
+            <p className="hero-desc">
               Oversized T-Shirts<br />
               Black · White · Grey · Beige
             </p>
 
-            <Link href="/products" className="shop-btn" style={{
-              fontFamily: "Space Mono, monospace",
-              fontSize: "9px",
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-              color: "#080808",
-              textDecoration: "none",
-              background: "#f0ede6",
-              padding: "13px 28px",
-              display: "inline-block",
-              transition: "opacity 0.25s",
-            }}>
+            <Link href="/products" className="shop-btn">
               Shop Now
             </Link>
           </div>
         </div>
 
-        <div className="hero-line" style={{
-          position: "absolute", bottom: "28px", left: "50%",
-          transform: "translateX(-50%)",
-        }}>
-          <div style={{ width: "1px", height: "44px", background: "rgba(240,237,230,0.1)", overflow: "hidden" }}>
-            <div className="scroll-line" style={{ width: "100%", height: "100%", background: "rgba(240,237,230,0.45)" }} />
+        <div className="scroll-indicator">
+          <div className="scroll-track">
+            <div className="scroll-line" />
           </div>
         </div>
-
       </section>
 
       {/* ── NEW IN ── */}
-      <section style={{ padding: "64px 24px 40px" }}>
+      <section className="newin-section">
         <RevealSection>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "28px" }}>
-            <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "#f0ede6" }}>New In</span>
-            <Link href="/products" style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", textDecoration: "none", borderBottom: "1px solid rgba(240,237,230,0.2)", paddingBottom: "1px" }}>View All</Link>
+          <div className="newin-header">
+            <span className="newin-label">New In</span>
+            <Link href="/products" className="newin-viewall">View All</Link>
           </div>
         </RevealSection>
-        <div className="newin-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: "rgba(240,237,230,0.06)" }}>
+        <div className="newin-grid">
           {products.map((p, i) => {
             const color = p.variants?.[0]?.color || ""
             const colorLabel = color ? color.charAt(0) + color.slice(1).toLowerCase() : ""
@@ -253,21 +357,19 @@ export default async function Home() {
                     />
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, transparent 60%)" }} />
                     <div style={{ position: "absolute", bottom: "12px", left: "12px", right: "12px" }}>
-                      <p className="newin-name" style={{ fontFamily: "Cormorant Garamond, serif", fontWeight: 300, color: "#f0ede6", margin: "0 0 4px", lineHeight: 1.15 }}>
+                      <p className="newin-name">
                         Oversize T-Shirt<br />
                         <span style={{ color: "rgba(240,237,230,0.5)" }}>— {colorLabel}</span>
                       </p>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span className="newin-cat" style={{ fontFamily: "Space Mono, monospace", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>
-                          T-Shirts
-                        </span>
+                      <div className="newin-meta-row">
+                        <span className="newin-cat">T-Shirts</span>
                         {p.originalPrice && p.originalPrice > p.price ? (
                           <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                            <span className="newin-orig" style={{ fontFamily: "Space Mono, monospace", color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>{p.originalPrice}</span>
-                            <span className="newin-price" style={{ fontFamily: "Space Mono, monospace", color: "rgba(240,237,230,0.7)" }}>{p.price} EGP</span>
+                            <span className="newin-orig">{p.originalPrice}</span>
+                            <span className="newin-price">{p.price} EGP</span>
                           </span>
                         ) : (
-                          <span className="newin-price" style={{ fontFamily: "Space Mono, monospace", color: "rgba(240,237,230,0.5)" }}>{p.price} EGP</span>
+                          <span className="newin-price" style={{ color: "rgba(240,237,230,0.5)" }}>{p.price} EGP</span>
                         )}
                       </div>
                     </div>
@@ -280,41 +382,37 @@ export default async function Home() {
       </section>
 
       {/* ── STATEMENT ── */}
-      <section style={{ padding: "80px 24px", textAlign: "center" }}>
+      <section className="statement-section">
         <RevealSection>
-          <div style={{ display: "flex", alignItems: "center", gap: "20px", maxWidth: "600px", margin: "0 auto" }}>
-            <div style={{ flex: 1, height: "1px", background: "rgba(240,237,230,0.08)" }} />
+          <div className="statement-row">
+            <div className="statement-line" />
             <div>
-              <p style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.28)", marginBottom: "20px", whiteSpace: "nowrap" }}>
-                The 2Z Philosophy
-              </p>
-              <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "clamp(28px, 7vw, 52px)", fontWeight: 300, lineHeight: 1.2, color: "#f0ede6", margin: 0, whiteSpace: "nowrap" }}>
+              <p className="statement-label">The 2Z Philosophy</p>
+              <h2 className="statement-heading">
                 Less noise. <em style={{ color: "rgba(240,237,230,0.38)" }}>More presence.</em>
               </h2>
             </div>
-            <div style={{ flex: 1, height: "1px", background: "rgba(240,237,230,0.08)" }} />
+            <div className="statement-line" />
           </div>
         </RevealSection>
       </section>
 
       {/* ── COMING SOON TEASER ── */}
-      <section style={{ padding: "0 24px 24px" }}>
+      <section className="comingsoon-section">
         <RevealSection delay={100}>
-          <div style={{ border: "1px solid rgba(240,237,230,0.1)", display: "flex", alignItems: "stretch" }}>
-            <div style={{ flex: 1, padding: "40px 28px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-                <div className="coming-soon-dot" style={{ width: "5px", height: "5px", borderRadius: "50%", background: "rgba(240,237,230,0.45)" }} />
-                <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.35em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>Next Drop</span>
+          <div className="comingsoon-box">
+            <div style={{ flex: 1, padding: "28px 20px", display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                <div className="comingsoon-dot" style={{ width: "5px", height: "5px" }} />
+                <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>Next Drop</span>
               </div>
-              <h2 className="shimmer-text" style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "clamp(28px, 6vw, 48px)", fontWeight: 300, letterSpacing: "-0.02em", marginBottom: "20px" }}>
-                Sweatpants.
-              </h2>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid rgba(240,237,230,0.12)", padding: "9px 20px", width: "fit-content" }}>
-                <div className="coming-soon-dot" style={{ width: "4px", height: "4px", borderRadius: "50%", background: "rgba(240,237,230,0.4)" }} />
+              <h2 className="shimmer-text">Sweatpants.</h2>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid rgba(240,237,230,0.12)", padding: "9px 16px", width: "fit-content" }}>
+                <div className="comingsoon-dot" style={{ width: "4px", height: "4px" }} />
                 <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Coming Soon</span>
               </div>
             </div>
-            <div style={{ width: "clamp(90px, 26%, 160px)", position: "relative", overflow: "hidden", borderLeft: "1px solid rgba(240,237,230,0.08)" }}>
+            <div style={{ width: "clamp(80px, 26%, 160px)", position: "relative", overflow: "hidden", borderLeft: "1px solid rgba(240,237,230,0.08)", flexShrink: 0 }}>
               <img
                 src="https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&q=50&fm=webp"
                 alt="Sweatpants coming soon"
@@ -327,7 +425,7 @@ export default async function Home() {
       </section>
 
       {/* ── CATEGORIES ── */}
-      <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px", marginTop: "8px" }}>
+      <section className="categories-section">
         {[
           { name: "T-Shirts",   slug: "t-shirts",   img: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=50&fm=webp", available: true  },
           { name: "Sweatpants", slug: "sweatpants",  img: "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=400&q=50&fm=webp", available: false },
@@ -357,7 +455,7 @@ export default async function Home() {
 
       {/* ── FOOTER STRIP ── */}
       <RevealSection>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", borderTop: "1px solid rgba(240,237,230,0.06)", marginTop: "2px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 20px", borderTop: "1px solid rgba(240,237,230,0.06)", marginTop: "2px", flexWrap: "wrap", gap: "8px" }}>
           <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.25)" }}>2Z — 6th of October</span>
           <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.25)" }}>Oversized T-Shirts</span>
         </div>
