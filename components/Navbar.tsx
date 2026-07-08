@@ -15,7 +15,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav style={{ position: "fixed", top: 0, width: "100%", zIndex: 50, background: "rgba(8,8,8,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(240,237,230,0.06)" }}>
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "rgba(8,8,8,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(240,237,230,0.06)" }}>
         <div style={{ padding: "0 20px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
 
           {/* Logo */}

@@ -45,7 +45,6 @@ export default async function Home() {
           color: #f0ede6;
           min-height: 100vh;
           width: 100%;
-          max-width: 100vw;
           overflow-x: hidden;
         }
 
