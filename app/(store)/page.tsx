@@ -437,7 +437,7 @@ export default async function Home() {
       {/* ── CATEGORIES ── */}
       <section className="categories-section">
         {[
-          { name: "T-Shirts",   slug: "t-shirts",   img: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=50&fm=webp", available: true  },
+          { name: "T-Shirts",   slug: "t-shirts",   img: optimizeCloudinaryUrl("https://res.cloudinary.com/ghetnovd/image/upload/2z-store/collection-tee.jpg", 500), available: true  },
           { name: "Sweatpants", slug: "sweatpants",  img: "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=400&q=50&fm=webp", available: false },
         ].map((cat, i) => (
           <RevealSection key={cat.slug} delay={i * 150}>

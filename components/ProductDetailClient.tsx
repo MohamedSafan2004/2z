@@ -461,7 +461,7 @@ export default function ProductDetailClient({
               Close ✕
             </button>
             <img
-              src={SIZE_CHART_IMAGE}
+              src={optimizeCloudinaryUrl(SIZE_CHART_IMAGE, 700)}
               alt="Size Chart"
               style={{ width: "100%", height: "auto", display: "block", border: "1px solid rgba(240,237,230,0.1)" }}
             />
