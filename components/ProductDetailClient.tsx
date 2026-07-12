@@ -9,18 +9,32 @@ const colorImages: Record<string, string[]> = {
   BLACK: [
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black-2.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black-3.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black-4.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black-5.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black-6.jpg",
   ],
   WHITE: [
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-white.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-white-2.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-white-3.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-white-4.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-white-5.jpg",
   ],
   GREY: [
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey-2.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey-3.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey-4.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey-5.jpg",
   ],
   BEIGE: [
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-2.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-3.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-4.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-5.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-6.jpg",
   ],
 }
 
@@ -66,7 +80,6 @@ export default function ProductDetailClient({
   const [selectedSize, setSelectedSize] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
-  const [imgLoaded, setImgLoaded] = useState(false)
   const [imgIndex, setImgIndex] = useState(0)
   const [sizeChartOpen, setSizeChartOpen] = useState(false)
   const [buying, setBuying] = useState(false)
@@ -85,8 +98,17 @@ export default function ProductDetailClient({
   const images = colorImages[productColor] || colorImages.BLACK
   const img = images[imgIndex] || images[0]
 
+  // نعمل preload لكل صور المنتج من أول ما الصفحة تفتح، عشان التنقل بين الصور
+  // يبقى فوري وسموث حتى لو المستخدم رجع وقلب على نفس الصور كذا مرة
+  React.useEffect(() => {
+    images.forEach((src) => {
+      const preloadImg = new window.Image()
+      preloadImg.src = src
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productColor])
+
   const goToImage = (index: number) => {
-    setImgLoaded(false)
     setImgIndex(index)
   }
 
@@ -190,8 +212,7 @@ export default function ProductDetailClient({
             <img
               src={img}
               alt={product.name}
-              onLoad={() => setImgLoaded(true)}
-              style={{ width: "100%", height: "100%", objectFit: "cover", opacity: imgLoaded ? 0.9 : 0, transition: "opacity 0.5s ease", display: "block" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.9, display: "block" }}
             />
             <div style={{ position: "absolute", top: "16px", left: "16px", background: "rgba(8,8,8,0.7)", backdropFilter: "blur(8px)", padding: "6px 12px" }}>
               <span style={{ fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>{product.category?.name}</span>
