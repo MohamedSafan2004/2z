@@ -9,6 +9,11 @@ const colorImages: Record<string, string> = {
   BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige.jpg",
 }
 
+// بتضيف تحويلات Cloudinary (ضغط تلقائي + WebP + تصغير المقاس) من غير ما تلمس الصورة الأصلية
+function optimizeCloudinaryUrl(url: string, width: number): string {
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`)
+}
+
 async function getFeaturedProducts() {
   const products = await db.product.findMany({
     where: { isActive: true },
@@ -352,7 +357,7 @@ export default async function Home() {
                 <Link href={`/products/${p.id}`} className="product-card" style={{ display: "block", textDecoration: "none" }}>
                   <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
                     <img
-                      src={colorImages[color] || colorImages.BLACK}
+                      src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
                       alt=""
                       aria-hidden="true"
                       loading="lazy"

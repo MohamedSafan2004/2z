@@ -1,13 +1,18 @@
 import Link from "next/link"
 import { db } from "@/lib/db"
 
+// صورة الـ Main بس لكل لون — دي اللي بتظهر في صفحة قائمة المنتجات
 const colorImages: Record<string, string> = {
   BLACK: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black.jpg",
   WHITE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-white.jpg",
   GREY:  "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey.jpg",
   BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige.jpg",
 }
-//fra5 banih
+
+// بتضيف تحويلات Cloudinary (ضغط تلقائي + WebP + تصغير المقاس) من غير ما تلمس الصورة الأصلية
+function optimizeCloudinaryUrl(url: string, width: number): string {
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`)
+}
 async function getProducts() {
   const products = await db.product.findMany({
     where: { isActive: true },
@@ -117,7 +122,7 @@ export default async function ProductsPage() {
             >
               <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "#111", position: "relative" }}>
                 <img
-                  src={colorImages[color] || colorImages.BLACK}
+                  src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
                   alt={`Oversize T-Shirt — ${colorLabel}`}
                   loading="lazy"
                   className="p-img"

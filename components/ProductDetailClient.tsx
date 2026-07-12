@@ -40,6 +40,12 @@ const colorImages: Record<string, string[]> = {
 
 const SIZE_CHART_IMAGE = "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/size-chart.jpg"
 
+// بتضيف تحويلات Cloudinary (ضغط تلقائي + تحويل لـ WebP لو المتصفح بيدعمه + تصغير المقاس)
+// من غير ما تلمس الصورة الأصلية على Cloudinary — بس بترجع نسخة أخف في نفس الرابط.
+function optimizeCloudinaryUrl(url: string, width: number): string {
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`)
+}
+
 const sizes = ["M", "L", "XL"]
 const LOW_STOCK_THRESHOLD = 3
 
@@ -98,13 +104,24 @@ export default function ProductDetailClient({
   const images = colorImages[productColor] || colorImages.BLACK
   const img = images[imgIndex] || images[0]
 
-  // نعمل preload لكل صور المنتج من أول ما الصفحة تفتح، عشان التنقل بين الصور
-  // يبقى فوري وسموث حتى لو المستخدم رجع وقلب على نفس الصور كذا مرة
+  // preload لباقي صور نفس المنتج (بمقاس مضغوط) بعد ما الصفحة تخلص تحميل —
+  // مش فوراً، عشان الصورة الرئيسية تاخد الأولوية في الـ bandwidth الأول.
   React.useEffect(() => {
-    images.forEach((src) => {
-      const preloadImg = new window.Image()
-      preloadImg.src = src
-    })
+    const preloadRest = () => {
+      images.forEach((src, i) => {
+        if (i === 0) return // دي بالفعل بتتحمل كـ الصورة الرئيسية
+        const preloadImg = new window.Image()
+        preloadImg.src = optimizeCloudinaryUrl(src, 900)
+      })
+    }
+
+    if (document.readyState === "complete") {
+      const timer = setTimeout(preloadRest, 300)
+      return () => clearTimeout(timer)
+    } else {
+      window.addEventListener("load", preloadRest, { once: true })
+      return () => window.removeEventListener("load", preloadRest)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productColor])
 
@@ -210,8 +227,9 @@ export default function ProductDetailClient({
 
           <div style={{ position: "relative", aspectRatio: "4/5", overflow: "hidden", background: "#0d0d0d" }}>
             <img
-              src={img}
+              src={optimizeCloudinaryUrl(img, 900)}
               alt={product.name}
+              fetchPriority="high"
               style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.9, display: "block" }}
             />
             <div style={{ position: "absolute", top: "16px", left: "16px", background: "rgba(8,8,8,0.7)", backdropFilter: "blur(8px)", padding: "6px 12px" }}>
@@ -389,7 +407,7 @@ export default function ProductDetailClient({
                   <Link href={`/products/${p.id}`} key={p.id} className="suggested-card">
                     <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "#111", position: "relative" }}>
                       <img
-                        src={productImgs[0]}
+                        src={optimizeCloudinaryUrl(productImgs[0], 500)}
                         alt={`Oversize T-Shirt — ${colorLabel}`}
                         loading="lazy"
                         className="suggested-img"
