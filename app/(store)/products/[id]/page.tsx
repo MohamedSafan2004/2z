@@ -2,8 +2,7 @@ import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import ProductDetailClient from "@/components/ProductDetailClient"
 
-export const revalidate = 60 // بيتحدث كل دقيقة
-
+export const dynamic = "force-dynamic"
 async function getProduct(id: string) {
   const product = await db.product.findUnique({
     where: { id },
