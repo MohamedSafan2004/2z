@@ -9,6 +9,8 @@ const colorImages: Record<string, string> = {
   BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige.jpg",
 }
 
+export const revalidate = 60 // بيتحدث كل دقيقة
+
 // بتضيف تحويلات Cloudinary (ضغط تلقائي + WebP + تصغير المقاس) من غير ما تلمس الصورة الأصلية
 function optimizeCloudinaryUrl(url: string, width: number): string {
   return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`)

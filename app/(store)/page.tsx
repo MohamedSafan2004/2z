@@ -2,6 +2,8 @@ import Link from "next/link"
 import { db } from "@/lib/db"
 import { RevealSection } from "@/components/RevealSection"
 
+export const revalidate = 60 // بيتحدث كل دقيقة
+
 const colorImages: Record<string, string> = {
   BLACK: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black.jpg",
   WHITE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-white.jpg",
