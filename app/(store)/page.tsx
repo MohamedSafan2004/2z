@@ -1,9 +1,7 @@
 // app/(store)/page.tsx
 import Link from "next/link"
-import { Suspense } from "react"
 import { db } from "@/lib/db"
 import { RevealSection } from "@/components/RevealSection"
-import { SkeletonBlock, SkeletonLine } from "@/components/Skeleton"
 
 export const dynamic = "force-dynamic"
 const colorImages: Record<string, string> = {
@@ -13,7 +11,6 @@ const colorImages: Record<string, string> = {
   BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige.jpg",
 }
 
-// بتضيف تحويلات Cloudinary (ضغط تلقائي + WebP + تصغير المقاس) من غير ما تلمس الصورة الأصلية
 function optimizeCloudinaryUrl(url: string, width: number): string {
   return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`)
 }
@@ -41,68 +38,9 @@ async function getFeaturedProducts() {
     }))
 }
 
-// ── الجزء اللي بيستنى الداتابيز، معزول لوحده عشان الـ Suspense يقدر يلفه بس ──
-async function NewInSection() {
+export default async function Home() {
   const products = await getFeaturedProducts()
 
-  return (
-    <>
-      {products.map((p, i) => {
-        const color = p.variants?.[0]?.color || ""
-        const colorLabel = color ? color.charAt(0) + color.slice(1).toLowerCase() : ""
-        return (
-          <RevealSection key={p.id} delay={i * 100}>
-            <Link href={`/products/${p.id}`} className="product-card" style={{ display: "block", textDecoration: "none" }}>
-              <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
-                <img
-                  src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
-                  alt=""
-                  aria-hidden="true"
-                  loading="lazy"
-                  className="card-img"
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
-                />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, transparent 60%)" }} />
-                <div style={{ position: "absolute", bottom: "12px", left: "12px", right: "12px" }}>
-                  <p className="newin-name">
-                    Oversize T-Shirt<br />
-                    <span style={{ color: "rgba(240,237,230,0.5)" }}>— {colorLabel}</span>
-                  </p>
-                  <div className="newin-meta-row">
-                    <span className="newin-cat">T-Shirts</span>
-                    <span aria-hidden="true"> </span>
-                    {p.originalPrice && p.originalPrice > p.price ? (
-                      <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                        <span className="newin-orig">{p.originalPrice}</span>
-                        <span className="newin-price">{p.price} EGP</span>
-                      </span>
-                    ) : (
-                      <span className="newin-price" style={{ color: "rgba(240,237,230,0.5)" }}>{p.price} EGP</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </RevealSection>
-        )
-      })}
-    </>
-  )
-}
-
-function NewInSkeleton() {
-  return (
-    <>
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} style={{ aspectRatio: "3/4", width: "100%" }}>
-          <SkeletonBlock height="100%" />
-        </div>
-      ))}
-    </>
-  )
-}
-
-export default function Home() {
   return (
     <div className="home-root">
       <style>{`
@@ -412,9 +350,45 @@ export default function Home() {
           </div>
         </RevealSection>
         <div className="newin-grid">
-          <Suspense fallback={<NewInSkeleton />}>
-            <NewInSection />
-          </Suspense>
+          {products.map((p, i) => {
+            const color = p.variants?.[0]?.color || ""
+            const colorLabel = color ? color.charAt(0) + color.slice(1).toLowerCase() : ""
+            return (
+              <RevealSection key={p.id} delay={i * 100}>
+                <Link href={`/products/${p.id}`} className="product-card" style={{ display: "block", textDecoration: "none" }}>
+                  <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
+                    <img
+                      src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      className="card-img"
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
+                    />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, transparent 60%)" }} />
+                    <div style={{ position: "absolute", bottom: "12px", left: "12px", right: "12px" }}>
+                      <p className="newin-name">
+                        Oversize T-Shirt<br />
+                        <span style={{ color: "rgba(240,237,230,0.5)" }}>— {colorLabel}</span>
+                      </p>
+                      <div className="newin-meta-row">
+                        <span className="newin-cat">T-Shirts</span>
+                        <span aria-hidden="true"> </span>
+                        {p.originalPrice && p.originalPrice > p.price ? (
+                          <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                            <span className="newin-orig">{p.originalPrice}</span>
+                            <span className="newin-price">{p.price} EGP</span>
+                          </span>
+                        ) : (
+                          <span className="newin-price" style={{ color: "rgba(240,237,230,0.5)" }}>{p.price} EGP</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </RevealSection>
+            )
+          })}
         </div>
       </section>
 
