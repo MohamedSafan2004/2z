@@ -28,7 +28,9 @@ export default function HomeLoading() {
           style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "2px" }}
         >
           {[1, 2, 3, 4].map((i) => (
-            <SkeletonBlock key={i} height="100%" />
+            <div key={i} style={{ aspectRatio: "3/4", width: "100%" }}>
+              <SkeletonBlock height="100%" />
+            </div>
           ))}
         </div>
       </div>
