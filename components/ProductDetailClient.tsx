@@ -253,6 +253,33 @@ export default function ProductDetailClient({
           .suggested-orig  { font-size: 11px; }
         }
 
+        /* ── Sale badge ── */
+        @keyframes saleShine {
+          0%   { background-position: -60px 0; }
+          100% { background-position: 160px 0; }
+        }
+        .sale-badge {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #080808;
+          background: ${ACCENT};
+          padding: 5px 10px;
+          overflow: hidden;
+        }
+        .sale-badge::after {
+          content: "";
+          position: absolute;
+          top: 0; left: 0;
+          width: 40px; height: 100%;
+          background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+          animation: saleShine 2.6s ease-in-out infinite;
+        }
+
         /* ── Bundle progress bar ── */
         .bundle-box {
           border: 1px solid rgba(240,237,230,0.12);
@@ -265,11 +292,57 @@ export default function ProductDetailClient({
           animation: giftGlow 2.5s ease infinite;
           animation-delay: 1s;
         }
-        .bundle-track { height: 4px; background: rgba(240,237,230,0.08); width: 100%; overflow: hidden; border-radius: 2px; margin-top: 10px; }
-        .bundle-fill { height: 100%; background: ${ACCENT}; transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 2px; }
-        .bundle-dots { display: flex; gap: 4px; margin-top: 8px; }
-        .bundle-dot { flex: 1; height: 3px; border-radius: 2px; background: rgba(240,237,230,0.1); transition: background 0.3s ease; }
-        .bundle-dot.filled { background: ${ACCENT}; }
+        /* ── Unified multi-tier progress bar (shows both milestones together) ── */
+        .tier-progress { position: relative; margin-top: 14px; padding-top: 6px; }
+        .tier-progress-track {
+          position: relative;
+          height: 4px;
+          background: rgba(240,237,230,0.08);
+          border-radius: 2px;
+          overflow: visible;
+        }
+        .tier-progress-fill {
+          height: 100%;
+          background: ${ACCENT};
+          border-radius: 2px;
+          transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .tier-progress-marker {
+          position: absolute;
+          top: 50%;
+          width: 13px;
+          height: 13px;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          background: #080808;
+          border: 2px solid rgba(240,237,230,0.25);
+          transition: border-color 0.3s ease, background 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .tier-progress-marker.reached {
+          background: ${ACCENT};
+          border-color: ${ACCENT};
+        }
+        .tier-progress-marker.reached::after {
+          content: "✓";
+          font-size: 8px;
+          font-weight: 700;
+          color: #080808;
+        }
+        .tier-progress-label {
+          position: absolute;
+          top: 14px;
+          transform: translateX(-50%);
+          font-size: 8px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          white-space: nowrap;
+          color: rgba(240,237,230,0.35);
+          transition: color 0.3s ease;
+        }
+        .tier-progress-label.reached { color: ${ACCENT}; }
 
         /* ── Gift picker ── */
         .gift-picker { animation: slideDown 0.4s ease both; overflow: hidden; }
@@ -381,8 +454,8 @@ export default function ProductDetailClient({
                 <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "32px", fontWeight: 300, color: "#f0ede6" }}>{Number(product.price)}</span>
                 <span style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,237,230,0.4)" }}>EGP</span>
                 {hasDiscount && (
-                  <span style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", border: "1px solid #c8f04f", color: "#c8f04f", padding: "4px 9px" }}>
-                    First Drop
+                  <span className="sale-badge">
+                    Sale
                   </span>
                 )}
               </div>
@@ -604,6 +677,11 @@ const SWATCH_COLORS: Record<string, string> = {
   BEIGE: "#d8c8a8",
 }
 
+function activeFreeQty(eligibleNow: { triggerQuantity: number; freeQuantity: number } | null): string {
+  if (!eligibleNow) return ""
+  return eligibleNow.freeQuantity === 1 ? "1 free tee" : `${eligibleNow.freeQuantity} free tees`
+}
+
 function BundleSection({
   currentCartQuantity,
   eligibleNow,
@@ -621,39 +699,58 @@ function BundleSection({
   availableGiftVariants: AvailableGiftVariant[]
   loadingGiftVariants: boolean
 }) {
-  // لو مفيش عرض متاح خالص ولا حتى قريب منه، منعرضش حاجة
-  if (!eligibleNow && !nextTier) return null
+  // لو مفيش أي تير خالص متعرف في النظام، منعرضش حاجة
+  if (TIERS.length === 0) return null
 
-  const activeTier = eligibleNow || nextTier!
-  const remaining  = activeTier.triggerQuantity - currentCartQuantity
+  // كل التيرز مرتبة تصاعدي عشان نرسم البار من الأصغر للأكبر
+  const sortedTiers = TIERS.slice().sort((a, b) => a.triggerQuantity - b.triggerQuantity)
+  const maxTrigger = sortedTiers[sortedTiers.length - 1].triggerQuantity
+  const fillPercent = Math.min(100, (currentCartQuantity / maxTrigger) * 100)
+
+  // أعلى تير متبقي بعد آخر تير محقق — ده اللي بنوريله "كمان X تضيف"
+  const upcomingTier = sortedTiers.find((t) => t.triggerQuantity > currentCartQuantity) ?? null
+  const remaining = upcomingTier ? upcomingTier.triggerQuantity - currentCartQuantity : 0
 
   return (
     <div className={`bundle-box ${eligibleNow ? "eligible" : ""}`}>
-      {!eligibleNow && nextTier && (
-        <>
-          <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
-            🎁 Add <span style={{ color: ACCENT }}>{remaining}</span> more to unlock {nextTier.freeQuantity === 1 ? "a free tee" : `${nextTier.freeQuantity} free tees`}
-          </p>
-          <div className="bundle-track">
-            <div className="bundle-fill" style={{ width: `${Math.min(100, (currentCartQuantity / nextTier.triggerQuantity) * 100)}%` }} />
-          </div>
-        </>
+      {/* رسالة الحالة الحالية — دايمًا واضحة سواء لسه مفيش عرض اتحقق أو خدت عرض وفيه عرض أكبر جاي */}
+      {upcomingTier ? (
+        <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
+          🎁 {eligibleNow ? "One more and" : "Add"} <span style={{ color: ACCENT }}>{remaining}</span> more to unlock {upcomingTier.freeQuantity === 1 ? "a free tee" : `${upcomingTier.freeQuantity} free tees`}
+        </p>
+      ) : (
+        <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: ACCENT, margin: 0 }}>
+          🎉 Max offer unlocked — {activeFreeQty(eligibleNow)}
+        </p>
       )}
+
+      {/* بار موحّد بيوري كل المراحل مع بعض */}
+      <div className="tier-progress">
+        <div className="tier-progress-track">
+          <div className="tier-progress-fill" style={{ width: `${fillPercent}%` }} />
+          {sortedTiers.map((t) => {
+            const reached = currentCartQuantity >= t.triggerQuantity
+            const leftPct = (t.triggerQuantity / maxTrigger) * 100
+            return (
+              <React.Fragment key={t.triggerQuantity}>
+                <div
+                  className={`tier-progress-marker ${reached ? "reached" : ""}`}
+                  style={{ left: `${leftPct}%` }}
+                />
+                <span
+                  className={`tier-progress-label ${reached ? "reached" : ""}`}
+                  style={{ left: `${leftPct}%` }}
+                >
+                  {t.triggerQuantity} = +{t.freeQuantity}
+                </span>
+              </React.Fragment>
+            )
+          })}
+        </div>
+      </div>
 
       {eligibleNow && (
         <>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-            <span style={{ fontSize: "13px" }}>🎉</span>
-            <p style={{ fontSize: "11px", fontFamily: "Cormorant Garamond, serif", color: ACCENT, margin: 0 }}>
-              {eligibleNow.freeQuantity === 1 ? "You've unlocked a free tee" : `You've unlocked ${eligibleNow.freeQuantity} free tees`}
-            </p>
-          </div>
-          <div className="bundle-dots">
-            {Array.from({ length: eligibleNow.triggerQuantity }).map((_, i) => (
-              <div key={i} className={`bundle-dot ${i < currentCartQuantity ? "filled" : ""}`} />
-            ))}
-          </div>
-
           <div className="gift-picker" style={{ marginTop: "18px" }}>
             {loadingGiftVariants ? (
               <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)" }}>Loading options...</p>
