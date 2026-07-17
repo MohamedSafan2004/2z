@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useCart } from "@/lib/store/cart"
 import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
@@ -18,11 +18,29 @@ const paymentMethods = [
 ]
 
 const zones: ShippingZone[] = ["cairo", "giza"]
+const COLORS = ["BLACK", "WHITE", "GREY", "BEIGE"]
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+// عتبات العروض — لازم تتطابق مع الـ Promotion rows في الداتابيز
+const TIERS = [
+  { triggerQuantity: 3, freeQuantity: 2 },
+  { triggerQuantity: 2, freeQuantity: 1 },
+].sort((a, b) => b.triggerQuantity - a.triggerQuantity)
+
+function getEligibleTier(paidQuantity: number) {
+  return TIERS.find((t) => paidQuantity >= t.triggerQuantity) ?? null
+}
+
+interface AvailableVariant {
+  variantId: string
+  color: string
+  size: string
+  productName: string
+}
+
 export default function CheckoutPage() {
-  const { items, gifts, total, clearCart } = useCart()
+  const { items, gifts, total, clearCart, setGift } = useCart()
   const { user, token } = useAuth()
   const router = useRouter()
 
@@ -42,6 +60,13 @@ export default function CheckoutPage() {
   const [promoError, setPromoError]       = useState("")
   const [promoSuccess, setPromoSuccess]   = useState("")
 
+  const [availableVariants, setAvailableVariants] = useState<AvailableVariant[]>([])
+  const [loadingVariants, setLoadingVariants] = useState(false)
+  const [skipGift, setSkipGift] = useState(false)
+
+  const itemCount = useMemo(() => items.reduce((sum, i) => sum + i.quantity, 0), [items])
+  const eligibleTier = useMemo(() => getEligibleTier(itemCount), [itemCount])
+
   useEffect(() => {
     if (user?.name)  setName(user.name)
     if (user?.email) setEmail(user.email)
@@ -57,16 +82,27 @@ export default function CheckoutPage() {
     }
   }, [phone])
 
+  useEffect(() => {
+    if (!eligibleTier) return
+    setLoadingVariants(true)
+    fetch("/api/products/gift-variants")
+      .then((res) => res.json())
+      .then((data) => setAvailableVariants(data.variants || []))
+      .catch(() => setAvailableVariants([]))
+      .finally(() => setLoadingVariants(false))
+  }, [eligibleTier])
+
   const validGifts = gifts.filter((g) => g && g.variantId)
-  const subtotal       = total()
-  // خصم الـ bundle بيتحسب هنا بس للعرض (السيرفر هو اللي بيحسب الرقم الحقيقي والملزم)
-  const promotionValue = validGifts.reduce((sum, g) => {
+  const giftsComplete = !!eligibleTier && validGifts.length === eligibleTier.freeQuantity
+
+  const subtotal        = total()
+  const promotionValue  = validGifts.reduce((sum, g) => {
     const matchingItem = items.find((i) => i.color === g.color && i.size === g.size)
     return sum + (matchingItem?.price || items[0]?.price || 0)
   }, 0)
   const discountValue = promoApplied ? Math.round(((subtotal - promotionValue) * promoDiscount) / 100) : 0
-  const shippingCost  = zone ? SHIPPING_RATES[zone] : 0
-  const finalTotal     = subtotal - promotionValue - discountValue + shippingCost
+  const shippingCost   = zone ? SHIPPING_RATES[zone] : 0
+  const finalTotal      = subtotal - promotionValue - discountValue + shippingCost
 
   const handleApplyPromo = async () => {
     if (promoLoading) return
@@ -143,6 +179,10 @@ export default function CheckoutPage() {
       setError("Please select your delivery zone")
       return
     }
+    if (eligibleTier && !giftsComplete && !skipGift) {
+      setError("من فضلك اختار هديتك المجانية، أو دوس تخطي الهدية")
+      return
+    }
 
     setLoading(true)
     setError("")
@@ -156,7 +196,7 @@ export default function CheckoutPage() {
         },
         body: JSON.stringify({
           items: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
-          giftSelections: validGifts.map((g) => ({ variantId: g.variantId })),
+          giftSelections: giftsComplete ? validGifts.map((g) => ({ variantId: g.variantId })) : [],
           address: trimmedAddress,
           phone: trimmedPhone,
           email: trimmedEmail,
@@ -208,12 +248,130 @@ export default function CheckoutPage() {
 
   return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>
+      <style>{`
+        @keyframes giftPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(200,240,79,0.15); } 50% { box-shadow: 0 0 0 6px rgba(200,240,79,0); } }
+        .gift-box {
+          border: 1px solid rgba(200,240,79,0.35);
+          background: linear-gradient(180deg, rgba(200,240,79,0.05) 0%, rgba(200,240,79,0.01) 100%);
+          animation: giftPulse 2.5s ease infinite;
+          animation-delay: 1s;
+        }
+        .gift-select {
+          background: #080808;
+          border: 1px solid rgba(240,237,230,0.2);
+          color: #f0ede6;
+          font-family: 'Space Mono', monospace;
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          padding: 10px 8px;
+          width: 100%;
+          cursor: pointer;
+        }
+        .gift-select:focus { outline: none; border-color: ${ACCENT}; }
+        @media (min-width: 768px) { .checkout-grid { grid-template-columns: 1fr 360px !important; gap: 64px !important; } }
+      `}</style>
+
       <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "80px 24px 60px" }}>
 
         <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "6px" }}>Almost there</p>
-        <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "40px", fontWeight: 300, color: "#f0ede6", marginBottom: "48px" }}>Checkout</h1>
+        <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "40px", fontWeight: 300, color: "#f0ede6", marginBottom: "32px" }}>Checkout</h1>
 
-        <style>{`@media (min-width: 768px) { .checkout-grid { grid-template-columns: 1fr 360px !important; gap: 64px !important; } }`}</style>
+        {/* ── GIFT SELECTOR — أول حاجة العميل يشوفها لو مستحق عرض ── */}
+        {eligibleTier && !skipGift && (
+          <div className="gift-box" style={{ padding: "22px 20px", marginBottom: "40px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ fontSize: "14px" }}>🎉</span>
+                <p style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: ACCENT, margin: 0 }}>
+                  {eligibleTier.freeQuantity === 1 ? "عندك قطعة مجانية" : `عندك ${eligibleTier.freeQuantity} قطع مجانية`}
+                </p>
+              </div>
+              <button
+                onClick={() => setSkipGift(true)}
+                style={{ fontSize: "8px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
+              >
+                تخطي
+              </button>
+            </div>
+            <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", marginBottom: "18px", letterSpacing: "0.03em" }}>
+              اختار اللون والمقاس بتاع هديتك قبل ما تكمل
+            </p>
+
+            {loadingVariants ? (
+              <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)" }}>...جاري التحميل</p>
+            ) : (
+              Array.from({ length: eligibleTier.freeQuantity }).map((_, idx) => {
+                const currentGift = gifts[idx]
+                const colorOptions = COLORS.filter((c) => availableVariants.some((v) => v.color === c))
+                const sizeOptionsForColor = currentGift?.color
+                  ? availableVariants.filter((v) => v.color === currentGift.color).map((v) => v.size)
+                  : []
+
+                return (
+                  <div key={idx} style={{ marginBottom: idx < eligibleTier.freeQuantity - 1 ? "14px" : 0 }}>
+                    <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "6px" }}>
+                      هدية {eligibleTier.freeQuantity > 1 ? idx + 1 : ""}
+                    </p>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                      <select
+                        className="gift-select"
+                        value={currentGift?.color || ""}
+                        onChange={(e) => {
+                          const color = e.target.value
+                          const firstAvailable = availableVariants.find((v) => v.color === color)
+                          setGift(idx, {
+                            variantId: firstAvailable?.variantId || "",
+                            productName: firstAvailable?.productName || "Oversize T-Shirt",
+                            color,
+                            size: firstAvailable?.size || "",
+                          })
+                        }}
+                      >
+                        <option value="">اختار اللون</option>
+                        {colorOptions.map((c) => (
+                          <option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>
+                        ))}
+                      </select>
+
+                      <select
+                        className="gift-select"
+                        value={currentGift?.size || ""}
+                        disabled={!currentGift?.color}
+                        onChange={(e) => {
+                          const size = e.target.value
+                          const variant = availableVariants.find((v) => v.color === currentGift?.color && v.size === size)
+                          if (currentGift) {
+                            setGift(idx, { ...currentGift, variantId: variant?.variantId || "", size })
+                          }
+                        }}
+                        style={{ opacity: currentGift?.color ? 1 : 0.4, cursor: currentGift?.color ? "pointer" : "not-allowed" }}
+                      >
+                        <option value="">المقاس</option>
+                        {sizeOptionsForColor.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        )}
+
+        {eligibleTier && skipGift && (
+          <div style={{ border: "1px solid rgba(240,237,230,0.1)", padding: "14px 18px", marginBottom: "40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.05em" }}>هتكمل من غير هديتك المجانية</p>
+            <button
+              onClick={() => setSkipGift(false)}
+              style={{ fontSize: "8px", letterSpacing: "0.1em", textTransform: "uppercase", color: ACCENT, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
+            >
+              رجّعها
+            </button>
+          </div>
+        )}
+
         <div className="checkout-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", alignItems: "start" }}>
 
           <div>
@@ -340,7 +498,7 @@ export default function CheckoutPage() {
             ))}
 
             {/* Gift line items */}
-            {validGifts.map((g, idx) => (
+            {giftsComplete && validGifts.map((g, idx) => (
               <div key={`gift-${idx}`} style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", gap: "12px" }}>
                 <div>
                   <p style={{ fontSize: "11px", fontFamily: "Cormorant Garamond, serif", color: "#f0ede6" }}>🎁 {g.productName}</p>
@@ -408,7 +566,7 @@ export default function CheckoutPage() {
                 <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.5)" }}>{subtotal} EGP</span>
               </div>
 
-              {validGifts.length > 0 && (
+              {giftsComplete && (
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                   <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: ACCENT }}>Free Gift ({validGifts.length}x)</span>
                   <span style={{ fontSize: "11px", color: ACCENT }}>− {promotionValue} EGP</span>
