@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/lib/store/cart"
@@ -40,14 +40,27 @@ const colorImages: Record<string, string[]> = {
 
 const SIZE_CHART_IMAGE = "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/size-chart.jpg"
 
-// بتضيف تحويلات Cloudinary (ضغط تلقائي + تحويل لـ WebP لو المتصفح بيدعمه + تصغير المقاس)
-// من غير ما تلمس الصورة الأصلية على Cloudinary — بس بترجع نسخة أخف في نفس الرابط.
 function optimizeCloudinaryUrl(url: string, width: number): string {
   return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`)
 }
 
 const sizes = ["M", "L", "XL"]
+const colorsList = ["BLACK", "WHITE", "GREY", "BEIGE"]
 const LOW_STOCK_THRESHOLD = 3
+const ACCENT = "#c8f04f"
+
+// عتبات العروض — لازم تتطابق مع الـ Promotion rows في الداتابيز
+const TIERS = [
+  { triggerQuantity: 3, freeQuantity: 2 },
+  { triggerQuantity: 2, freeQuantity: 1 },
+].sort((a, b) => b.triggerQuantity - a.triggerQuantity)
+
+function getEligibleTier(paidQuantity: number) {
+  return TIERS.find((t) => paidQuantity >= t.triggerQuantity) ?? null
+}
+function getNextTier(paidQuantity: number) {
+  return TIERS.slice().sort((a, b) => a.triggerQuantity - b.triggerQuantity).find((t) => t.triggerQuantity > paidQuantity) ?? null
+}
 
 interface Variant {
   id: string
@@ -75,6 +88,13 @@ interface SuggestedProduct {
   variants: { id: string; color: string; size: string; stockQuantity: number }[]
 }
 
+interface AvailableGiftVariant {
+  variantId: string
+  color: string
+  size: string
+  productName: string
+}
+
 export default function ProductDetailClient({
   product,
   suggestedProducts = [],
@@ -89,7 +109,7 @@ export default function ProductDetailClient({
   const [imgIndex, setImgIndex] = useState(0)
   const [sizeChartOpen, setSizeChartOpen] = useState(false)
   const [buying, setBuying] = useState(false)
-  const { addItem, items } = useCart()
+  const { addItem, items, gifts, setGift, paidQuantity } = useCart()
   const router = useRouter()
 
   const selectedVariant   = variants.find((v) => v.size === selectedSize)
@@ -104,17 +124,36 @@ export default function ProductDetailClient({
   const images = colorImages[productColor] || colorImages.BLACK
   const img = images[imgIndex] || images[0]
 
-  // preload لباقي صور نفس المنتج (بمقاس مضغوط) بعد ما الصفحة تخلص تحميل —
-  // مش فوراً، عشان الصورة الرئيسية تاخد الأولوية في الـ bandwidth الأول.
+  // ─── Bundle progress ────────────────────────────────────────────────────
+  // بيحسب على إجمالي قطع الكارت الحالي + القطعة اللي هيضيفها دلوقتي (لو مختار size)
+  const projectedQuantity = paidQuantity() + (selectedSize && !isSoldOut ? quantity : 0)
+  const currentCartQuantity = paidQuantity()
+
+  const eligibleNow  = useMemo(() => getEligibleTier(currentCartQuantity), [currentCartQuantity])
+  const eligibleNext = useMemo(() => getEligibleTier(projectedQuantity), [projectedQuantity])
+  const nextTier      = useMemo(() => getNextTier(currentCartQuantity), [currentCartQuantity])
+
+  const [availableGiftVariants, setAvailableGiftVariants] = useState<AvailableGiftVariant[]>([])
+  const [loadingGiftVariants, setLoadingGiftVariants] = useState(false)
+
+  useEffect(() => {
+    if (!eligibleNow) return
+    setLoadingGiftVariants(true)
+    fetch("/api/products/gift-variants")
+      .then((res) => res.json())
+      .then((data) => setAvailableGiftVariants(data.variants || []))
+      .catch(() => setAvailableGiftVariants([]))
+      .finally(() => setLoadingGiftVariants(false))
+  }, [eligibleNow])
+
   React.useEffect(() => {
     const preloadRest = () => {
       images.forEach((src, i) => {
-        if (i === 0) return // دي بالفعل بتتحمل كـ الصورة الرئيسية
+        if (i === 0) return
         const preloadImg = new window.Image()
         preloadImg.src = optimizeCloudinaryUrl(src, 900)
       })
     }
-
     if (document.readyState === "complete") {
       const timer = setTimeout(preloadRest, 300)
       return () => clearTimeout(timer)
@@ -125,10 +164,7 @@ export default function ProductDetailClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productColor])
 
-  const goToImage = (index: number) => {
-    setImgIndex(index)
-  }
-
+  const goToImage = (index: number) => setImgIndex(index)
   const nextImage = () => goToImage((imgIndex + 1) % images.length)
   const prevImage = () => goToImage((imgIndex - 1 + images.length) % images.length)
 
@@ -157,12 +193,10 @@ export default function ProductDetailClient({
   }
 
   const handleBuyNow = () => {
-    if (buying) return // منع الدوسة المزدوجة
+    if (buying) return
     const variant = variants.find((v) => v.size === selectedSize)
     if (!variant || variant.stockQuantity === 0) return
 
-    // لو الكمية المطلوبة أكبر من اللي موجود بالفعل في الكارت لنفس الـ variant،
-    // نضيف بس الفرق. لو هو أصلاً حاطط كل الكمية دي في الكارت قبل كده، منضيفش حاجة تانية.
     const alreadyInCart = items.find((i) => i.variantId === variant.id)?.quantity ?? 0
     const toAdd = quantity - alreadyInCart
 
@@ -187,6 +221,9 @@ export default function ProductDetailClient({
       <style>{`
         @media (min-width: 768px) { .product-grid { grid-template-columns: 1fr 1fr !important; gap: 64px !important; } }
         @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+        @keyframes giftGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(200,240,79,0.15); } 50% { box-shadow: 0 0 0 6px rgba(200,240,79,0); } }
+        @keyframes slideDown { from { opacity: 0; max-height: 0; transform: translateY(-6px); } to { opacity: 1; max-height: 600px; transform: translateY(0); } }
+        @keyframes checkPop { 0% { transform: scale(0); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
 
         .img-nav-btn {
           position: absolute; top: 50%; transform: translateY(-50%);
@@ -215,6 +252,38 @@ export default function ProductDetailClient({
           .suggested-price { font-size: 13px; }
           .suggested-orig  { font-size: 11px; }
         }
+
+        /* ── Bundle progress bar ── */
+        .bundle-box {
+          border: 1px solid rgba(240,237,230,0.12);
+          padding: 16px 18px;
+          margin-bottom: 10px;
+          transition: border-color 0.3s ease;
+        }
+        .bundle-box.eligible {
+          border-color: rgba(200,240,79,0.4);
+          animation: giftGlow 2.5s ease infinite;
+          animation-delay: 1s;
+        }
+        .bundle-track { height: 4px; background: rgba(240,237,230,0.08); width: 100%; overflow: hidden; border-radius: 2px; margin-top: 10px; }
+        .bundle-fill { height: 100%; background: ${ACCENT}; transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 2px; }
+        .bundle-dots { display: flex; gap: 4px; margin-top: 8px; }
+        .bundle-dot { flex: 1; height: 3px; border-radius: 2px; background: rgba(240,237,230,0.1); transition: background 0.3s ease; }
+        .bundle-dot.filled { background: ${ACCENT}; }
+
+        /* ── Gift picker ── */
+        .gift-picker { animation: slideDown 0.4s ease both; overflow: hidden; }
+        .gift-swatch {
+          width: 32px; height: 32px; border-radius: 50%;
+          cursor: pointer; position: relative; flex-shrink: 0;
+          transition: all 0.2s;
+        }
+        .gift-size-btn {
+          min-width: 38px; height: 34px; padding: 0 8px; font-size: 10px;
+          font-family: 'Space Mono', monospace; letter-spacing: 0.05em;
+          cursor: pointer; transition: all 0.15s; background: transparent;
+        }
+        .check-pop { animation: checkPop 0.3s ease; }
       `}</style>
 
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "70px 20px 80px" }}>
@@ -378,10 +447,23 @@ export default function ProductDetailClient({
                 color: (quantityDisabled || buying) ? "rgba(240,237,230,0.2)" : "#f0ede6",
                 border: `1px solid ${(quantityDisabled || buying) ? "rgba(240,237,230,0.1)" : "rgba(240,237,230,0.4)"}`,
                 transition: "all 0.3s",
+                marginBottom: "16px",
               }}
             >
               {buying ? "Redirecting…" : "Buy It Now"}
             </button>
+
+            {/* ── BUNDLE PROGRESS + GIFT PICKER ── */}
+            <BundleSection
+              currentCartQuantity={currentCartQuantity}
+              eligibleNow={eligibleNow}
+              nextTier={nextTier}
+              gifts={gifts}
+              setGift={setGift}
+              availableGiftVariants={availableGiftVariants}
+              loadingGiftVariants={loadingGiftVariants}
+            />
+
           </div>
 
         </div>
@@ -467,6 +549,183 @@ export default function ProductDetailClient({
             />
           </div>
         </div>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Bundle progress bar + inline gift picker (lives right under Buy It Now)
+// ─────────────────────────────────────────────────────────────────────────
+
+const SWATCH_COLORS: Record<string, string> = {
+  BLACK: "#1a1a1a",
+  WHITE: "#f0ede6",
+  GREY:  "#8a8a85",
+  BEIGE: "#d8c8a8",
+}
+
+function BundleSection({
+  currentCartQuantity,
+  eligibleNow,
+  nextTier,
+  gifts,
+  setGift,
+  availableGiftVariants,
+  loadingGiftVariants,
+}: {
+  currentCartQuantity: number
+  eligibleNow: { triggerQuantity: number; freeQuantity: number } | null
+  nextTier: { triggerQuantity: number; freeQuantity: number } | null
+  gifts: { variantId: string; productName: string; color: string; size: string }[]
+  setGift: (index: number, gift: { variantId: string; productName: string; color: string; size: string }) => void
+  availableGiftVariants: AvailableGiftVariant[]
+  loadingGiftVariants: boolean
+}) {
+  // لو مفيش عرض متاح خالص ولا حتى قريب منه، منعرضش حاجة
+  if (!eligibleNow && !nextTier) return null
+
+  const activeTier = eligibleNow || nextTier!
+  const remaining  = activeTier.triggerQuantity - currentCartQuantity
+
+  return (
+    <div className={`bundle-box ${eligibleNow ? "eligible" : ""}`}>
+      {!eligibleNow && nextTier && (
+        <>
+          <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
+            🎁 Add <span style={{ color: ACCENT }}>{remaining}</span> more to unlock {nextTier.freeQuantity === 1 ? "a free tee" : `${nextTier.freeQuantity} free tees`}
+          </p>
+          <div className="bundle-track">
+            <div className="bundle-fill" style={{ width: `${Math.min(100, (currentCartQuantity / nextTier.triggerQuantity) * 100)}%` }} />
+          </div>
+        </>
+      )}
+
+      {eligibleNow && (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+            <span style={{ fontSize: "13px" }}>🎉</span>
+            <p style={{ fontSize: "11px", fontFamily: "Cormorant Garamond, serif", color: ACCENT, margin: 0 }}>
+              {eligibleNow.freeQuantity === 1 ? "You've unlocked a free tee" : `You've unlocked ${eligibleNow.freeQuantity} free tees`}
+            </p>
+          </div>
+          <div className="bundle-dots">
+            {Array.from({ length: eligibleNow.triggerQuantity }).map((_, i) => (
+              <div key={i} className={`bundle-dot ${i < currentCartQuantity ? "filled" : ""}`} />
+            ))}
+          </div>
+
+          <div className="gift-picker" style={{ marginTop: "18px" }}>
+            {loadingGiftVariants ? (
+              <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)" }}>Loading options...</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+                {Array.from({ length: eligibleNow.freeQuantity }).map((_, idx) => {
+                  const currentGift = gifts[idx]
+                  const colorOptions = colorsList.filter((c) => availableGiftVariants.some((v) => v.color === c))
+                  const sizeOptionsForColor = currentGift?.color
+                    ? availableGiftVariants.filter((v) => v.color === currentGift.color).map((v) => v.size)
+                    : []
+                  const isDone = !!currentGift?.variantId
+
+                  return (
+                    <div key={idx}>
+                      {eligibleNow.freeQuantity > 1 && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "10px" }}>
+                          <div className={isDone ? "check-pop" : ""} style={{
+                            width: "15px", height: "15px", borderRadius: "50%", flexShrink: 0,
+                            border: `1px solid ${isDone ? ACCENT : "rgba(240,237,230,0.25)"}`,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            background: isDone ? ACCENT : "transparent",
+                          }}>
+                            {isDone && <span style={{ fontSize: "9px", color: "#080808", lineHeight: 1 }}>✓</span>}
+                          </div>
+                          <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", margin: 0 }}>
+                            Free Gift {idx + 1}
+                          </p>
+                        </div>
+                      )}
+
+                      <div style={{ display: "flex", gap: "18px", flexWrap: "wrap" }}>
+                        <div>
+                          <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "7px" }}>
+                            {currentGift?.color ? currentGift.color.charAt(0) + currentGift.color.slice(1).toLowerCase() : "Color"}
+                          </p>
+                          <div style={{ display: "flex", gap: "8px" }}>
+                            {colorOptions.map((c) => {
+                              const isSelected = currentGift?.color === c
+                              return (
+                                <button
+                                  key={c}
+                                  className="gift-swatch"
+                                  onClick={() => {
+                                    const firstAvailable = availableGiftVariants.find((v) => v.color === c)
+                                    setGift(idx, {
+                                      variantId: firstAvailable?.variantId || "",
+                                      productName: firstAvailable?.productName || "Oversize T-Shirt",
+                                      color: c,
+                                      size: firstAvailable?.size || "",
+                                    })
+                                  }}
+                                  aria-label={c}
+                                  style={{
+                                    background: SWATCH_COLORS[c],
+                                    border: isSelected ? `2px solid ${ACCENT}` : "1px solid rgba(240,237,230,0.2)",
+                                    boxShadow: isSelected ? "0 0 0 3px rgba(200,240,79,0.15)" : "none",
+                                  }}
+                                >
+                                  {isSelected && (
+                                    <span style={{
+                                      position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                                      color: c === "WHITE" || c === "BEIGE" ? "#080808" : "#f0ede6", fontSize: "11px",
+                                    }}>✓</span>
+                                  )}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+
+                        <div>
+                          <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "7px" }}>
+                            Size
+                          </p>
+                          <div style={{ display: "flex", gap: "6px", opacity: currentGift?.color ? 1 : 0.35 }}>
+                            {sizes.map((s) => {
+                              const isAvailable = sizeOptionsForColor.includes(s)
+                              const isSelected = currentGift?.size === s
+                              const disabled = !currentGift?.color || !isAvailable
+                              return (
+                                <button
+                                  key={s}
+                                  className="gift-size-btn"
+                                  disabled={disabled}
+                                  onClick={() => {
+                                    const variant = availableGiftVariants.find((v) => v.color === currentGift?.color && v.size === s)
+                                    if (currentGift) setGift(idx, { ...currentGift, variantId: variant?.variantId || "", size: s })
+                                  }}
+                                  style={{
+                                    cursor: disabled ? "not-allowed" : "pointer",
+                                    background: isSelected ? ACCENT : "transparent",
+                                    color: !isAvailable ? "rgba(240,237,230,0.15)" : isSelected ? "#080808" : "#f0ede6",
+                                    border: isSelected ? `1px solid ${ACCENT}` : "1px solid rgba(240,237,230,0.15)",
+                                    textDecoration: !isAvailable && currentGift?.color ? "line-through" : "none",
+                                  }}
+                                >
+                                  {s}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   )
