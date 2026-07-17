@@ -284,13 +284,52 @@ export default function ProductDetailClient({
           cursor: pointer; transition: all 0.15s; background: transparent;
         }
         .check-pop { animation: checkPop 0.3s ease; }
+
+        /* ── Promo banner (top of product page) ── */
+        @keyframes fadeSlide {
+          0%, 45%   { opacity: 1; transform: translateY(0); }
+          50%       { opacity: 0; transform: translateY(-6px); }
+          55%       { opacity: 0; transform: translateY(6px); }
+          100%      { opacity: 1; transform: translateY(0); }
+        }
+        .promo-banner {
+          border: 1px solid rgba(200,240,79,0.25);
+          background: linear-gradient(90deg, rgba(200,240,79,0.06) 0%, rgba(200,240,79,0.02) 100%);
+          padding: 11px 16px;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          overflow: hidden;
+          position: relative;
+        }
+        .promo-banner-track {
+          position: relative;
+          height: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .promo-banner-slide {
+          position: absolute;
+          white-space: nowrap;
+          font-size: 9px;
+          letterSpacing: 0.15em;
+          color: ${ACCENT};
+          font-family: 'Space Mono', monospace;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+        }
       `}</style>
 
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "70px 20px 80px" }}>
 
-        <Link href="/products" style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", textDecoration: "none", marginBottom: "32px", display: "inline-block" }}>
+        <Link href="/products" style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", textDecoration: "none", marginBottom: "20px", display: "inline-block" }}>
           ← Back to Products
         </Link>
+
+        <PromoBanner />
 
         <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", marginTop: "24px" }}>
 
@@ -727,6 +766,47 @@ function BundleSection({
           </div>
         </>
       )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Promo banner — rotating announcement at top of product page
+// ─────────────────────────────────────────────────────────────────────────
+
+const PROMO_MESSAGES = [
+  "🎁  Buy 2 — Get 1 Free",
+  "🎁  Buy 3 — Get 2 Free",
+]
+
+function PromoBanner() {
+  const [index, setIndex] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((i) => (i + 1) % PROMO_MESSAGES.length)
+    }, 3200)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div className="promo-banner">
+      <div className="promo-banner-track" style={{ width: "100%" }}>
+        {PROMO_MESSAGES.map((msg, i) => (
+          <span
+            key={i}
+            className="promo-banner-slide"
+            style={{
+              opacity: i === index ? 1 : 0,
+              transform: i === index ? "translateY(0)" : "translateY(6px)",
+              transition: "opacity 0.4s ease, transform 0.4s ease",
+              pointerEvents: i === index ? "auto" : "none",
+            }}
+          >
+            {msg}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }
