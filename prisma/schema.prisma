@@ -65,6 +65,7 @@ model Order {
   userId                String?
   totalAmount           Decimal
   discountAmount        Decimal       @default(0)
+  promotionDiscount     Decimal       @default(0)
   shippingCost          Decimal       @default(0)
   shippingZone          String?
   promoCode             String?
@@ -102,6 +103,7 @@ model OrderItem {
   colorSnapshot       String
   sizeSnapshot        String
   quantity            Int
+  isGift              Boolean        @default(false)
   order               Order          @relation(fields: [orderId], references: [id])
   variant             ProductVariant @relation(fields: [variantId], references: [id])
 }
@@ -133,6 +135,17 @@ model PromoCodeUsage {
   @@index([promoCodeId])
   @@index([phone])
   @@index([userId])
+}
+
+model Promotion {
+  id              String        @id @default(cuid())
+  type            PromotionType @default(BUY_X_GET_Y_FREE)
+  triggerQuantity Int
+  freeQuantity    Int
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+
+  @@index([isActive])
 }
 
 enum Role {
@@ -172,4 +185,8 @@ enum PaymentStatus {
 enum PaymentMethod {
   COD
   INSTAPAY
+}
+
+enum PromotionType {
+  BUY_X_GET_Y_FREE
 }

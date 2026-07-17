@@ -62,3 +62,8 @@ export type PromoCode = Prisma.PromoCodeModel
  * 
  */
 export type PromoCodeUsage = Prisma.PromoCodeUsageModel
+/**
+ * Model Promotion
+ * 
+ */
+export type Promotion = Prisma.PromotionModel

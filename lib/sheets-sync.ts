@@ -49,24 +49,34 @@ export async function appendToSalesSheet(order: any) {
     let nextRow = lastDataRow + 3
     const sheetId = await getSheetId(sheets, spreadsheetId, SALES_SHEET)
 
-    // subtotal الحقيقي بتاع المنتجات بس (من غير شحن) — عشان نحسب نسبة الخصم صح
-    const productsSubtotal = order.items.reduce(
+    // subtotal الحقيقي بتاع المنتجات المدفوعة بس (مش الهدايا، من غير شحن) — عشان نحسب نسبة الخصم صح
+    const paidItems = order.items.filter((it: any) => !it.isGift)
+    const productsSubtotal = paidItems.reduce(
       (sum: number, it: any) => sum + Number(it.priceSnapshot) * it.quantity,
       0
     )
+
+    // نسبة خصم الكود بس (مش خصم الـ bundle) — عشان عمود "نسبة الخصم" يفضل يعبر عن الكود لوحده
     const discount = order.discountAmount && order.promoCode && productsSubtotal > 0
-      ? Number(order.discountAmount) / productsSubtotal * 100
+      ? (Number(order.discountAmount) / productsSubtotal) * 100
       : 0
 
-    for (const item of order.items) {
+    const shippingCost = Number(order.shippingCost || 0)
+
+    for (let idx = 0; idx < order.items.length; idx++) {
+      const item = order.items[idx]
+      const isLastRow = idx === order.items.length - 1
+
       const variant = await db.productVariant.findUnique({
         where: { id: item.variantId },
       })
 
-      const unitPrice  = Number(item.priceSnapshot)
-      const quantity   = item.quantity
-      const finalPrice = unitPrice * quantity * (1 - discount / 100)
-      const revenue    = finalPrice
+      const unitPrice = Number(item.priceSnapshot)
+      const quantity = item.quantity
+
+      // الهدية سعرها صفر أصلاً — مفيش خصم كود ينطبق عليها، والإيراد منها = 0
+      const finalPrice = item.isGift ? 0 : unitPrice * quantity * (1 - discount / 100)
+      const revenue = finalPrice
 
       const date = new Date(order.createdAt).toLocaleDateString("ar-EG", {
         day: "2-digit", month: "2-digit", year: "numeric",
@@ -76,24 +86,29 @@ export async function appendToSalesSheet(order: any) {
         ? `INV-${String(order.invoiceNumber).padStart(4, "0")}`
         : order.id.slice(0, 8).toUpperCase()
 
+      const productName = item.isGift
+        ? `${item.productNameSnapshot} (هدية)`
+        : item.productNameSnapshot
+
       const row = [
         date,
         variant?.sku || item.variantId.slice(0, 8).toUpperCase(),
-        item.productNameSnapshot,
+        productName,
         item.colorSnapshot,
         item.sizeSnapshot,
         quantity,
         unitPrice,
-        discount.toFixed(1),
+        item.isGift ? 0 : discount.toFixed(1),
         finalPrice.toFixed(2),
         revenue.toFixed(2),
         invoiceNum,
+        isLastRow ? shippingCost : "", // L: الشحن — آخر صف بس من صفوف الأوردر
       ]
 
       // كتابة البيانات
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: `${SALES_SHEET}!A${nextRow}:K${nextRow}`,
+        range: `${SALES_SHEET}!A${nextRow}:L${nextRow}`,
         valueInputOption: "USER_ENTERED",
         requestBody: { values: [row] },
       })
@@ -110,7 +125,7 @@ export async function appendToSalesSheet(order: any) {
                   startRowIndex: nextRow - 1,
                   endRowIndex: nextRow,
                   startColumnIndex: 0,
-                  endColumnIndex: 11,
+                  endColumnIndex: 12,
                 },
                 cell: {
                   userEnteredFormat: {

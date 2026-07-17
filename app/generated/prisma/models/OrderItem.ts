@@ -45,6 +45,7 @@ export type OrderItemMinAggregateOutputType = {
   colorSnapshot: string | null
   sizeSnapshot: string | null
   quantity: number | null
+  isGift: boolean | null
 }
 
 export type OrderItemMaxAggregateOutputType = {
@@ -56,6 +57,7 @@ export type OrderItemMaxAggregateOutputType = {
   colorSnapshot: string | null
   sizeSnapshot: string | null
   quantity: number | null
+  isGift: boolean | null
 }
 
 export type OrderItemCountAggregateOutputType = {
@@ -67,6 +69,7 @@ export type OrderItemCountAggregateOutputType = {
   colorSnapshot: number
   sizeSnapshot: number
   quantity: number
+  isGift: number
   _all: number
 }
 
@@ -90,6 +93,7 @@ export type OrderItemMinAggregateInputType = {
   colorSnapshot?: true
   sizeSnapshot?: true
   quantity?: true
+  isGift?: true
 }
 
 export type OrderItemMaxAggregateInputType = {
@@ -101,6 +105,7 @@ export type OrderItemMaxAggregateInputType = {
   colorSnapshot?: true
   sizeSnapshot?: true
   quantity?: true
+  isGift?: true
 }
 
 export type OrderItemCountAggregateInputType = {
@@ -112,6 +117,7 @@ export type OrderItemCountAggregateInputType = {
   colorSnapshot?: true
   sizeSnapshot?: true
   quantity?: true
+  isGift?: true
   _all?: true
 }
 
@@ -210,6 +216,7 @@ export type OrderItemGroupByOutputType = {
   colorSnapshot: string
   sizeSnapshot: string
   quantity: number
+  isGift: boolean
   _count: OrderItemCountAggregateOutputType | null
   _avg: OrderItemAvgAggregateOutputType | null
   _sum: OrderItemSumAggregateOutputType | null
@@ -244,6 +251,7 @@ export type OrderItemWhereInput = {
   colorSnapshot?: Prisma.StringFilter<"OrderItem"> | string
   sizeSnapshot?: Prisma.StringFilter<"OrderItem"> | string
   quantity?: Prisma.IntFilter<"OrderItem"> | number
+  isGift?: Prisma.BoolFilter<"OrderItem"> | boolean
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
   variant?: Prisma.XOR<Prisma.ProductVariantScalarRelationFilter, Prisma.ProductVariantWhereInput>
 }
@@ -257,6 +265,7 @@ export type OrderItemOrderByWithRelationInput = {
   colorSnapshot?: Prisma.SortOrder
   sizeSnapshot?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  isGift?: Prisma.SortOrder
   order?: Prisma.OrderOrderByWithRelationInput
   variant?: Prisma.ProductVariantOrderByWithRelationInput
 }
@@ -273,6 +282,7 @@ export type OrderItemWhereUniqueInput = Prisma.AtLeast<{
   colorSnapshot?: Prisma.StringFilter<"OrderItem"> | string
   sizeSnapshot?: Prisma.StringFilter<"OrderItem"> | string
   quantity?: Prisma.IntFilter<"OrderItem"> | number
+  isGift?: Prisma.BoolFilter<"OrderItem"> | boolean
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
   variant?: Prisma.XOR<Prisma.ProductVariantScalarRelationFilter, Prisma.ProductVariantWhereInput>
 }, "id">
@@ -286,6 +296,7 @@ export type OrderItemOrderByWithAggregationInput = {
   colorSnapshot?: Prisma.SortOrder
   sizeSnapshot?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  isGift?: Prisma.SortOrder
   _count?: Prisma.OrderItemCountOrderByAggregateInput
   _avg?: Prisma.OrderItemAvgOrderByAggregateInput
   _max?: Prisma.OrderItemMaxOrderByAggregateInput
@@ -305,6 +316,7 @@ export type OrderItemScalarWhereWithAggregatesInput = {
   colorSnapshot?: Prisma.StringWithAggregatesFilter<"OrderItem"> | string
   sizeSnapshot?: Prisma.StringWithAggregatesFilter<"OrderItem"> | string
   quantity?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
+  isGift?: Prisma.BoolWithAggregatesFilter<"OrderItem"> | boolean
 }
 
 export type OrderItemCreateInput = {
@@ -314,6 +326,7 @@ export type OrderItemCreateInput = {
   colorSnapshot: string
   sizeSnapshot: string
   quantity: number
+  isGift?: boolean
   order: Prisma.OrderCreateNestedOneWithoutItemsInput
   variant: Prisma.ProductVariantCreateNestedOneWithoutOrderItemsInput
 }
@@ -327,6 +340,7 @@ export type OrderItemUncheckedCreateInput = {
   colorSnapshot: string
   sizeSnapshot: string
   quantity: number
+  isGift?: boolean
 }
 
 export type OrderItemUpdateInput = {
@@ -336,6 +350,7 @@ export type OrderItemUpdateInput = {
   colorSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   sizeSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isGift?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.OrderUpdateOneRequiredWithoutItemsNestedInput
   variant?: Prisma.ProductVariantUpdateOneRequiredWithoutOrderItemsNestedInput
 }
@@ -349,6 +364,7 @@ export type OrderItemUncheckedUpdateInput = {
   colorSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   sizeSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isGift?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type OrderItemCreateManyInput = {
@@ -360,6 +376,7 @@ export type OrderItemCreateManyInput = {
   colorSnapshot: string
   sizeSnapshot: string
   quantity: number
+  isGift?: boolean
 }
 
 export type OrderItemUpdateManyMutationInput = {
@@ -369,6 +386,7 @@ export type OrderItemUpdateManyMutationInput = {
   colorSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   sizeSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isGift?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type OrderItemUncheckedUpdateManyInput = {
@@ -380,6 +398,7 @@ export type OrderItemUncheckedUpdateManyInput = {
   colorSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   sizeSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isGift?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type OrderItemListRelationFilter = {
@@ -401,6 +420,7 @@ export type OrderItemCountOrderByAggregateInput = {
   colorSnapshot?: Prisma.SortOrder
   sizeSnapshot?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  isGift?: Prisma.SortOrder
 }
 
 export type OrderItemAvgOrderByAggregateInput = {
@@ -417,6 +437,7 @@ export type OrderItemMaxOrderByAggregateInput = {
   colorSnapshot?: Prisma.SortOrder
   sizeSnapshot?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  isGift?: Prisma.SortOrder
 }
 
 export type OrderItemMinOrderByAggregateInput = {
@@ -428,6 +449,7 @@ export type OrderItemMinOrderByAggregateInput = {
   colorSnapshot?: Prisma.SortOrder
   sizeSnapshot?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  isGift?: Prisma.SortOrder
 }
 
 export type OrderItemSumOrderByAggregateInput = {
@@ -526,6 +548,7 @@ export type OrderItemCreateWithoutVariantInput = {
   colorSnapshot: string
   sizeSnapshot: string
   quantity: number
+  isGift?: boolean
   order: Prisma.OrderCreateNestedOneWithoutItemsInput
 }
 
@@ -537,6 +560,7 @@ export type OrderItemUncheckedCreateWithoutVariantInput = {
   colorSnapshot: string
   sizeSnapshot: string
   quantity: number
+  isGift?: boolean
 }
 
 export type OrderItemCreateOrConnectWithoutVariantInput = {
@@ -577,6 +601,7 @@ export type OrderItemScalarWhereInput = {
   colorSnapshot?: Prisma.StringFilter<"OrderItem"> | string
   sizeSnapshot?: Prisma.StringFilter<"OrderItem"> | string
   quantity?: Prisma.IntFilter<"OrderItem"> | number
+  isGift?: Prisma.BoolFilter<"OrderItem"> | boolean
 }
 
 export type OrderItemCreateWithoutOrderInput = {
@@ -586,6 +611,7 @@ export type OrderItemCreateWithoutOrderInput = {
   colorSnapshot: string
   sizeSnapshot: string
   quantity: number
+  isGift?: boolean
   variant: Prisma.ProductVariantCreateNestedOneWithoutOrderItemsInput
 }
 
@@ -597,6 +623,7 @@ export type OrderItemUncheckedCreateWithoutOrderInput = {
   colorSnapshot: string
   sizeSnapshot: string
   quantity: number
+  isGift?: boolean
 }
 
 export type OrderItemCreateOrConnectWithoutOrderInput = {
@@ -633,6 +660,7 @@ export type OrderItemCreateManyVariantInput = {
   colorSnapshot: string
   sizeSnapshot: string
   quantity: number
+  isGift?: boolean
 }
 
 export type OrderItemUpdateWithoutVariantInput = {
@@ -642,6 +670,7 @@ export type OrderItemUpdateWithoutVariantInput = {
   colorSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   sizeSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isGift?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.OrderUpdateOneRequiredWithoutItemsNestedInput
 }
 
@@ -653,6 +682,7 @@ export type OrderItemUncheckedUpdateWithoutVariantInput = {
   colorSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   sizeSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isGift?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type OrderItemUncheckedUpdateManyWithoutVariantInput = {
@@ -663,6 +693,7 @@ export type OrderItemUncheckedUpdateManyWithoutVariantInput = {
   colorSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   sizeSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isGift?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type OrderItemCreateManyOrderInput = {
@@ -673,6 +704,7 @@ export type OrderItemCreateManyOrderInput = {
   colorSnapshot: string
   sizeSnapshot: string
   quantity: number
+  isGift?: boolean
 }
 
 export type OrderItemUpdateWithoutOrderInput = {
@@ -682,6 +714,7 @@ export type OrderItemUpdateWithoutOrderInput = {
   colorSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   sizeSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isGift?: Prisma.BoolFieldUpdateOperationsInput | boolean
   variant?: Prisma.ProductVariantUpdateOneRequiredWithoutOrderItemsNestedInput
 }
 
@@ -693,6 +726,7 @@ export type OrderItemUncheckedUpdateWithoutOrderInput = {
   colorSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   sizeSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isGift?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type OrderItemUncheckedUpdateManyWithoutOrderInput = {
@@ -703,6 +737,7 @@ export type OrderItemUncheckedUpdateManyWithoutOrderInput = {
   colorSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   sizeSnapshot?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isGift?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -716,6 +751,7 @@ export type OrderItemSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   colorSnapshot?: boolean
   sizeSnapshot?: boolean
   quantity?: boolean
+  isGift?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   variant?: boolean | Prisma.ProductVariantDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["orderItem"]>
@@ -729,6 +765,7 @@ export type OrderItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   colorSnapshot?: boolean
   sizeSnapshot?: boolean
   quantity?: boolean
+  isGift?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   variant?: boolean | Prisma.ProductVariantDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["orderItem"]>
@@ -742,6 +779,7 @@ export type OrderItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   colorSnapshot?: boolean
   sizeSnapshot?: boolean
   quantity?: boolean
+  isGift?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   variant?: boolean | Prisma.ProductVariantDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["orderItem"]>
@@ -755,9 +793,10 @@ export type OrderItemSelectScalar = {
   colorSnapshot?: boolean
   sizeSnapshot?: boolean
   quantity?: boolean
+  isGift?: boolean
 }
 
-export type OrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "variantId" | "productNameSnapshot" | "priceSnapshot" | "colorSnapshot" | "sizeSnapshot" | "quantity", ExtArgs["result"]["orderItem"]>
+export type OrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "variantId" | "productNameSnapshot" | "priceSnapshot" | "colorSnapshot" | "sizeSnapshot" | "quantity" | "isGift", ExtArgs["result"]["orderItem"]>
 export type OrderItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   variant?: boolean | Prisma.ProductVariantDefaultArgs<ExtArgs>
@@ -786,6 +825,7 @@ export type $OrderItemPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     colorSnapshot: string
     sizeSnapshot: string
     quantity: number
+    isGift: boolean
   }, ExtArgs["result"]["orderItem"]>
   composites: {}
 }
@@ -1219,6 +1259,7 @@ export interface OrderItemFieldRefs {
   readonly colorSnapshot: Prisma.FieldRef<"OrderItem", 'String'>
   readonly sizeSnapshot: Prisma.FieldRef<"OrderItem", 'String'>
   readonly quantity: Prisma.FieldRef<"OrderItem", 'Int'>
+  readonly isGift: Prisma.FieldRef<"OrderItem", 'Boolean'>
 }
     
 

@@ -30,6 +30,7 @@ export type OrderAvgAggregateOutputType = {
   invoiceNumber: number | null
   totalAmount: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
+  promotionDiscount: runtime.Decimal | null
   shippingCost: runtime.Decimal | null
 }
 
@@ -37,6 +38,7 @@ export type OrderSumAggregateOutputType = {
   invoiceNumber: number | null
   totalAmount: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
+  promotionDiscount: runtime.Decimal | null
   shippingCost: runtime.Decimal | null
 }
 
@@ -46,6 +48,7 @@ export type OrderMinAggregateOutputType = {
   userId: string | null
   totalAmount: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
+  promotionDiscount: runtime.Decimal | null
   shippingCost: runtime.Decimal | null
   shippingZone: string | null
   promoCode: string | null
@@ -73,6 +76,7 @@ export type OrderMaxAggregateOutputType = {
   userId: string | null
   totalAmount: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
+  promotionDiscount: runtime.Decimal | null
   shippingCost: runtime.Decimal | null
   shippingZone: string | null
   promoCode: string | null
@@ -100,6 +104,7 @@ export type OrderCountAggregateOutputType = {
   userId: number
   totalAmount: number
   discountAmount: number
+  promotionDiscount: number
   shippingCost: number
   shippingZone: number
   promoCode: number
@@ -127,6 +132,7 @@ export type OrderAvgAggregateInputType = {
   invoiceNumber?: true
   totalAmount?: true
   discountAmount?: true
+  promotionDiscount?: true
   shippingCost?: true
 }
 
@@ -134,6 +140,7 @@ export type OrderSumAggregateInputType = {
   invoiceNumber?: true
   totalAmount?: true
   discountAmount?: true
+  promotionDiscount?: true
   shippingCost?: true
 }
 
@@ -143,6 +150,7 @@ export type OrderMinAggregateInputType = {
   userId?: true
   totalAmount?: true
   discountAmount?: true
+  promotionDiscount?: true
   shippingCost?: true
   shippingZone?: true
   promoCode?: true
@@ -170,6 +178,7 @@ export type OrderMaxAggregateInputType = {
   userId?: true
   totalAmount?: true
   discountAmount?: true
+  promotionDiscount?: true
   shippingCost?: true
   shippingZone?: true
   promoCode?: true
@@ -197,6 +206,7 @@ export type OrderCountAggregateInputType = {
   userId?: true
   totalAmount?: true
   discountAmount?: true
+  promotionDiscount?: true
   shippingCost?: true
   shippingZone?: true
   promoCode?: true
@@ -311,6 +321,7 @@ export type OrderGroupByOutputType = {
   userId: string | null
   totalAmount: runtime.Decimal
   discountAmount: runtime.Decimal
+  promotionDiscount: runtime.Decimal
   shippingCost: runtime.Decimal
   shippingZone: string | null
   promoCode: string | null
@@ -361,6 +372,7 @@ export type OrderWhereInput = {
   userId?: Prisma.StringNullableFilter<"Order"> | string | null
   totalAmount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.StringNullableFilter<"Order"> | string | null
   promoCode?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -390,6 +402,7 @@ export type OrderOrderByWithRelationInput = {
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
+  promotionDiscount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
   shippingZone?: Prisma.SortOrderInput | Prisma.SortOrder
   promoCode?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -424,6 +437,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.StringNullableFilter<"Order"> | string | null
   totalAmount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.StringNullableFilter<"Order"> | string | null
   promoCode?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -451,6 +465,7 @@ export type OrderOrderByWithAggregationInput = {
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
+  promotionDiscount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
   shippingZone?: Prisma.SortOrderInput | Prisma.SortOrder
   promoCode?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -486,6 +501,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   userId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   totalAmount?: Prisma.DecimalWithAggregatesFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalWithAggregatesFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalWithAggregatesFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalWithAggregatesFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   promoCode?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
@@ -512,6 +528,7 @@ export type OrderCreateInput = {
   invoiceNumber?: number | null
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: string | null
   promoCode?: string | null
@@ -541,6 +558,7 @@ export type OrderUncheckedCreateInput = {
   userId?: string | null
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: string | null
   promoCode?: string | null
@@ -568,6 +586,7 @@ export type OrderUpdateInput = {
   invoiceNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -597,6 +616,7 @@ export type OrderUncheckedUpdateInput = {
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -625,6 +645,7 @@ export type OrderCreateManyInput = {
   userId?: string | null
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: string | null
   promoCode?: string | null
@@ -651,6 +672,7 @@ export type OrderUpdateManyMutationInput = {
   invoiceNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -678,6 +700,7 @@ export type OrderUncheckedUpdateManyInput = {
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -715,6 +738,7 @@ export type OrderCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
+  promotionDiscount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
   shippingZone?: Prisma.SortOrder
   promoCode?: Prisma.SortOrder
@@ -740,6 +764,7 @@ export type OrderAvgOrderByAggregateInput = {
   invoiceNumber?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
+  promotionDiscount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
 }
 
@@ -749,6 +774,7 @@ export type OrderMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
+  promotionDiscount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
   shippingZone?: Prisma.SortOrder
   promoCode?: Prisma.SortOrder
@@ -776,6 +802,7 @@ export type OrderMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
+  promotionDiscount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
   shippingZone?: Prisma.SortOrder
   promoCode?: Prisma.SortOrder
@@ -801,6 +828,7 @@ export type OrderSumOrderByAggregateInput = {
   invoiceNumber?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
+  promotionDiscount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
 }
 
@@ -890,6 +918,7 @@ export type OrderCreateWithoutUserInput = {
   invoiceNumber?: number | null
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: string | null
   promoCode?: string | null
@@ -917,6 +946,7 @@ export type OrderUncheckedCreateWithoutUserInput = {
   invoiceNumber?: number | null
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: string | null
   promoCode?: string | null
@@ -974,6 +1004,7 @@ export type OrderScalarWhereInput = {
   userId?: Prisma.StringNullableFilter<"Order"> | string | null
   totalAmount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.StringNullableFilter<"Order"> | string | null
   promoCode?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -1000,6 +1031,7 @@ export type OrderCreateWithoutItemsInput = {
   invoiceNumber?: number | null
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: string | null
   promoCode?: string | null
@@ -1028,6 +1060,7 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   userId?: string | null
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: string | null
   promoCode?: string | null
@@ -1070,6 +1103,7 @@ export type OrderUpdateWithoutItemsInput = {
   invoiceNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1098,6 +1132,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1124,6 +1159,7 @@ export type OrderCreateManyUserInput = {
   invoiceNumber?: number | null
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: string | null
   promoCode?: string | null
@@ -1150,6 +1186,7 @@ export type OrderUpdateWithoutUserInput = {
   invoiceNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1177,6 +1214,7 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   invoiceNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1204,6 +1242,7 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   invoiceNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  promotionDiscount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shippingZone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1262,6 +1301,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   userId?: boolean
   totalAmount?: boolean
   discountAmount?: boolean
+  promotionDiscount?: boolean
   shippingCost?: boolean
   shippingZone?: boolean
   promoCode?: boolean
@@ -1292,6 +1332,7 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   userId?: boolean
   totalAmount?: boolean
   discountAmount?: boolean
+  promotionDiscount?: boolean
   shippingCost?: boolean
   shippingZone?: boolean
   promoCode?: boolean
@@ -1320,6 +1361,7 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   userId?: boolean
   totalAmount?: boolean
   discountAmount?: boolean
+  promotionDiscount?: boolean
   shippingCost?: boolean
   shippingZone?: boolean
   promoCode?: boolean
@@ -1348,6 +1390,7 @@ export type OrderSelectScalar = {
   userId?: boolean
   totalAmount?: boolean
   discountAmount?: boolean
+  promotionDiscount?: boolean
   shippingCost?: boolean
   shippingZone?: boolean
   promoCode?: boolean
@@ -1369,7 +1412,7 @@ export type OrderSelectScalar = {
   sheetSynced?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceNumber" | "userId" | "totalAmount" | "discountAmount" | "shippingCost" | "shippingZone" | "promoCode" | "status" | "paymentMethod" | "paymentId" | "paymentStatus" | "instapayRef" | "createdAt" | "guestEmail" | "address" | "phone" | "clientOrderId" | "verifyToken" | "lastPaymentCheckAt" | "paymobTransactionId" | "confirmationEmailSent" | "adminEmailSent" | "sheetSynced", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceNumber" | "userId" | "totalAmount" | "discountAmount" | "promotionDiscount" | "shippingCost" | "shippingZone" | "promoCode" | "status" | "paymentMethod" | "paymentId" | "paymentStatus" | "instapayRef" | "createdAt" | "guestEmail" | "address" | "phone" | "clientOrderId" | "verifyToken" | "lastPaymentCheckAt" | "paymobTransactionId" | "confirmationEmailSent" | "adminEmailSent" | "sheetSynced", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
@@ -1394,6 +1437,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     userId: string | null
     totalAmount: runtime.Decimal
     discountAmount: runtime.Decimal
+    promotionDiscount: runtime.Decimal
     shippingCost: runtime.Decimal
     shippingZone: string | null
     promoCode: string | null
@@ -1843,6 +1887,7 @@ export interface OrderFieldRefs {
   readonly userId: Prisma.FieldRef<"Order", 'String'>
   readonly totalAmount: Prisma.FieldRef<"Order", 'Decimal'>
   readonly discountAmount: Prisma.FieldRef<"Order", 'Decimal'>
+  readonly promotionDiscount: Prisma.FieldRef<"Order", 'Decimal'>
   readonly shippingCost: Prisma.FieldRef<"Order", 'Decimal'>
   readonly shippingZone: Prisma.FieldRef<"Order", 'String'>
   readonly promoCode: Prisma.FieldRef<"Order", 'String'>

@@ -8,6 +8,8 @@ import Link from "next/link"
 import { SHIPPING_RATES, SHIPPING_LABELS, type ShippingZone } from "@/lib/shipping"
 import { saveGuestOrderToken } from "@/lib/store/orderTracking"
 
+const ACCENT = "#c8f04f"
+
 type PaymentMethod = "cod" | "instapay"
 
 const paymentMethods = [
@@ -20,7 +22,7 @@ const zones: ShippingZone[] = ["cairo", "giza"]
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function CheckoutPage() {
-  const { items, total, clearCart } = useCart()
+  const { items, gifts, total, clearCart } = useCart()
   const { user, token } = useAuth()
   const router = useRouter()
 
@@ -55,10 +57,16 @@ export default function CheckoutPage() {
     }
   }, [phone])
 
-  const subtotal      = total()
-  const discountValue = promoApplied ? Math.round((subtotal * promoDiscount) / 100) : 0
+  const validGifts = gifts.filter((g) => g && g.variantId)
+  const subtotal       = total()
+  // خصم الـ bundle بيتحسب هنا بس للعرض (السيرفر هو اللي بيحسب الرقم الحقيقي والملزم)
+  const promotionValue = validGifts.reduce((sum, g) => {
+    const matchingItem = items.find((i) => i.color === g.color && i.size === g.size)
+    return sum + (matchingItem?.price || items[0]?.price || 0)
+  }, 0)
+  const discountValue = promoApplied ? Math.round(((subtotal - promotionValue) * promoDiscount) / 100) : 0
   const shippingCost  = zone ? SHIPPING_RATES[zone] : 0
-  const finalTotal     = subtotal - discountValue + shippingCost
+  const finalTotal     = subtotal - promotionValue - discountValue + shippingCost
 
   const handleApplyPromo = async () => {
     if (promoLoading) return
@@ -148,6 +156,7 @@ export default function CheckoutPage() {
         },
         body: JSON.stringify({
           items: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
+          giftSelections: validGifts.map((g) => ({ variantId: g.variantId })),
           address: trimmedAddress,
           phone: trimmedPhone,
           email: trimmedEmail,
@@ -330,6 +339,19 @@ export default function CheckoutPage() {
               </div>
             ))}
 
+            {/* Gift line items */}
+            {validGifts.map((g, idx) => (
+              <div key={`gift-${idx}`} style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", gap: "12px" }}>
+                <div>
+                  <p style={{ fontSize: "11px", fontFamily: "Cormorant Garamond, serif", color: "#f0ede6" }}>🎁 {g.productName}</p>
+                  <p style={{ fontSize: "9px", color: ACCENT, marginTop: "2px", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                    {g.color} / {g.size} — Gift
+                  </p>
+                </div>
+                <p style={{ fontSize: "11px", color: ACCENT, whiteSpace: "nowrap" }}>Free</p>
+              </div>
+            ))}
+
             {/* Promo Code */}
             <div style={{ borderTop: "1px solid rgba(240,237,230,0.08)", paddingTop: "16px", marginTop: "8px", marginBottom: "16px" }}>
               <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "10px" }}>Promo Code</p>
@@ -385,6 +407,13 @@ export default function CheckoutPage() {
                 <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Subtotal</span>
                 <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.5)" }}>{subtotal} EGP</span>
               </div>
+
+              {validGifts.length > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: ACCENT }}>Free Gift ({validGifts.length}x)</span>
+                  <span style={{ fontSize: "11px", color: ACCENT }}>− {promotionValue} EGP</span>
+                </div>
+              )}
 
               {promoApplied && (
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>

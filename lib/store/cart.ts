@@ -15,14 +15,30 @@ interface CartItem {
   imageUrl?: string
 }
 
+interface GiftItem {
+  variantId: string
+  productName: string
+  color: string
+  size: string
+  image?: string
+  imageUrl?: string
+}
+
 interface CartStore {
   items: CartItem[]
+  gifts: GiftItem[]
   expiresAt: number | null
   addItem: (item: CartItem) => void
   removeItem: (variantId: string) => void
   updateQuantity: (variantId: string, quantity: number) => void
   clearCart: () => void
   total: () => number
+  paidQuantity: () => number
+
+  // ─── Gift selection ───────────────────────────────────────────────────────
+  setGift: (index: number, gift: GiftItem) => void
+  removeGift: (index: number) => void
+  clearGifts: () => void
 }
 
 const freshExpiry = () => Date.now() + CART_TTL_MS
@@ -31,6 +47,7 @@ export const useCart = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      gifts: [],
       expiresAt: null,
 
       addItem: (item) => {
@@ -72,10 +89,29 @@ export const useCart = create<CartStore>()(
         })
       },
 
-      clearCart: () => set({ items: [], expiresAt: null }),
+      clearCart: () => set({ items: [], gifts: [], expiresAt: null }),
 
       total: () =>
         get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+
+      paidQuantity: () =>
+        get().items.reduce((sum, i) => sum + i.quantity, 0),
+
+      // ─── Gift selection ───────────────────────────────────────────────────
+      // index: ترتيب الهدية (0 للهدية الأولى، 1 للتانية لو عرض buy3get2)
+      setGift: (index, gift) => {
+        const gifts = [...get().gifts]
+        gifts[index] = gift
+        set({ gifts })
+      },
+
+      removeGift: (index) => {
+        const gifts = [...get().gifts]
+        gifts.splice(index, 1)
+        set({ gifts })
+      },
+
+      clearGifts: () => set({ gifts: [] }),
     }),
     {
       name: "cart-storage",
@@ -83,6 +119,7 @@ export const useCart = create<CartStore>()(
         // لو الكارت عدى عليه أكتر من 7 أيام من آخر تعديل، امسحه أوتوماتيك
         if (state && state.expiresAt && Date.now() > state.expiresAt) {
           state.items = []
+          state.gifts = []
           state.expiresAt = null
         }
       },
