@@ -53,6 +53,9 @@ async function NewInSection() {
           <RevealSection key={p.id} delay={i * 100}>
             <Link href={`/products/${p.id}`} className="product-card" style={{ display: "block", textDecoration: "none" }}>
               <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
+                {p.originalPrice && p.originalPrice > p.price && (
+                  <span className="card-sale-badge">Sale</span>
+                )}
                 <img
                   src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
                   alt=""
@@ -294,6 +297,37 @@ export default function Home() {
 
         .card-img { transition: transform 0.8s ease, opacity 0.6s ease; }
         .product-card:hover .card-img { transform: scale(1.05); opacity: 0.7; }
+
+        /* ── Sale badge on cards ── */
+        @keyframes cardSaleShine {
+          0%   { background-position: -60px 0; }
+          100% { background-position: 160px 0; }
+        }
+        .card-sale-badge {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          z-index: 2;
+          display: inline-flex;
+          align-items: center;
+          font-family: 'Space Mono', monospace;
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #080808;
+          background: #c8f04f;
+          padding: 4px 8px;
+          overflow: hidden;
+        }
+        .card-sale-badge::after {
+          content: "";
+          position: absolute;
+          top: 0; left: 0;
+          width: 30px; height: 100%;
+          background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+          animation: cardSaleShine 2.6s ease-in-out infinite;
+        }
 
         .newin-name  { font-family: 'Cormorant Garamond', serif; font-weight: 300; color: #f0ede6; margin: 0 0 4px; line-height: 1.15; font-size: 15px; }
         .newin-cat   { font-family: 'Space Mono', monospace; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.4); font-size: 7px; white-space: nowrap; }

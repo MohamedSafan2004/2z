@@ -51,6 +51,37 @@ export default async function ProductsPage() {
         .p-card:hover .p-img { transform: scale(1.04); opacity: 0.75 !important; }
         .p-card:hover .p-name { color: rgba(240,237,230,0.7) !important; }
 
+        /* ── Sale badge on cards ── */
+        @keyframes cardSaleShine {
+          0%   { background-position: -60px 0; }
+          100% { background-position: 160px 0; }
+        }
+        .card-sale-badge {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          z-index: 2;
+          display: inline-flex;
+          align-items: center;
+          font-family: 'Space Mono', monospace;
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #080808;
+          background: #c8f04f;
+          padding: 4px 8px;
+          overflow: hidden;
+        }
+        .card-sale-badge::after {
+          content: "";
+          position: absolute;
+          top: 0; left: 0;
+          width: 30px; height: 100%;
+          background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+          animation: cardSaleShine 2.6s ease-in-out infinite;
+        }
+
         .p-name  { font-size: 15px; }
         .p-cat   { font-size: 7px; white-space: nowrap; }
         .p-price { font-size: 13px; white-space: nowrap; }
@@ -70,6 +101,47 @@ export default async function ProductsPage() {
           .p-orig  { font-size: 12px; }
         }
         @media (min-width: 1024px) { .p-grid { grid-template-columns: repeat(4, 1fr) !important; } }
+
+        /* ── Promo banner — calm, static, two tiers side by side ── */
+        .promo-banner {
+          border: 1px solid rgba(200,240,79,0.18);
+          background: rgba(200,240,79,0.03);
+          padding: 14px 18px;
+          margin-bottom: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 18px;
+        }
+        .promo-banner-item { display: flex; align-items: center; gap: 9px; }
+        .promo-banner-num {
+          font-family: 'Space Mono', monospace;
+          font-size: 11px;
+          font-weight: 700;
+          color: #080808;
+          background: #c8f04f;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .promo-banner-txt {
+          font-family: 'Space Mono', monospace;
+          font-size: 10px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(240,237,230,0.75);
+          white-space: nowrap;
+        }
+        .promo-banner-divider { width: 1px; height: 16px; background: rgba(240,237,230,0.12); flex-shrink: 0; }
+        @media (max-width: 420px) {
+          .promo-banner { flex-wrap: wrap; gap: 10px 14px; padding: 12px 14px; }
+          .promo-banner-divider { display: none; }
+          .promo-banner-txt { font-size: 9px; }
+        }
       `}</style>
 
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "80px 20px 80px" }}>
@@ -100,6 +172,18 @@ export default async function ProductsPage() {
           </div>
         </div>
 
+        <div className="promo-banner">
+          <div className="promo-banner-item">
+            <span className="promo-banner-num">2</span>
+            <span className="promo-banner-txt">Buy 2, Get 1 Free</span>
+          </div>
+          <div className="promo-banner-divider" />
+          <div className="promo-banner-item">
+            <span className="promo-banner-num">3</span>
+            <span className="promo-banner-txt">Buy 3, Get 2 Free</span>
+          </div>
+        </div>
+
         <p style={{
           fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase",
           color: "rgba(240,237,230,0.25)", marginBottom: "24px",
@@ -122,6 +206,9 @@ export default async function ProductsPage() {
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "#111", position: "relative" }}>
+                {p.originalPrice && p.originalPrice > p.price && (
+                  <span className="card-sale-badge">Sale</span>
+                )}
                 <img
                   src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
                   alt={`Oversize T-Shirt — ${colorLabel}`}

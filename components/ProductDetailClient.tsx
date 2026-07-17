@@ -109,7 +109,7 @@ export default function ProductDetailClient({
   const [imgIndex, setImgIndex] = useState(0)
   const [sizeChartOpen, setSizeChartOpen] = useState(false)
   const [buying, setBuying] = useState(false)
-  const { addItem, items, gifts, setGift, paidQuantity } = useCart()
+  const { addItem, items, gifts, setGift, clearGifts, paidQuantity } = useCart()
   const router = useRouter()
 
   const selectedVariant   = variants.find((v) => v.size === selectedSize)
@@ -145,6 +145,20 @@ export default function ProductDetailClient({
       .catch(() => setAvailableGiftVariants([]))
       .finally(() => setLoadingGiftVariants(false))
   }, [eligibleNow])
+
+  // ─── Stale gift cleanup ─────────────────────────────────────────────────
+  // لو الكارت رجع مش مؤهل لأي عرض (اتشالت قطعة مثلاً)، أو عدد الهدايا المحفوظة
+  // من عرض قديم أكبر من الـ freeQuantity الحالي، امسح الهدايا القديمة فورًا
+  // عشان محتفضش بهدية إضافية من تير سابق كان أعلى.
+  useEffect(() => {
+    if (!eligibleNow) {
+      if (gifts.length > 0) clearGifts()
+      return
+    }
+    if (gifts.length > eligibleNow.freeQuantity) {
+      clearGifts()
+    }
+  }, [eligibleNow, gifts.length, clearGifts])
 
   React.useEffect(() => {
     const preloadRest = () => {
@@ -244,6 +258,37 @@ export default function ProductDetailClient({
         .suggested-img { transition: transform 0.6s ease, opacity 0.4s ease; }
         .suggested-card:hover .suggested-img { transform: scale(1.04); opacity: 0.75 !important; }
 
+        /* ── Sale badge on suggested product cards ── */
+        @keyframes cardSaleShine {
+          0%   { background-position: -60px 0; }
+          100% { background-position: 160px 0; }
+        }
+        .card-sale-badge {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          z-index: 2;
+          display: inline-flex;
+          align-items: center;
+          font-family: 'Space Mono', monospace;
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #080808;
+          background: ${ACCENT};
+          padding: 4px 8px;
+          overflow: hidden;
+        }
+        .card-sale-badge::after {
+          content: "";
+          position: absolute;
+          top: 0; left: 0;
+          width: 30px; height: 100%;
+          background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+          animation: cardSaleShine 2.6s ease-in-out infinite;
+        }
+
         .suggested-name  { font-size: 14px; }
         .suggested-price { font-size: 12px; }
         .suggested-orig  { font-size: 10px; }
@@ -251,6 +296,33 @@ export default function ProductDetailClient({
           .suggested-name  { font-size: 17px; }
           .suggested-price { font-size: 13px; }
           .suggested-orig  { font-size: 11px; }
+        }
+
+        /* ── Sale badge ── */
+        @keyframes saleShine {
+          0%   { background-position: -60px 0; }
+          100% { background-position: 160px 0; }
+        }
+        .sale-badge {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #080808;
+          background: ${ACCENT};
+          padding: 5px 10px;
+          overflow: hidden;
+        }
+        .sale-badge::after {
+          content: "";
+          position: absolute;
+          top: 0; left: 0;
+          width: 40px; height: 100%;
+          background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+          animation: saleShine 2.6s ease-in-out infinite;
         }
 
         /* ── Bundle progress bar ── */
@@ -265,11 +337,57 @@ export default function ProductDetailClient({
           animation: giftGlow 2.5s ease infinite;
           animation-delay: 1s;
         }
-        .bundle-track { height: 4px; background: rgba(240,237,230,0.08); width: 100%; overflow: hidden; border-radius: 2px; margin-top: 10px; }
-        .bundle-fill { height: 100%; background: ${ACCENT}; transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 2px; }
-        .bundle-dots { display: flex; gap: 4px; margin-top: 8px; }
-        .bundle-dot { flex: 1; height: 3px; border-radius: 2px; background: rgba(240,237,230,0.1); transition: background 0.3s ease; }
-        .bundle-dot.filled { background: ${ACCENT}; }
+        /* ── Unified multi-tier progress bar (shows both milestones together) ── */
+        .tier-progress { position: relative; margin-top: 14px; padding-top: 6px; }
+        .tier-progress-track {
+          position: relative;
+          height: 4px;
+          background: rgba(240,237,230,0.08);
+          border-radius: 2px;
+          overflow: visible;
+        }
+        .tier-progress-fill {
+          height: 100%;
+          background: ${ACCENT};
+          border-radius: 2px;
+          transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .tier-progress-marker {
+          position: absolute;
+          top: 50%;
+          width: 13px;
+          height: 13px;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          background: #080808;
+          border: 2px solid rgba(240,237,230,0.25);
+          transition: border-color 0.3s ease, background 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .tier-progress-marker.reached {
+          background: ${ACCENT};
+          border-color: ${ACCENT};
+        }
+        .tier-progress-marker.reached::after {
+          content: "✓";
+          font-size: 8px;
+          font-weight: 700;
+          color: #080808;
+        }
+        .tier-progress-label {
+          position: absolute;
+          top: 14px;
+          transform: translateX(-50%);
+          font-size: 8px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          white-space: nowrap;
+          color: rgba(240,237,230,0.35);
+          transition: color 0.3s ease;
+        }
+        .tier-progress-label.reached { color: ${ACCENT}; }
 
         /* ── Gift picker ── */
         .gift-picker { animation: slideDown 0.4s ease both; overflow: hidden; }
@@ -285,41 +403,54 @@ export default function ProductDetailClient({
         }
         .check-pop { animation: checkPop 0.3s ease; }
 
-        /* ── Promo banner (top of product page) ── */
-        @keyframes fadeSlide {
-          0%, 45%   { opacity: 1; transform: translateY(0); }
-          50%       { opacity: 0; transform: translateY(-6px); }
-          55%       { opacity: 0; transform: translateY(6px); }
-          100%      { opacity: 1; transform: translateY(0); }
-        }
+        /* ── Promo banner (top of product page) — calm, static, two tiers side by side ── */
         .promo-banner {
-          border: 1px solid rgba(200,240,79,0.25);
-          background: linear-gradient(90deg, rgba(200,240,79,0.06) 0%, rgba(200,240,79,0.02) 100%);
-          padding: 11px 16px;
+          border: 1px solid rgba(200,240,79,0.18);
+          background: rgba(200,240,79,0.03);
+          padding: 14px 18px;
           margin-bottom: 20px;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
-          overflow: hidden;
-          position: relative;
+          gap: 18px;
         }
-        .promo-banner-track {
-          position: relative;
-          height: 14px;
+        .promo-banner-item {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+        }
+        .promo-banner-num {
+          font-family: 'Space Mono', monospace;
+          font-size: 11px;
+          font-weight: 700;
+          color: #080808;
+          background: ${ACCENT};
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
         }
-        .promo-banner-slide {
-          position: absolute;
-          white-space: nowrap;
-          font-size: 9px;
-          letterSpacing: 0.15em;
-          color: ${ACCENT};
+        .promo-banner-txt {
           font-family: 'Space Mono', monospace;
-          letter-spacing: 0.14em;
+          font-size: 10px;
+          letter-spacing: 0.08em;
           text-transform: uppercase;
+          color: rgba(240,237,230,0.75);
+          white-space: nowrap;
+        }
+        .promo-banner-divider {
+          width: 1px;
+          height: 16px;
+          background: rgba(240,237,230,0.12);
+          flex-shrink: 0;
+        }
+        @media (max-width: 420px) {
+          .promo-banner { flex-wrap: wrap; gap: 10px 14px; padding: 12px 14px; }
+          .promo-banner-divider { display: none; }
+          .promo-banner-txt { font-size: 9px; }
         }
       `}</style>
 
@@ -381,8 +512,8 @@ export default function ProductDetailClient({
                 <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "32px", fontWeight: 300, color: "#f0ede6" }}>{Number(product.price)}</span>
                 <span style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,237,230,0.4)" }}>EGP</span>
                 {hasDiscount && (
-                  <span style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", border: "1px solid #c8f04f", color: "#c8f04f", padding: "4px 9px" }}>
-                    First Drop
+                  <span className="sale-badge">
+                    Sale
                   </span>
                 )}
               </div>
@@ -527,6 +658,7 @@ export default function ProductDetailClient({
                 return (
                   <Link href={`/products/${p.id}`} key={p.id} className="suggested-card">
                     <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "#111", position: "relative" }}>
+                      {hasDisc && <span className="card-sale-badge">Sale</span>}
                       <img
                         src={optimizeCloudinaryUrl(productImgs[0], 500)}
                         alt={`Oversize T-Shirt — ${colorLabel}`}
@@ -604,6 +736,11 @@ const SWATCH_COLORS: Record<string, string> = {
   BEIGE: "#d8c8a8",
 }
 
+function activeFreeQty(eligibleNow: { triggerQuantity: number; freeQuantity: number } | null): string {
+  if (!eligibleNow) return ""
+  return eligibleNow.freeQuantity === 1 ? "1 free tee" : `${eligibleNow.freeQuantity} free tees`
+}
+
 function BundleSection({
   currentCartQuantity,
   eligibleNow,
@@ -621,39 +758,58 @@ function BundleSection({
   availableGiftVariants: AvailableGiftVariant[]
   loadingGiftVariants: boolean
 }) {
-  // لو مفيش عرض متاح خالص ولا حتى قريب منه، منعرضش حاجة
-  if (!eligibleNow && !nextTier) return null
+  // لو مفيش أي تير خالص متعرف في النظام، منعرضش حاجة
+  if (TIERS.length === 0) return null
 
-  const activeTier = eligibleNow || nextTier!
-  const remaining  = activeTier.triggerQuantity - currentCartQuantity
+  // كل التيرز مرتبة تصاعدي عشان نرسم البار من الأصغر للأكبر
+  const sortedTiers = TIERS.slice().sort((a, b) => a.triggerQuantity - b.triggerQuantity)
+  const maxTrigger = sortedTiers[sortedTiers.length - 1].triggerQuantity
+  const fillPercent = Math.min(100, (currentCartQuantity / maxTrigger) * 100)
+
+  // أعلى تير متبقي بعد آخر تير محقق — ده اللي بنوريله "كمان X تضيف"
+  const upcomingTier = sortedTiers.find((t) => t.triggerQuantity > currentCartQuantity) ?? null
+  const remaining = upcomingTier ? upcomingTier.triggerQuantity - currentCartQuantity : 0
 
   return (
     <div className={`bundle-box ${eligibleNow ? "eligible" : ""}`}>
-      {!eligibleNow && nextTier && (
-        <>
-          <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
-            🎁 Add <span style={{ color: ACCENT }}>{remaining}</span> more to unlock {nextTier.freeQuantity === 1 ? "a free tee" : `${nextTier.freeQuantity} free tees`}
-          </p>
-          <div className="bundle-track">
-            <div className="bundle-fill" style={{ width: `${Math.min(100, (currentCartQuantity / nextTier.triggerQuantity) * 100)}%` }} />
-          </div>
-        </>
+      {/* رسالة الحالة الحالية — دايمًا واضحة سواء لسه مفيش عرض اتحقق أو خدت عرض وفيه عرض أكبر جاي */}
+      {upcomingTier ? (
+        <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
+          🎁 {eligibleNow ? "One more and" : "Add"} <span style={{ color: ACCENT }}>{remaining}</span> more to unlock {upcomingTier.freeQuantity === 1 ? "a free tee" : `${upcomingTier.freeQuantity} free tees`}
+        </p>
+      ) : (
+        <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: ACCENT, margin: 0 }}>
+          🎉 Max offer unlocked — {activeFreeQty(eligibleNow)}
+        </p>
       )}
+
+      {/* بار موحّد بيوري كل المراحل مع بعض */}
+      <div className="tier-progress">
+        <div className="tier-progress-track">
+          <div className="tier-progress-fill" style={{ width: `${fillPercent}%` }} />
+          {sortedTiers.map((t) => {
+            const reached = currentCartQuantity >= t.triggerQuantity
+            const leftPct = (t.triggerQuantity / maxTrigger) * 100
+            return (
+              <React.Fragment key={t.triggerQuantity}>
+                <div
+                  className={`tier-progress-marker ${reached ? "reached" : ""}`}
+                  style={{ left: `${leftPct}%` }}
+                />
+                <span
+                  className={`tier-progress-label ${reached ? "reached" : ""}`}
+                  style={{ left: `${leftPct}%` }}
+                >
+                  {t.triggerQuantity} = +{t.freeQuantity}
+                </span>
+              </React.Fragment>
+            )
+          })}
+        </div>
+      </div>
 
       {eligibleNow && (
         <>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-            <span style={{ fontSize: "13px" }}>🎉</span>
-            <p style={{ fontSize: "11px", fontFamily: "Cormorant Garamond, serif", color: ACCENT, margin: 0 }}>
-              {eligibleNow.freeQuantity === 1 ? "You've unlocked a free tee" : `You've unlocked ${eligibleNow.freeQuantity} free tees`}
-            </p>
-          </div>
-          <div className="bundle-dots">
-            {Array.from({ length: eligibleNow.triggerQuantity }).map((_, i) => (
-              <div key={i} className={`bundle-dot ${i < currentCartQuantity ? "filled" : ""}`} />
-            ))}
-          </div>
-
           <div className="gift-picker" style={{ marginTop: "18px" }}>
             {loadingGiftVariants ? (
               <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)" }}>Loading options...</p>
@@ -771,41 +927,20 @@ function BundleSection({
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Promo banner — rotating announcement at top of product page
+// Promo banner — static, both tiers shown side by side, calm and legible
 // ─────────────────────────────────────────────────────────────────────────
 
-const PROMO_MESSAGES = [
-  "🎁  Buy 2 — Get 1 Free",
-  "🎁  Buy 3 — Get 2 Free",
-]
-
 function PromoBanner() {
-  const [index, setIndex] = useState(0)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((i) => (i + 1) % PROMO_MESSAGES.length)
-    }, 3200)
-    return () => clearInterval(interval)
-  }, [])
-
   return (
     <div className="promo-banner">
-      <div className="promo-banner-track" style={{ width: "100%" }}>
-        {PROMO_MESSAGES.map((msg, i) => (
-          <span
-            key={i}
-            className="promo-banner-slide"
-            style={{
-              opacity: i === index ? 1 : 0,
-              transform: i === index ? "translateY(0)" : "translateY(6px)",
-              transition: "opacity 0.4s ease, transform 0.4s ease",
-              pointerEvents: i === index ? "auto" : "none",
-            }}
-          >
-            {msg}
-          </span>
-        ))}
+      <div className="promo-banner-item">
+        <span className="promo-banner-num">2</span>
+        <span className="promo-banner-txt">Buy 2, Get 1 Free</span>
+      </div>
+      <div className="promo-banner-divider" />
+      <div className="promo-banner-item">
+        <span className="promo-banner-num">3</span>
+        <span className="promo-banner-txt">Buy 3, Get 2 Free</span>
       </div>
     </div>
   )
