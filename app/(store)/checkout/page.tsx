@@ -19,6 +19,14 @@ const paymentMethods = [
 
 const zones: ShippingZone[] = ["cairo", "giza"]
 const COLORS = ["BLACK", "WHITE", "GREY", "BEIGE"]
+const SIZES = ["M", "L", "XL"] as const
+
+const SWATCH_COLORS: Record<string, string> = {
+  BLACK: "#111111",
+  WHITE: "#F5F5F5",
+  GREY: "#8A8A8A",
+  BEIGE: "#D8C3A5",
+}
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -96,13 +104,14 @@ export default function CheckoutPage() {
   const giftsComplete = !!eligibleTier && validGifts.length === eligibleTier.freeQuantity
 
   const subtotal        = total()
-  const promotionValue  = validGifts.reduce((sum, g) => {
-    const matchingItem = items.find((i) => i.color === g.color && i.size === g.size)
-    return sum + (matchingItem?.price || items[0]?.price || 0)
-  }, 0)
-  const discountValue = promoApplied ? Math.round(((subtotal - promotionValue) * promoDiscount) / 100) : 0
+  // الهدية مش داخلة أصلاً في subtotal (لأن total() بيحسب items بس مش gifts)
+  // يبقى "قيمة" الهدية دي بس رقم نعرضه للعميل يعرف قد ايه وفر، مش حاجة نطرحها من التوتال
+  const giftDisplayValue = giftsComplete
+    ? eligibleTier!.freeQuantity * (items[0]?.price || 0)
+    : 0
+  const discountValue = promoApplied ? Math.round((subtotal * promoDiscount) / 100) : 0
   const shippingCost   = zone ? SHIPPING_RATES[zone] : 0
-  const finalTotal      = subtotal - promotionValue - discountValue + shippingCost
+  const finalTotal      = subtotal - discountValue + shippingCost
 
   const handleApplyPromo = async () => {
     if (promoLoading) return
@@ -279,83 +288,137 @@ export default function CheckoutPage() {
 
         {/* ── GIFT SELECTOR — أول حاجة العميل يشوفها لو مستحق عرض ── */}
         {eligibleTier && !skipGift && (
-          <div className="gift-box" style={{ padding: "22px 20px", marginBottom: "40px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ fontSize: "14px" }}>🎉</span>
-                <p style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: ACCENT, margin: 0 }}>
-                  {eligibleTier.freeQuantity === 1 ? "عندك قطعة مجانية" : `عندك ${eligibleTier.freeQuantity} قطع مجانية`}
-                </p>
+          <div className="gift-box" style={{ padding: "26px 24px", marginBottom: "40px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "18px" }}>🎁</span>
+                <div>
+                  <p style={{ fontSize: "13px", fontFamily: "Cormorant Garamond, serif", fontWeight: 400, color: ACCENT, margin: 0, lineHeight: 1.3 }}>
+                    {eligibleTier.freeQuantity === 1 ? "You've unlocked a free gift" : `You've unlocked ${eligibleTier.freeQuantity} free gifts`}
+                  </p>
+                  <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginTop: "3px" }}>
+                    Pick your color & size below
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setSkipGift(true)}
-                style={{ fontSize: "8px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
+                style={{ fontSize: "8px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", background: "none", border: "none", cursor: "pointer", flexShrink: 0, padding: "4px" }}
               >
-                تخطي
+                Skip
               </button>
             </div>
-            <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", marginBottom: "18px", letterSpacing: "0.03em" }}>
-              اختار اللون والمقاس بتاع هديتك قبل ما تكمل
-            </p>
 
             {loadingVariants ? (
-              <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)" }}>...جاري التحميل</p>
+              <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)", marginTop: "16px" }}>Loading options...</p>
             ) : (
-              Array.from({ length: eligibleTier.freeQuantity }).map((_, idx) => {
-                const currentGift = gifts[idx]
-                const colorOptions = COLORS.filter((c) => availableVariants.some((v) => v.color === c))
-                const sizeOptionsForColor = currentGift?.color
-                  ? availableVariants.filter((v) => v.color === currentGift.color).map((v) => v.size)
-                  : []
+              <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "20px" }}>
+                {Array.from({ length: eligibleTier.freeQuantity }).map((_, idx) => {
+                  const currentGift = gifts[idx]
+                  const colorOptions = COLORS.filter((c) => availableVariants.some((v) => v.color === c))
+                  const sizeOptionsForColor = currentGift?.color
+                    ? availableVariants.filter((v) => v.color === currentGift.color).map((v) => v.size)
+                    : []
+                  const isDone = !!currentGift?.variantId
 
-                return (
-                  <div key={idx} style={{ marginBottom: idx < eligibleTier.freeQuantity - 1 ? "14px" : 0 }}>
-                    <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "6px" }}>
-                      هدية {eligibleTier.freeQuantity > 1 ? idx + 1 : ""}
-                    </p>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                      <select
-                        className="gift-select"
-                        value={currentGift?.color || ""}
-                        onChange={(e) => {
-                          const color = e.target.value
-                          const firstAvailable = availableVariants.find((v) => v.color === color)
-                          setGift(idx, {
-                            variantId: firstAvailable?.variantId || "",
-                            productName: firstAvailable?.productName || "Oversize T-Shirt",
-                            color,
-                            size: firstAvailable?.size || "",
-                          })
-                        }}
-                      >
-                        <option value="">اختار اللون</option>
-                        {colorOptions.map((c) => (
-                          <option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>
-                        ))}
-                      </select>
+                  return (
+                    <div key={idx}>
+                      {eligibleTier.freeQuantity > 1 && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                          <div style={{
+                            width: "16px", height: "16px", borderRadius: "50%", flexShrink: 0,
+                            border: `1px solid ${isDone ? ACCENT : "rgba(240,237,230,0.25)"}`,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            background: isDone ? ACCENT : "transparent",
+                          }}>
+                            {isDone && <span style={{ fontSize: "9px", color: "#080808", lineHeight: 1 }}>✓</span>}
+                          </div>
+                          <p style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.45)", margin: 0 }}>
+                            Gift {idx + 1}
+                          </p>
+                        </div>
+                      )}
 
-                      <select
-                        className="gift-select"
-                        value={currentGift?.size || ""}
-                        disabled={!currentGift?.color}
-                        onChange={(e) => {
-                          const size = e.target.value
-                          const variant = availableVariants.find((v) => v.color === currentGift?.color && v.size === size)
-                          if (currentGift) {
-                            setGift(idx, { ...currentGift, variantId: variant?.variantId || "", size })
-                          }
-                        }}
-                        style={{ opacity: currentGift?.color ? 1 : 0.4, cursor: currentGift?.color ? "pointer" : "not-allowed" }}
-                      >
-                        <option value="">المقاس</option>
-                        {sizeOptionsForColor.map((s) => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </select>
+                      {/* Color swatches */}
+                      <div style={{ marginBottom: "14px" }}>
+                        <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "8px" }}>
+                          Color {currentGift?.color ? `— ${currentGift.color.charAt(0) + currentGift.color.slice(1).toLowerCase()}` : ""}
+                        </p>
+                        <div style={{ display: "flex", gap: "10px" }}>
+                          {colorOptions.map((c) => {
+                            const isSelected = currentGift?.color === c
+                            return (
+                              <button
+                                key={c}
+                                onClick={() => {
+                                  const firstAvailable = availableVariants.find((v) => v.color === c)
+                                  setGift(idx, {
+                                    variantId: firstAvailable?.variantId || "",
+                                    productName: firstAvailable?.productName || "Oversize T-Shirt",
+                                    color: c,
+                                    size: firstAvailable?.size || "",
+                                  })
+                                }}
+                                aria-label={c}
+                                style={{
+                                  width: "34px", height: "34px", borderRadius: "50%",
+                                  background: SWATCH_COLORS[c],
+                                  border: isSelected ? `2px solid ${ACCENT}` : "1px solid rgba(240,237,230,0.2)",
+                                  boxShadow: isSelected ? `0 0 0 3px rgba(200,240,79,0.15)` : "none",
+                                  cursor: "pointer", position: "relative", flexShrink: 0,
+                                  transition: "all 0.2s",
+                                }}
+                              >
+                                {isSelected && (
+                                  <span style={{
+                                    position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                                    color: c === "WHITE" || c === "BEIGE" ? "#080808" : "#f0ede6", fontSize: "12px",
+                                  }}>✓</span>
+                                )}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Size buttons */}
+                      <div>
+                        <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "8px" }}>
+                          Size
+                        </p>
+                        <div style={{ display: "flex", gap: "8px", opacity: currentGift?.color ? 1 : 0.35 }}>
+                          {SIZES.map((s) => {
+                            const isAvailable = sizeOptionsForColor.includes(s)
+                            const isSelected = currentGift?.size === s
+                            const disabled = !currentGift?.color || !isAvailable
+                            return (
+                              <button
+                                key={s}
+                                disabled={disabled}
+                                onClick={() => {
+                                  const variant = availableVariants.find((v) => v.color === currentGift?.color && v.size === s)
+                                  if (currentGift) setGift(idx, { ...currentGift, variantId: variant?.variantId || "", size: s })
+                                }}
+                                style={{
+                                  width: "40px", height: "36px", fontSize: "10px", fontFamily: "Space Mono, monospace",
+                                  letterSpacing: "0.05em", cursor: disabled ? "not-allowed" : "pointer",
+                                  background: isSelected ? ACCENT : "transparent",
+                                  color: !isAvailable ? "rgba(240,237,230,0.15)" : isSelected ? "#080808" : "#f0ede6",
+                                  border: isSelected ? `1px solid ${ACCENT}` : "1px solid rgba(240,237,230,0.15)",
+                                  textDecoration: !isAvailable && currentGift?.color ? "line-through" : "none",
+                                  transition: "all 0.15s",
+                                }}
+                              >
+                                {s}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )
-              })
+                  )
+                })}
+              </div>
             )}
           </div>
         )}
@@ -569,7 +632,7 @@ export default function CheckoutPage() {
               {giftsComplete && (
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                   <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: ACCENT }}>Free Gift ({validGifts.length}x)</span>
-                  <span style={{ fontSize: "11px", color: ACCENT }}>− {promotionValue} EGP</span>
+                  <span style={{ fontSize: "11px", color: ACCENT }}>Included · Worth {giftDisplayValue} EGP</span>
                 </div>
               )}
 
