@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 import { useCart } from "@/lib/store/cart"
 import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
@@ -42,20 +42,26 @@ export default function CheckoutPage() {
   const [promoError, setPromoError]       = useState("")
   const [promoSuccess, setPromoSuccess]   = useState("")
 
-  useEffect(() => {
-    if (user?.name)  setName(user.name)
-    if (user?.email) setEmail(user.email)
-    if (user?.phone) setPhone(user.phone)
-  }, [user])
+  // Sync form fields from logged-in user (derived state during render, no effect)
+  const [syncedUserId, setSyncedUserId] = useState<string | null>(null)
+  if (user && user.id !== syncedUserId) {
+    setSyncedUserId(user.id)
+    if (user.name)  setName(user.name)
+    if (user.email) setEmail(user.email)
+    if (user.phone) setPhone(user.phone)
+  }
 
-  useEffect(() => {
+  // Reset promo when phone changes (derived state during render, no effect)
+  const [lastPromoPhone, setLastPromoPhone] = useState(phone)
+  if (phone !== lastPromoPhone) {
+    setLastPromoPhone(phone)
     if (promoApplied) {
       setPromoApplied("")
       setPromoDiscount(0)
       setPromoSuccess("")
       setPromoError("Phone changed — please re-apply your promo code")
     }
-  }, [phone])
+  }
 
   // الهدايا خلاص اتختارت في صفحة المنتج — هنا بس عرض
   const validGifts = useMemo(() => gifts.filter((g) => g && g.variantId), [gifts])
@@ -318,7 +324,7 @@ export default function CheckoutPage() {
 
             {payment === "instapay" && (
               <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.08em", lineHeight: 1.8, marginTop: "16px", padding: "14px", border: "1px solid rgba(240,237,230,0.08)" }}>
-                After placing your order, you'll be taken to a payment page with our InstaPay number and the exact amount. You'll transfer and enter your transaction reference there.
+                After placing your order, you&apos;ll be taken to a payment page with our InstaPay number and the exact amount. You&apos;ll transfer and enter your transaction reference there.
               </p>
             )}
 
