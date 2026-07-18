@@ -1,5 +1,3 @@
-import Link from "next/link"
-
 export default function ContactPage() {
   return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>
@@ -10,7 +8,7 @@ export default function ContactPage() {
           Contact<br /><em style={{ color: "rgba(240,237,230,0.4)" }}>Us.</em>
         </h1>
         <p style={{ fontSize: "11px", color: "rgba(240,237,230,0.5)", letterSpacing: "0.15em", marginBottom: "56px", lineHeight: 1.8 }}>
-          We're here to help — reach out anytime.
+          We&apos;re here to help — reach out anytime.
         </p>
 
         {/* WhatsApp */}

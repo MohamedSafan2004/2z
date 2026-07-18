@@ -9,7 +9,7 @@ export default function PrivacyPage() {
         </h1>
         <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.1em", marginBottom: "8px" }}>Last updated: May 2026</p>
         <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)", lineHeight: 2, marginBottom: "56px" }}>
-          This policy is compliant with Egypt's Personal Data Protection Law No. 151 of 2020 (PDPL).
+          This policy is compliant with Egypt&apos;s Personal Data Protection Law No. 151 of 2020 (PDPL).
         </p>
 
         {[

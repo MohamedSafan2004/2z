@@ -5,6 +5,7 @@ import { loginRatelimit } from "@/lib/ratelimit"
 import { validateEmail, validatePhone, validatePassword, sanitize } from "@/lib/validation"
 import { sendVerificationEmail } from "@/lib/email"
 import crypto from "crypto"
+import { Prisma } from "@/app/generated/prisma/client"
 
 function generateCode(): string {
   return crypto.randomInt(100000, 1000000).toString()
@@ -15,7 +16,7 @@ function hashCode(code: string): string {
 }
 
 // استخراج اسم الـ field من Prisma P2002 error
-function getDuplicateField(error: any): string | null {
+function getDuplicateField(error: Prisma.PrismaClientKnownRequestError): string | null {
   try {
     const target = error?.meta?.target
     if (Array.isArray(target)) {
@@ -118,9 +119,9 @@ export async function POST(req: NextRequest) {
           verificationCodeExpiry: verificationExpiry,
         },
       })
-    } catch (dbError: any) {
+    } catch (dbError) {
       // P2002 — unique constraint violation
-      if (dbError?.code === "P2002") {
+      if (dbError instanceof Prisma.PrismaClientKnownRequestError && dbError.code === "P2002") {
         const field = getDuplicateField(dbError)
         if (field === "email") {
           return NextResponse.json(

@@ -30,9 +30,14 @@ export default function ForgotPasswordPage() {
 
   useEffect(() => {
     if (step !== "reset") return
-    if (countdown <= 0) { setCanResend(true); return }
+    if (countdown <= 0) return
     const timer = setTimeout(() => {
-      if (isMounted.current) setCountdown(c => c - 1)
+      if (!isMounted.current) return
+      setCountdown((c) => {
+        const next = c - 1
+        if (next <= 0) setCanResend(true)
+        return next
+      })
     }, 1000)
     return () => clearTimeout(timer)
   }, [countdown, step])
@@ -43,7 +48,7 @@ export default function ForgotPasswordPage() {
     setLoading(true)
     setError("")
     try {
-      const res = await fetch("/api/auth/forgot-password", {
+      await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() }),
@@ -160,7 +165,7 @@ export default function ForgotPasswordPage() {
             <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "8px", textAlign: "center" }}>Account Recovery</p>
             <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "36px", fontWeight: 300, color: "#f0ede6", marginBottom: "12px", textAlign: "center" }}>Forgot Password</h1>
             <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)", marginBottom: "40px", textAlign: "center", lineHeight: 1.8 }}>
-              Enter your email and we'll send you a reset code.
+              Enter your email and we&apos;ll send you a reset code.
             </p>
 
             <div aria-live="polite" aria-atomic="true">

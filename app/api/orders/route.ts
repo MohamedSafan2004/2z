@@ -41,7 +41,9 @@ export async function POST(req: NextRequest) {
     }
 
     const giftList: GiftSelection[] = Array.isArray(giftSelections)
-      ? giftSelections.filter((g: any) => g && typeof g.variantId === "string")
+      ? giftSelections.filter((g: unknown): g is GiftSelection =>
+          typeof g === "object" && g !== null && typeof (g as { variantId?: unknown }).variantId === "string"
+        )
       : []
 
     if (clientOrderId) {

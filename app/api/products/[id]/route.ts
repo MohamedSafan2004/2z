@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { requireAdmin } from "@/lib/middleware"
 import { sanitize } from "@/lib/validation"
 import { apiRatelimit } from "@/lib/ratelimit"
+import { Prisma } from "@/app/generated/prisma/client"
 
 export async function GET(
   req: NextRequest,
@@ -46,7 +47,7 @@ export async function PATCH(
     const { id } = await params
     const { name, description, price, categoryId, isActive } = await req.json()
 
-    const updateData: any = {}
+    const updateData: Prisma.ProductUpdateInput = {}
     if (name !== undefined) updateData.name = sanitize(name)
     if (description !== undefined) updateData.description = sanitize(description)
     if (price !== undefined) {
@@ -55,9 +56,8 @@ export async function PATCH(
       }
       updateData.price = Number(price)
     }
-    if (categoryId !== undefined) updateData.categoryId = categoryId
-    if (isActive !== undefined) updateData.isActive = Boolean(isActive)
-
+    if (categoryId !== undefined) updateData.category = { connect: { id: categoryId } }
+    if (isActive !== undefined) updateData.isActive = { set: Boolean(isActive) }
     const product = await db.product.update({
       where: { id },
       data: updateData,

@@ -19,8 +19,14 @@ function VerifyContent() {
   const inputs = useRef<(HTMLInputElement | null)[]>([])
 
   useEffect(() => {
-    if (countdown <= 0) { setCanResend(true); return }
-    const timer = setTimeout(() => setCountdown(c => c - 1), 1000)
+    if (countdown <= 0) return
+    const timer = setTimeout(() => {
+      setCountdown((c) => {
+        const next = c - 1
+        if (next <= 0) setCanResend(true)
+        return next
+      })
+    }, 1000)
     return () => clearTimeout(timer)
   }, [countdown])
 

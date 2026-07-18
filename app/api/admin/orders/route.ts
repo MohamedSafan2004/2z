@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { requireAdmin } from "@/lib/middleware"
+import type { OrderStatus } from "@/app/generated/prisma/client"
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
     }
     const orders = await db.order.findMany({
       where: {
-        ...(status && { status: status as any }),
+        ...(status && { status: status as OrderStatus }),
       },
       include: {
         user: {
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
     })
 
     return NextResponse.json(orders)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

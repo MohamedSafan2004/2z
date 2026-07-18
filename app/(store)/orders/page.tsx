@@ -69,7 +69,9 @@ export default function OrdersPage() {
   const [error, setError] = useState("")
   const [hydrated, setHydrated] = useState(false)
 
-  useEffect(() => { setHydrated(true) }, [])
+  useEffect(() => {
+    queueMicrotask(() => setHydrated(true))
+  }, [])
 
   useEffect(() => {
     if (!hydrated) return
@@ -98,7 +100,7 @@ export default function OrdersPage() {
     // Guest — نجيب الأوردرات المحفوظة عن طريق الـ tokens في localStorage
     const guestTokens = getGuestOrderTokens()
     if (guestTokens.length === 0) {
-      setLoading(false)
+      queueMicrotask(() => setLoading(false))
       return
     }
 
@@ -116,6 +118,7 @@ export default function OrdersPage() {
       setOrders(valid)
       setLoading(false)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, hydrated])
 
   if (loading) return (

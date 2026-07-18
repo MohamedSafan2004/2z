@@ -23,6 +23,7 @@ async function getProduct(id: string) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getSuggestedProducts(currentId: string, currentCategoryId: string) {
   const products = await db.product.findMany({
     where: {

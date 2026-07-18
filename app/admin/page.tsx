@@ -6,12 +6,47 @@ import { useRouter } from "next/navigation"
 
 const ITEMS_PER_PAGE = 20
 
-function printPackingSlip(order: any) {
+type OrderItem = {
+  id: string
+  productNameSnapshot: string
+  colorSnapshot: string
+  sizeSnapshot: string
+  quantity: number
+  priceSnapshot: number | string
+}
+
+type OrderUser = {
+  name?: string
+  phone?: string
+  email?: string
+}
+
+type Order = {
+  id: string
+  status: string
+  paymentStatus: string
+  paymentMethod: string
+  totalAmount: number | string
+  discountAmount?: number | string
+  promoCode?: string | null
+  shippingZone: string | null
+  shippingCost: number | string
+  createdAt: string
+  address: string | null
+  phone?: string | null
+  guestEmail?: string | null
+  invoiceNumber?: number | null
+  instapayRef?: string | null
+  items: OrderItem[]
+  user?: OrderUser
+}
+
+function printPackingSlip(order: Order) {
   const invoiceNum = order.invoiceNumber
     ? `INV-${String(order.invoiceNumber).padStart(4, "0")}`
     : `#${order.id.slice(0, 8).toUpperCase()}`
 
-  const itemsHtml = order.items.map((item: any) => `
+  const itemsHtml = order.items.map((item: OrderItem) => `
     <tr>
       <td style="padding:8px 0;border-bottom:1px solid #eee;font-size:13px">${item.productNameSnapshot} — ${item.colorSnapshot} / ${item.sizeSnapshot}</td>
       <td style="padding:8px 0;border-bottom:1px solid #eee;font-size:13px;text-align:center">${item.quantity}</td>
@@ -108,7 +143,7 @@ function printPackingSlip(order: any) {
 export default function AdminPage() {
   const { user, token, logout } = useAuth()
   const router = useRouter()
-  const [orders, setOrders] = useState<any[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [syncing, setSyncing] = useState(false)
@@ -118,7 +153,9 @@ export default function AdminPage() {
   const [search, setSearch] = useState("")
   const [hydrated, setHydrated] = useState(false)
 
-  useEffect(() => { setHydrated(true) }, [])
+  useEffect(() => {
+    queueMicrotask(() => setHydrated(true))
+  }, [])
 
   const fetchOrders = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
@@ -134,13 +171,15 @@ export default function AdminPage() {
       setLoading(false)
       setRefreshing(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
   useEffect(() => {
     if (!hydrated) return
     if (!user) { router.push("/login"); return }
     if (user.role !== "ADMIN") { router.push("/"); return }
-    fetchOrders()
+    queueMicrotask(() => { fetchOrders() })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, hydrated])
 
   const updateStatus = async (orderId: string, status: string) => {
@@ -373,7 +412,7 @@ export default function AdminPage() {
 
                   <div style={{ borderTop: "1px solid rgba(240,237,230,0.06)", paddingTop: "14px", marginBottom: "14px" }}>
                     <p style={{ fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "8px" }}>Items</p>
-                    {order.items.map((item: any) => (
+                    {order.items.map((item: OrderItem) => (
                       <div key={item.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
                         <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.6)" }}>{item.productNameSnapshot} / {item.colorSnapshot} / {item.sizeSnapshot} × {item.quantity}</p>
                         <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)" }}>{(Number(item.priceSnapshot) * item.quantity).toLocaleString()} EGP</p>

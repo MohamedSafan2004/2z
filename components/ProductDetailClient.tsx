@@ -130,6 +130,7 @@ export default function ProductDetailClient({
   const currentCartQuantity = paidQuantity()
 
   const eligibleNow  = useMemo(() => getEligibleTier(currentCartQuantity), [currentCartQuantity])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const eligibleNext = useMemo(() => getEligibleTier(projectedQuantity), [projectedQuantity])
   const nextTier      = useMemo(() => getNextTier(currentCartQuantity), [currentCartQuantity])
 
@@ -138,12 +139,14 @@ export default function ProductDetailClient({
 
   useEffect(() => {
     if (!eligibleNow) return
-    setLoadingGiftVariants(true)
-    fetch("/api/products/gift-variants")
-      .then((res) => res.json())
-      .then((data) => setAvailableGiftVariants(data.variants || []))
-      .catch(() => setAvailableGiftVariants([]))
-      .finally(() => setLoadingGiftVariants(false))
+    queueMicrotask(() => {
+      setLoadingGiftVariants(true)
+      fetch("/api/products/gift-variants")
+        .then((res) => res.json())
+        .then((data) => setAvailableGiftVariants(data.variants || []))
+        .catch(() => setAvailableGiftVariants([]))
+        .finally(() => setLoadingGiftVariants(false))
+    })
   }, [eligibleNow])
 
   // ─── Stale gift cleanup ─────────────────────────────────────────────────
@@ -196,6 +199,7 @@ export default function ProductDetailClient({
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const inCartQuantity = items.find((i) => i.variantId === selectedVariant?.id)?.quantity ?? 0
 
   const handleAdd = () => {
@@ -735,6 +739,7 @@ function activeFreeQty(eligibleNow: { triggerQuantity: number; freeQuantity: num
 function BundleSection({
   currentCartQuantity,
   eligibleNow,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   nextTier,
   gifts,
   setGift,

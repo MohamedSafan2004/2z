@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     await sendVerificationEmail({ to: user.email, code: verificationCode })
 
     return NextResponse.json({ message: "Code sent" })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     })
 
     return NextResponse.json(products)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

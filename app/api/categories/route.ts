@@ -20,7 +20,7 @@ export async function GET() {
   try {
     const categories = await getCachedCategories()
     return NextResponse.json(categories)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     revalidateTag("categories", "max")
 
     return NextResponse.json(category, { status: 201 })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

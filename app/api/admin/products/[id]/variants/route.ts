@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { requireAdmin } from "@/lib/middleware"
 
-const VALID_COLORS = ["BLACK", "WHITE", "NAVY", "GREY"]
-const VALID_SIZES = ["S", "M", "L"]
+const VALID_COLORS = ["BLACK", "WHITE", "BEIGE", "GREY"]
+const VALID_SIZES = ["M", "L", "XL"]
 
 export async function POST(
   req: NextRequest,
@@ -57,7 +57,7 @@ export async function POST(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  _context: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = requireAdmin(req)

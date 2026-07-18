@@ -1,4 +1,4 @@
-  import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
   import { db } from "@/lib/db"
   import { loginRatelimit } from "@/lib/ratelimit"
   import bcrypt from "bcryptjs"
@@ -96,7 +96,7 @@
       const incomingHash = hashCode(code)
       if (user.resetCode !== incomingHash) {
         // atomic increment لمنع race conditions
-        const updated = await db.user.updateMany({
+        await db.user.updateMany({
           where: { id: user.id, resetCode: { not: null } },
           data: { resetAttempts: { increment: 1 } },
         })
