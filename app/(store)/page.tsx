@@ -1,6 +1,5 @@
 // app/(store)/page.tsx
 import Link from "next/link"
-import Image from "next/image"
 import { Suspense } from "react"
 import { db } from "@/lib/db"
 import { RevealSection } from "@/components/RevealSection"
@@ -57,15 +56,13 @@ async function NewInSection() {
                 {p.originalPrice && p.originalPrice > p.price && (
                   <span className="card-sale-badge">Sale</span>
                 )}
-                <Image
+                <img
                   src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
                   alt=""
                   aria-hidden="true"
                   loading="lazy"
-                  fill
-                  sizes="(min-width: 768px) 25vw, 50vw"
                   className="card-img"
-                  style={{ objectFit: "cover", opacity: 0.55 }}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
                 />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, transparent 60%)" }} />
                 <div style={{ position: "absolute", bottom: "12px", left: "12px", right: "12px" }}>
@@ -158,6 +155,11 @@ export default function Home() {
         }
 
         .hero-img {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          max-width: 100%;
           object-fit: cover;
           object-position: 78% center;
           opacity: 0.55;
@@ -385,12 +387,11 @@ export default function Home() {
 
       {/* ── HERO ── */}
       <section className="hero-section">
-        <Image
+        <img
           src={optimizeCloudinaryUrl("https://res.cloudinary.com/ghetnovd/image/upload/2z-store/hero.png", 1200)}
           alt="2Z Minimal Streetwear"
-          fill
-          priority
-          sizes="100vw"
+          fetchPriority="high"
+          loading="eager"
           className="hero-img"
         />
 
@@ -482,13 +483,11 @@ export default function Home() {
               </div>
             </div>
             <div style={{ width: "clamp(80px, 26%, 160px)", position: "relative", overflow: "hidden", borderLeft: "1px solid rgba(240,237,230,0.08)", flexShrink: 0 }}>
-              <Image
+              <img
                 src="https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&q=50&fm=webp"
                 alt="Sweatpants coming soon"
                 loading="lazy"
-                fill
-                sizes="160px"
-                style={{ objectFit: "cover", opacity: 0.18, filter: "grayscale(100%)" }}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.18, filter: "grayscale(100%)" }}
               />
             </div>
           </div>
@@ -504,7 +503,7 @@ export default function Home() {
           <RevealSection key={cat.slug} delay={i * 150}>
             {cat.available ? (
               <Link href={`/products?category=${cat.slug}`} className="cat-link" style={{ position: "relative", height: "180px", overflow: "hidden", display: "block" }}>
-                <Image src={cat.img} alt={cat.name} loading="lazy" fill sizes="50vw" className="cat-img" style={{ objectFit: "cover", opacity: 0.32 }} />
+                <img src={cat.img} alt={cat.name} loading="lazy" className="cat-img" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.32 }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,8,8,0.85) 0%, transparent 65%)" }} />
                 <div style={{ position: "absolute", bottom: "16px", left: "16px" }}>
                   <p style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.45)", marginBottom: "4px" }}>Collection</p>
@@ -513,7 +512,7 @@ export default function Home() {
               </Link>
             ) : (
               <div style={{ position: "relative", height: "180px", overflow: "hidden" }}>
-                <Image src={cat.img} alt={cat.name} loading="lazy" fill sizes="50vw" style={{ objectFit: "cover", opacity: 0.1, filter: "grayscale(100%)" }} />
+                <img src={cat.img} alt={cat.name} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.1, filter: "grayscale(100%)" }} />
                 <div style={{ position: "absolute", bottom: "16px", left: "16px" }}>
                   <p style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.22)", marginBottom: "4px" }}>Coming Soon</p>
                   <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "22px", fontWeight: 300, color: "rgba(240,237,230,0.28)", margin: 0 }}>{cat.name}</p>
