@@ -7,6 +7,24 @@ import { useCart } from "@/lib/store/cart"
 
 const ACCENT = "#c8f04f"
 
+// نفس صور الألوان المستخدمة في باقي الموقع — بتستخدم كـ fallback
+// لو العنصر (خصوصًا الهدايا القديمة المحفوظة قبل الإصلاح) معندوش imageUrl
+const colorImages: Record<string, string> = {
+  BLACK: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black.jpg",
+  WHITE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-white.jpg",
+  GREY:  "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey.jpg",
+  BEIGE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige.jpg",
+}
+
+function optimizeCloudinaryUrl(url: string, width: number): string {
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`)
+}
+
+function resolveImage(color: string, provided?: string): string {
+  const src = provided || colorImages[color] || colorImages.BLACK
+  return optimizeCloudinaryUrl(src, 200)
+}
+
 export default function CartPage() {
   const { items, gifts, removeItem, updateQuantity, clearGifts, total } = useCart()
   const router = useRouter()
@@ -87,13 +105,11 @@ export default function CartPage() {
                 }}
               >
                 <div style={{ width: "80px", height: "100px", flexShrink: 0, background: "#111", overflow: "hidden" }}>
-                  {(item.imageUrl || item.image) && (
-                    <img
-                      src={item.imageUrl || item.image}
-                      alt={item.productName}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
-                    />
-                  )}
+                  <img
+                    src={resolveImage(item.color, item.imageUrl || item.image)}
+                    alt={item.productName}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
+                  />
                 </div>
 
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minWidth: 0 }}>
@@ -136,13 +152,11 @@ export default function CartPage() {
                     }}
                   >
                     <div style={{ width: "80px", height: "100px", flexShrink: 0, background: "#111", overflow: "hidden" }}>
-                      {(g.imageUrl || g.image) && (
-                        <img
-                          src={g.imageUrl || g.image}
-                          alt={g.productName}
-                          style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }}
-                        />
-                      )}
+                      <img
+                        src={resolveImage(g.color, g.imageUrl || g.image)}
+                        alt={g.productName}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }}
+                      />
                     </div>
                     <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
                       <p style={{ fontSize: "14px", fontFamily: "Cormorant Garamond, serif", color: "#f0ede6", margin: "0 0 4px" }}>

@@ -102,45 +102,71 @@ export default async function ProductsPage() {
         }
         @media (min-width: 1024px) { .p-grid { grid-template-columns: repeat(4, 1fr) !important; } }
 
-        /* ── Promo banner — calm, static, two tiers side by side ── */
+        /* ── Promo banner — revamped, stronger visual hierarchy ── */
         .promo-banner {
-          border: 1px solid rgba(200,240,79,0.18);
-          background: rgba(200,240,79,0.03);
-          padding: 14px 18px;
+          border: 1px solid rgba(200,240,79,0.22);
+          background: rgba(200,240,79,0.04);
           margin-bottom: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 18px;
+          overflow: hidden;
         }
-        .promo-banner-item { display: flex; align-items: center; gap: 9px; }
-        .promo-banner-num {
-          font-family: 'Space Mono', monospace;
-          font-size: 11px;
-          font-weight: 700;
-          color: #080808;
-          background: #c8f04f;
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
+        .promo-banner-head {
           display: flex;
           align-items: center;
-          justify-content: center;
+          gap: 8px;
+          padding: 10px 16px;
+          border-bottom: 1px solid rgba(200,240,79,0.15);
+        }
+        .promo-banner-head-dot {
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background: #c8f04f;
           flex-shrink: 0;
         }
-        .promo-banner-txt {
+        .promo-banner-head-txt {
           font-family: 'Space Mono', monospace;
-          font-size: 10px;
-          letter-spacing: 0.08em;
+          font-size: 8px;
+          letter-spacing: 0.28em;
           text-transform: uppercase;
-          color: rgba(240,237,230,0.75);
+          color: rgba(200,240,79,0.75);
+        }
+        .promo-banner-rows { display: flex; flex-direction: column; }
+        .promo-row {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 14px 16px;
+        }
+        .promo-row + .promo-row { border-top: 1px solid rgba(240,237,230,0.06); }
+        .promo-row-num {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 30px;
+          font-weight: 300;
+          color: #c8f04f;
+          line-height: 1;
+          min-width: 28px;
+          flex-shrink: 0;
+        }
+        .promo-row-divider { width: 1px; height: 26px; background: rgba(200,240,79,0.2); flex-shrink: 0; }
+        .promo-row-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .promo-row-title {
+          font-family: 'Space Mono', monospace;
+          font-size: 11px;
+          letter-spacing: 0.05em;
+          color: #f0ede6;
           white-space: nowrap;
         }
-        .promo-banner-divider { width: 1px; height: 16px; background: rgba(240,237,230,0.12); flex-shrink: 0; }
+        .promo-row-sub {
+          font-family: 'Space Mono', monospace;
+          font-size: 8px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: rgba(240,237,230,0.35);
+          white-space: nowrap;
+        }
         @media (max-width: 420px) {
-          .promo-banner { flex-wrap: wrap; gap: 10px 14px; padding: 12px 14px; }
-          .promo-banner-divider { display: none; }
-          .promo-banner-txt { font-size: 9px; }
+          .promo-row-num { font-size: 24px; min-width: 22px; }
+          .promo-row-title { font-size: 10px; }
         }
       `}</style>
 
@@ -173,14 +199,27 @@ export default async function ProductsPage() {
         </div>
 
         <div className="promo-banner">
-          <div className="promo-banner-item">
-            <span className="promo-banner-num">2</span>
-            <span className="promo-banner-txt">Buy 2, Get 1 Free</span>
+          <div className="promo-banner-head">
+            <span className="promo-banner-head-dot" />
+            <span className="promo-banner-head-txt">Bundle & Save</span>
           </div>
-          <div className="promo-banner-divider" />
-          <div className="promo-banner-item">
-            <span className="promo-banner-num">3</span>
-            <span className="promo-banner-txt">Buy 3, Get 2 Free</span>
+          <div className="promo-banner-rows">
+            <div className="promo-row">
+              <span className="promo-row-num">2</span>
+              <span className="promo-row-divider" />
+              <div className="promo-row-body">
+                <span className="promo-row-title">Buy 2, get 1 free</span>
+                <span className="promo-row-sub">Mix any colors & sizes</span>
+              </div>
+            </div>
+            <div className="promo-row">
+              <span className="promo-row-num">3</span>
+              <span className="promo-row-divider" />
+              <div className="promo-row-body">
+                <span className="promo-row-title">Buy 3, get 2 free</span>
+                <span className="promo-row-sub">Mix any colors & sizes</span>
+              </div>
+            </div>
           </div>
         </div>
 
