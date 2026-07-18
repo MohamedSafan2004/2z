@@ -338,7 +338,7 @@ export default function ProductDetailClient({
           animation-delay: 1s;
         }
         /* ── Unified multi-tier progress bar (shows both milestones together) ── */
-        .tier-progress { position: relative; margin-top: 14px; padding-top: 6px; }
+        .tier-progress { position: relative; margin-top: 14px; padding-top: 4px; padding-bottom: 4px; }
         .tier-progress-track {
           position: relative;
           height: 4px;
@@ -376,18 +376,6 @@ export default function ProductDetailClient({
           font-weight: 700;
           color: #080808;
         }
-        .tier-progress-label {
-          position: absolute;
-          top: 14px;
-          transform: translateX(-50%);
-          font-size: 8px;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          white-space: nowrap;
-          color: rgba(240,237,230,0.35);
-          transition: color 0.3s ease;
-        }
-        .tier-progress-label.reached { color: ${ACCENT}; }
 
         /* ── Gift picker ── */
         .gift-picker { animation: slideDown 0.4s ease both; overflow: hidden; }
@@ -791,18 +779,11 @@ function BundleSection({
             const reached = currentCartQuantity >= t.triggerQuantity
             const leftPct = (t.triggerQuantity / maxTrigger) * 100
             return (
-              <React.Fragment key={t.triggerQuantity}>
-                <div
-                  className={`tier-progress-marker ${reached ? "reached" : ""}`}
-                  style={{ left: `${leftPct}%` }}
-                />
-                <span
-                  className={`tier-progress-label ${reached ? "reached" : ""}`}
-                  style={{ left: `${leftPct}%` }}
-                >
-                  {t.triggerQuantity} = +{t.freeQuantity}
-                </span>
-              </React.Fragment>
+              <div
+                key={t.triggerQuantity}
+                className={`tier-progress-marker ${reached ? "reached" : ""}`}
+                style={{ left: `${leftPct}%` }}
+              />
             )
           })}
         </div>
