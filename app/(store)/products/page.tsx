@@ -195,7 +195,7 @@ export default async function ProductsPage() {
             <span className="promo-row-divider" />
             <span className="promo-row-title">Buy 3, get 2 free</span>
           </div>
-          <span className="promo-row-sub">Mix any colors & sizes · applied automatically at checkout</span>
+          <span className="promo-row-sub">Mix any colors & sizes</span>
         </div>
 
         <p style={{
