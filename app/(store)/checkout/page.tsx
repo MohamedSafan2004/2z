@@ -8,13 +8,11 @@ import Link from "next/link"
 import { SHIPPING_RATES, SHIPPING_LABELS, type ShippingZone } from "@/lib/shipping"
 import { saveGuestOrderToken } from "@/lib/store/orderTracking"
 
-const ACCENT = "#c8f04f"
-
 type PaymentMethod = "cod" | "instapay"
 
 const paymentMethods = [
-  { id: "cod",      label: "Cash on Delivery", sub: "Pay when you receive" },
-  { id: "instapay", label: "InstaPay",          sub: "Transfer & confirm instantly" },
+  { id: "cod",      label: "Cash on delivery", sub: "Pay when you receive" },
+  { id: "instapay", label: "InstaPay",          sub: "Transfer and confirm instantly" },
 ]
 
 const zones: ShippingZone[] = ["cairo", "giza"]
@@ -34,6 +32,7 @@ export default function CheckoutPage() {
   const [payment, setPayment]     = useState<PaymentMethod>("cod")
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState("")
+  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false)
 
   const [promoInput, setPromoInput]       = useState("")
   const [promoApplied, setPromoApplied]   = useState("")
@@ -195,270 +194,369 @@ export default function CheckoutPage() {
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    padding: "12px",
+    padding: "13px 14px",
     background: "transparent",
-    border: "1px solid rgba(240,237,230,0.15)",
+    border: "1px solid rgba(240,237,230,0.18)",
     color: "#f0ede6",
     fontFamily: "Space Mono, monospace",
-    fontSize: "11px",
+    fontSize: "12px",
     outline: "none",
     boxSizing: "border-box",
   }
 
   const labelStyle: React.CSSProperties = {
     fontSize: "9px",
-    letterSpacing: "0.2em",
+    letterSpacing: "0.18em",
     textTransform: "uppercase",
-    color: "rgba(240,237,230,0.6)",
+    color: "rgba(240,237,230,0.55)",
     marginBottom: "8px",
     display: "block",
   }
 
+  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0)
+
+  // ---- Order summary content (shared between desktop panel and mobile drawer) ----
+  const orderSummaryBody = (
+    <>
+      {items.map((item) => (
+        <div key={item.variantId} style={{ display: "flex", justifyContent: "space-between", marginBottom: "14px", gap: "12px" }}>
+          <div>
+            <p style={{ fontSize: "14px", fontFamily: "Cormorant Garamond, serif", color: "#f0ede6" }}>{item.productName}</p>
+            <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.45)", marginTop: "3px", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+              {item.color} / {item.size} × {item.quantity}
+            </p>
+          </div>
+          <p style={{ fontSize: "11px", color: "rgba(240,237,230,0.8)", whiteSpace: "nowrap" }}>{item.price * item.quantity} EGP</p>
+        </div>
+      ))}
+
+      {/* Gift line items — عرض بس، اتختارت في صفحة المنتج */}
+      {validGifts.map((g, idx) => (
+        <div key={`gift-${idx}`} style={{ display: "flex", justifyContent: "space-between", marginBottom: "14px", gap: "12px" }}>
+          <div>
+            <p style={{ fontSize: "14px", fontFamily: "Cormorant Garamond, serif", color: "#f0ede6" }}>{g.productName}</p>
+            <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.6)", marginTop: "3px", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+              {g.color} / {g.size} — Gift
+            </p>
+          </div>
+          <p style={{ fontSize: "11px", color: "rgba(240,237,230,0.8)", whiteSpace: "nowrap" }}>Free</p>
+        </div>
+      ))}
+
+      {/* Promo Code */}
+      <div style={{ borderTop: "1px solid rgba(240,237,230,0.1)", paddingTop: "18px", marginTop: "8px", marginBottom: "18px" }}>
+        <label style={labelStyle}>Promo code</label>
+
+        {!promoApplied ? (
+          <div style={{ display: "flex", gap: "8px" }}>
+            <input
+              type="text"
+              value={promoInput}
+              onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError("") }}
+              onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
+              placeholder="...."
+              style={{
+                flex: 1, padding: "12px 14px", background: "transparent",
+                border: "1px solid rgba(240,237,230,0.18)", color: "#f0ede6",
+                fontFamily: "Space Mono, monospace", fontSize: "11px",
+                outline: "none", letterSpacing: "0.1em",
+              }}
+            />
+            <button
+              onClick={handleApplyPromo}
+              disabled={promoLoading}
+              style={{
+                padding: "0 18px", fontSize: "9px", letterSpacing: "0.14em",
+                textTransform: "uppercase", fontFamily: "Space Mono, monospace",
+                background: "transparent", color: promoLoading ? "rgba(240,237,230,0.3)" : "rgba(240,237,230,0.75)",
+                border: "1px solid rgba(240,237,230,0.25)", cursor: promoLoading ? "not-allowed" : "pointer",
+                whiteSpace: "nowrap", transition: "all 0.2s",
+              }}
+            >
+              {promoLoading ? "..." : "Apply"}
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", border: "1px solid rgba(240,237,230,0.3)", background: "rgba(240,237,230,0.05)" }}>
+            <div>
+              <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.9)", letterSpacing: "0.15em", fontFamily: "Space Mono, monospace" }}>{promoApplied}</p>
+              <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", marginTop: "2px", letterSpacing: "0.05em" }}>{promoDiscount}% off</p>
+            </div>
+            <button onClick={handleRemovePromo} style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", background: "transparent", border: "none", cursor: "pointer", fontFamily: "Space Mono, monospace", letterSpacing: "0.1em" }}>
+              Remove
+            </button>
+          </div>
+        )}
+
+        {promoError   && <p style={{ fontSize: "9px", color: "#ff6b6b", marginTop: "8px", letterSpacing: "0.05em" }}>{promoError}</p>}
+        {promoSuccess && !promoError && <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.7)", marginTop: "8px", letterSpacing: "0.05em" }}>{promoSuccess}</p>}
+      </div>
+
+      {/* Totals */}
+      <div style={{ borderTop: "1px solid rgba(240,237,230,0.1)", paddingTop: "18px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "9px" }}>
+          <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.45)" }}>Subtotal</span>
+          <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.7)" }}>{subtotal} EGP</span>
+        </div>
+
+        {validGifts.length > 0 && (
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "9px" }}>
+            <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>Free gift ({validGifts.length}x)</span>
+            <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.7)" }}>Worth {giftDisplayValue} EGP</span>
+          </div>
+        )}
+
+        {promoApplied && (
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "9px" }}>
+            <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>Discount ({promoDiscount}%)</span>
+            <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.8)" }}>− {discountValue} EGP</span>
+          </div>
+        )}
+
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "9px" }}>
+          <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.45)" }}>Shipping {zone && `(${SHIPPING_LABELS[zone]})`}</span>
+          <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.7)" }}>{zone ? `${shippingCost} EGP` : "—"}</span>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "14px", paddingTop: "14px", borderTop: "1px solid rgba(240,237,230,0.1)" }}>
+          <span style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.45)" }}>Total</span>
+          <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "30px", color: "#f0ede6" }}>
+            {finalTotal} <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.45)" }}>EGP</span>
+          </span>
+        </div>
+      </div>
+    </>
+  )
+
   return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>
-      <style>{`@media (min-width: 768px) { .checkout-grid { grid-template-columns: 1fr 360px !important; gap: 64px !important; } }`}</style>
-      <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "80px 24px 60px" }}>
+      <style>{`
+        * { box-sizing: border-box; }
+        .checkout-root { overflow-x: hidden; }
+        .checkout-grid { display: grid; grid-template-columns: 1fr; gap: 32px; align-items: start; }
+        @media (min-width: 860px) {
+          .checkout-grid { grid-template-columns: 1fr 380px !important; gap: 64px !important; }
+          .checkout-mobile-only { display: none !important; }
+          .checkout-desktop-cta { display: block !important; }
+        }
+        @media (max-width: 859px) {
+          .checkout-desktop-summary { display: none !important; }
+          .checkout-desktop-cta { display: none !important; }
+        }
+        .checkout-section { padding: 0 0 32px; margin-bottom: 32px; border-bottom: 1px solid rgba(240,237,230,0.08); }
+        .checkout-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .checkout-input::placeholder { color: rgba(240,237,230,0.28); }
+        .checkout-input:focus { border-color: rgba(240,237,230,0.55) !important; }
+        .checkout-zone-row:last-child, .checkout-pay-row:last-child { border-bottom: none !important; }
+        .checkout-mobile-panel { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; border: 1px solid rgba(240,237,230,0.15); border-top: none; margin: -16px 0 28px; }
+        .checkout-mobile-panel.open { max-height: 800px; padding: 20px; border-top: 1px solid rgba(240,237,230,0.15); }
+      `}</style>
 
-        <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "6px" }}>Almost there</p>
-        <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "40px", fontWeight: 300, color: "#f0ede6", marginBottom: "48px" }}>Checkout</h1>
+      <div className="checkout-root" style={{ maxWidth: "1020px", margin: "0 auto", padding: "48px 24px 100px" }}>
 
-        <div className="checkout-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", alignItems: "start" }}>
+        <p style={{ fontSize: "10px", letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "8px" }}>Almost there</p>
+        <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "38px", fontWeight: 300, color: "#f0ede6", marginBottom: "20px", letterSpacing: "-0.01em" }}>Checkout</h1>
+
+        {/* Step indicator — display only, not tied to any routing/state */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "44px" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "9px", letterSpacing: "0.1em", color: "rgba(240,237,230,0.5)" }}>
+            <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "rgba(240,237,230,0.5)" }} />Cart
+          </span>
+          <span style={{ flex: 1, maxWidth: "40px", height: "1px", background: "rgba(240,237,230,0.1)" }} />
+          <span style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "9px", letterSpacing: "0.1em", color: "rgba(240,237,230,0.85)" }}>
+            <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#f0ede6" }} />Details
+          </span>
+          <span style={{ flex: 1, maxWidth: "40px", height: "1px", background: "rgba(240,237,230,0.1)" }} />
+          <span style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "9px", letterSpacing: "0.1em", color: "rgba(240,237,230,0.3)" }}>
+            <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "rgba(240,237,230,0.25)" }} />Confirm
+          </span>
+        </div>
+
+        {/* Mobile collapsible order summary */}
+        <div
+          className="checkout-mobile-only"
+          onClick={() => setMobileSummaryOpen((v) => !v)}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(240,237,230,0.18)", padding: "15px 16px", marginBottom: "28px", cursor: "pointer" }}
+        >
+          <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)" }}>
+            {itemCount} item{itemCount !== 1 ? "s" : ""} — order summary
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "19px" }}>{finalTotal} EGP</span>
+            <span style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", display: "inline-block", transition: "transform 0.2s", transform: mobileSummaryOpen ? "rotate(180deg)" : "rotate(0)" }}>▾</span>
+          </span>
+        </div>
+        <div className={`checkout-mobile-only checkout-mobile-panel${mobileSummaryOpen ? " open" : ""}`}>
+          {orderSummaryBody}
+        </div>
+
+        <div className="checkout-grid">
 
           <div>
-            <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "16px" }}>Contact</p>
-
-            <div style={{ marginBottom: "14px" }}>
-              <label style={labelStyle}>Email *</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} placeholder="your@email.com" />
-              <p style={{ fontSize: "8px", color: "rgb(255,255,255)", marginTop: "6px", letterSpacing: "0.1em" }}>
-                Order updates will be sent to this email — no account needed
-              </p>
-            </div>
-
-            <div style={{ borderTop: "1px solid rgba(240,237,230,0.08)", margin: "24px 0" }} />
-
-            <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "16px" }}>Delivery</p>
-
-            <div style={{ marginBottom: "14px" }}>
-              <label style={labelStyle}>Full Name *</label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
-            </div>
-
-            <div style={{ marginBottom: "14px" }}>
-              <label style={labelStyle}>Phone *</label>
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle} placeholder="01XXXXXXXXX" />
-            </div>
-
-            <div style={{ marginBottom: "14px" }}>
-              <label style={labelStyle}>Delivery Address *</label>
-              <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} placeholder="Street, Area, City, Governorate" style={{ ...inputStyle, resize: "none" }} />
-            </div>
-
-            <div style={{ marginBottom: "14px" }}>
-              <label style={labelStyle}>Delivery Zone *</label>
-              <div style={{ position: "relative" }}>
-                <select
-                  value={zone}
-                  onChange={(e) => setZone(e.target.value as ShippingZone)}
-                  style={{
-                    width: "100%", padding: "12px 36px 12px 12px", background: "transparent",
-                    border: zone ? "1px solid rgba(240,237,230,0.4)" : "1px solid rgba(240,237,230,0.15)",
-                    color: zone ? "#f0ede6" : "rgba(240,237,230,0.4)",
-                    fontFamily: "Space Mono, monospace", fontSize: "11px", outline: "none",
-                    boxSizing: "border-box", appearance: "none", cursor: "pointer", letterSpacing: "0.05em",
-                    transition: "border 0.15s",
-                  }}
-                >
-                  <option value="" disabled style={{ background: "#080808", color: "rgba(240,237,230,0.4)" }}>Select your area</option>
-                  {zones.map((z) => (
-                    <option key={z} value={z} style={{ background: "#080808", color: "#f0ede6" }}>
-                      {SHIPPING_LABELS[z]} — {SHIPPING_RATES[z]} EGP
-                    </option>
-                  ))}
-                </select>
-                <svg
-                  width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.5)" strokeWidth="2"
-                  style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
+            {/* Section 1 — Contact */}
+            <div className="checkout-section">
+              <div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginBottom: "22px" }}>
+                <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.3)", letterSpacing: "0.05em" }}>01</span>
+                <span style={{ fontSize: "10px", letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(240,237,230,0.85)" }}>Contact</span>
               </div>
-              <p style={{ fontSize: "8px", color: "rgba(240,237,230,0.3)", marginTop: "8px", letterSpacing: "0.05em" }}>
-                We currently deliver to Cairo and Giza only
-              </p>
+
+              <div style={{ marginBottom: 0 }}>
+                <label style={labelStyle}>Email *</label>
+                <input className="checkout-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} placeholder="your@email.com" />
+                <p style={{ fontSize: "8.5px", color: "rgba(240,237,230,0.4)", marginTop: "7px", letterSpacing: "0.04em", lineHeight: 1.6 }}>
+                  Order updates will be sent to this email — no account needed
+                </p>
+              </div>
             </div>
 
-            <div style={{ borderTop: "1px solid rgba(240,237,230,0.08)", margin: "24px 0" }} />
+            {/* Section 2 — Delivery */}
+            <div className="checkout-section">
+              <div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginBottom: "22px" }}>
+                <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.3)", letterSpacing: "0.05em" }}>02</span>
+                <span style={{ fontSize: "10px", letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(240,237,230,0.85)" }}>Delivery</span>
+              </div>
 
-            <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "16px" }}>Payment Method</p>
+              <div style={{ marginBottom: "18px" }}>
+                <label style={labelStyle}>Full name *</label>
+                <input className="checkout-input" type="text" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+              </div>
 
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {paymentMethods.map((m, i) => {
-                const isSelected = payment === m.id
-                return (
-                  <button
-                    key={m.id}
-                    onClick={() => setPayment(m.id as PaymentMethod)}
-                    style={{
-                      display: "flex", alignItems: "center", gap: "16px", padding: "16px",
-                      background: isSelected ? "rgba(240,237,230,0.04)" : "transparent",
-                      border: "1px solid rgba(240,237,230,0.12)",
-                      borderTop: i === 0 ? "1px solid rgba(240,237,230,0.12)" : "none",
-                      cursor: "pointer", textAlign: "left", width: "100%", transition: "background 0.15s",
-                    }}
-                  >
-                    <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "border 0.15s" }}>
-                      {isSelected && <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#f0ede6" }} />}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: "11px", color: "#f0ede6", fontFamily: "Space Mono, monospace", margin: 0 }}>{m.label}</p>
-                      <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", fontFamily: "Space Mono, monospace", margin: "3px 0 0", letterSpacing: "0.05em" }}>{m.sub}</p>
-                    </div>
-                    {isSelected && (
-                      <div style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>Selected</div>
-                    )}
-                  </button>
-                )
-              })}
+              <div style={{ marginBottom: "18px" }}>
+                <label style={labelStyle}>Phone *</label>
+                <input className="checkout-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle} placeholder="01XXXXXXXXX" />
+              </div>
+
+              <div style={{ marginBottom: "18px" }}>
+                <label style={labelStyle}>Delivery address *</label>
+                <textarea
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  rows={3}
+                  placeholder="Street, Area, City, Governorate"
+                  style={{ ...inputStyle, resize: "none" }}
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Delivery zone *</label>
+                <div style={{ border: "1px solid rgba(240,237,230,0.18)" }}>
+                  {zones.map((z) => {
+                    const isSelected = zone === z
+                    return (
+                      <button
+                        key={z}
+                        className="checkout-zone-row"
+                        onClick={() => setZone(z)}
+                        style={{
+                          width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px",
+                          padding: "15px 16px", background: isSelected ? "rgba(240,237,230,0.05)" : "transparent",
+                          border: "none", borderBottom: "1px solid rgba(240,237,230,0.1)",
+                          color: "#f0ede6", cursor: "pointer", fontFamily: "Space Mono, monospace", textAlign: "left",
+                        }}
+                      >
+                        <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <span style={{ width: "14px", height: "14px", borderRadius: "50%", border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            {isSelected && <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#f0ede6" }} />}
+                          </span>
+                          <span style={{ fontSize: "11px", letterSpacing: "0.05em" }}>{SHIPPING_LABELS[z]}</span>
+                        </span>
+                        <span style={{ fontSize: "10.5px", color: isSelected ? "rgba(240,237,230,0.85)" : "rgba(240,237,230,0.5)", flexShrink: 0 }}>{SHIPPING_RATES[z]} EGP</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <p style={{ fontSize: "8.5px", color: "rgba(240,237,230,0.4)", marginTop: "7px", letterSpacing: "0.04em", lineHeight: 1.6 }}>
+                  We currently deliver to Cairo and Giza only
+                </p>
+              </div>
             </div>
 
-            {payment === "instapay" && (
-              <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.08em", lineHeight: 1.8, marginTop: "16px", padding: "14px", border: "1px solid rgba(240,237,230,0.08)" }}>
-                After placing your order, you&apos;ll be taken to a payment page with our InstaPay number and the exact amount. You&apos;ll transfer and enter your transaction reference there.
-              </p>
-            )}
+            {/* Section 3 — Payment */}
+            <div className="checkout-section">
+              <div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginBottom: "22px" }}>
+                <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.3)", letterSpacing: "0.05em" }}>03</span>
+                <span style={{ fontSize: "10px", letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(240,237,230,0.85)" }}>Payment method</span>
+              </div>
 
-            {error && <p style={{ fontSize: "10px", color: "#ff6b6b", marginTop: "16px", letterSpacing: "0.1em" }}>{error}</p>}
+              <div style={{ border: "1px solid rgba(240,237,230,0.18)" }}>
+                {paymentMethods.map((m) => {
+                  const isSelected = payment === m.id
+                  return (
+                    <button
+                      key={m.id}
+                      className="checkout-pay-row"
+                      onClick={() => setPayment(m.id as PaymentMethod)}
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", gap: "14px",
+                        padding: "16px", background: isSelected ? "rgba(240,237,230,0.05)" : "transparent",
+                        border: "none", borderBottom: "1px solid rgba(240,237,230,0.1)",
+                        color: "#f0ede6", cursor: "pointer", fontFamily: "Space Mono, monospace", textAlign: "left",
+                      }}
+                    >
+                      <span style={{ width: "15px", height: "15px", borderRadius: "50%", border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        {isSelected && <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#f0ede6" }} />}
+                      </span>
+                      <span style={{ flex: 1 }}>
+                        <p style={{ fontSize: "11.5px", color: "#f0ede6", fontFamily: "Space Mono, monospace", margin: 0, letterSpacing: "0.03em" }}>{m.label}</p>
+                        <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.45)", fontFamily: "Space Mono, monospace", margin: "3px 0 0", letterSpacing: "0.03em" }}>{m.sub}</p>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {payment === "instapay" && (
+                <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", letterSpacing: "0.03em", lineHeight: 1.75, marginTop: "16px", padding: "15px 16px", borderLeft: "1px solid rgba(240,237,230,0.25)" }}>
+                  After placing your order, you&apos;ll be taken to a payment page with our InstaPay number and the exact amount. You&apos;ll transfer and enter your transaction reference there.
+                </p>
+              )}
+
+              {error && <p style={{ fontSize: "10px", color: "#ff6b6b", marginTop: "16px", letterSpacing: "0.1em" }}>{error}</p>}
+            </div>
           </div>
 
-          {/* Order Summary */}
-          <div style={{ border: "1px solid rgba(240,237,230,0.08)", padding: "28px", position: "sticky", top: "80px" }}>
-            <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "20px" }}>Order Summary</p>
+          {/* Desktop Order Summary */}
+          <div className="checkout-desktop-summary" style={{ border: "1px solid rgba(240,237,230,0.15)", padding: "26px", position: "sticky", top: "80px" }}>
+            <p style={{ fontSize: "9px", letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", marginBottom: "20px" }}>Order summary</p>
 
-            {items.map((item) => (
-              <div key={item.variantId} style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", gap: "12px" }}>
-                <div>
-                  <p style={{ fontSize: "11px", fontFamily: "Cormorant Garamond, serif", color: "#f0ede6" }}>{item.productName}</p>
-                  <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", marginTop: "2px", letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                    {item.color} / {item.size} × {item.quantity}
-                  </p>
-                </div>
-                <p style={{ fontSize: "11px", color: "#f0ede6", whiteSpace: "nowrap" }}>{item.price * item.quantity} EGP</p>
-              </div>
-            ))}
-
-            {/* Gift line items — عرض بس، اتختارت في صفحة المنتج */}
-            {validGifts.map((g, idx) => (
-              <div key={`gift-${idx}`} style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", gap: "12px" }}>
-                <div>
-                  <p style={{ fontSize: "11px", fontFamily: "Cormorant Garamond, serif", color: "#f0ede6" }}>🎁 {g.productName}</p>
-                  <p style={{ fontSize: "9px", color: ACCENT, marginTop: "2px", letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                    {g.color} / {g.size} — Gift
-                  </p>
-                </div>
-                <p style={{ fontSize: "11px", color: ACCENT, whiteSpace: "nowrap" }}>Free</p>
-              </div>
-            ))}
-
-            {/* Promo Code */}
-            <div style={{ borderTop: "1px solid rgba(240,237,230,0.08)", paddingTop: "16px", marginTop: "8px", marginBottom: "16px" }}>
-              <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "10px" }}>Promo Code</p>
-
-              {!promoApplied ? (
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <input
-                    type="text"
-                    value={promoInput}
-                    onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError("") }}
-                    onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
-                    placeholder="...."
-                    style={{
-                      flex: 1, padding: "10px 12px", background: "transparent",
-                      border: "1px solid rgba(240,237,230,0.15)", color: "#f0ede6",
-                      fontFamily: "Space Mono, monospace", fontSize: "11px",
-                      outline: "none", letterSpacing: "0.1em",
-                    }}
-                  />
-                  <button
-                    onClick={handleApplyPromo}
-                    disabled={promoLoading}
-                    style={{
-                      padding: "10px 16px", fontSize: "9px", letterSpacing: "0.15em",
-                      textTransform: "uppercase", fontFamily: "Space Mono, monospace",
-                      background: "transparent", color: promoLoading ? "rgba(240,237,230,0.3)" : "rgba(240,237,230,0.7)",
-                      border: "1px solid rgba(240,237,230,0.2)", cursor: promoLoading ? "not-allowed" : "pointer",
-                      whiteSpace: "nowrap", transition: "all 0.2s",
-                    }}
-                  >
-                    {promoLoading ? "..." : "Apply"}
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", border: "1px solid rgba(80,200,120,0.25)", background: "rgba(80,200,120,0.04)" }}>
-                  <div>
-                    <p style={{ fontSize: "10px", color: "rgba(80,200,120,0.9)", letterSpacing: "0.15em", fontFamily: "Space Mono, monospace" }}>{promoApplied}</p>
-                    <p style={{ fontSize: "9px", color: "rgba(80,200,120,0.6)", marginTop: "2px", letterSpacing: "0.05em" }}>{promoDiscount}% off</p>
-                  </div>
-                  <button onClick={handleRemovePromo} style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)", background: "transparent", border: "none", cursor: "pointer", fontFamily: "Space Mono, monospace", letterSpacing: "0.1em" }}>
-                    Remove
-                  </button>
-                </div>
-              )}
-
-              {promoError   && <p style={{ fontSize: "9px", color: "#ff6b6b", marginTop: "8px", letterSpacing: "0.05em" }}>{promoError}</p>}
-              {promoSuccess && !promoError && <p style={{ fontSize: "9px", color: "rgba(80,200,120,0.8)", marginTop: "8px", letterSpacing: "0.05em" }}>{promoSuccess}</p>}
-            </div>
-
-            {/* Totals */}
-            <div style={{ borderTop: "1px solid rgba(240,237,230,0.08)", paddingTop: "16px", marginBottom: "24px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Subtotal</span>
-                <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.5)" }}>{subtotal} EGP</span>
-              </div>
-
-              {validGifts.length > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                  <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: ACCENT }}>Free Gift ({validGifts.length}x)</span>
-                  <span style={{ fontSize: "11px", color: ACCENT }}>Worth {giftDisplayValue} EGP</span>
-                </div>
-              )}
-
-              {promoApplied && (
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                  <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(80,200,120,0.7)" }}>Discount ({promoDiscount}%)</span>
-                  <span style={{ fontSize: "11px", color: "rgba(80,200,120,0.8)" }}>− {discountValue} EGP</span>
-                </div>
-              )}
-
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Shipping {zone && `(${SHIPPING_LABELS[zone]})`}</span>
-                <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.5)" }}>{zone ? `${shippingCost} EGP` : "—"}</span>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid rgba(240,237,230,0.08)" }}>
-                <span style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Total</span>
-                <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "26px", color: "#f0ede6" }}>
-                  {finalTotal} <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.4)" }}>EGP</span>
-                </span>
-              </div>
-            </div>
+            {orderSummaryBody}
 
             <button
+              className="checkout-desktop-cta"
               onClick={handleOrder}
               disabled={loading}
-              style={{ width: "100%", padding: "14px", fontSize: "10px", letterSpacing: "0.25em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", background: "#f0ede6", color: "#080808", border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, transition: "all 0.3s", marginBottom: "16px" }}
+              style={{ width: "100%", padding: "16px", fontSize: "10px", letterSpacing: "0.26em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", background: "#f0ede6", color: "#080808", border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, transition: "all 0.3s", marginTop: "22px", marginBottom: "18px" }}
             >
               {loading ? "Please wait..." : payment === "cod" ? "Place Order" : "Continue to Payment"}
             </button>
 
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               {["Secure", "Egypt Only", "Easy Returns"].map((t) => (
-                <p key={t} style={{ fontSize: "8px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgb(255,255,255)" }}>{t}</p>
+                <p key={t} style={{ fontSize: "8px", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>{t}</p>
               ))}
             </div>
           </div>
 
         </div>
+      </div>
+
+      {/* Mobile sticky CTA */}
+      <div
+        className="checkout-mobile-only"
+        style={{ position: "sticky", bottom: 0, left: 0, right: 0, background: "#080808", borderTop: "1px solid rgba(240,237,230,0.15)", padding: "14px 16px calc(14px + env(safe-area-inset-bottom))" }}
+      >
+        {error && <p style={{ fontSize: "10px", color: "#ff6b6b", marginBottom: "10px", letterSpacing: "0.1em" }}>{error}</p>}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+          <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.45)" }}>Total</span>
+          <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "22px" }}>{finalTotal} EGP</span>
+        </div>
+        <button
+          onClick={handleOrder}
+          disabled={loading}
+          style={{ width: "100%", padding: "16px", fontSize: "10px", letterSpacing: "0.26em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", background: "#f0ede6", color: "#080808", border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}
+        >
+          {loading ? "Please wait..." : payment === "cod" ? "Place Order" : "Continue to Payment"}
+        </button>
       </div>
     </div>
   )
