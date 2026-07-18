@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/lib/store/cart"
 
@@ -104,11 +105,13 @@ export default function CartPage() {
                   borderBottom: "1px solid rgba(240,237,230,0.08)",
                 }}
               >
-                <div style={{ width: "80px", height: "100px", flexShrink: 0, background: "#111", overflow: "hidden" }}>
-                  <img
+                <div style={{ width: "80px", height: "100px", flexShrink: 0, background: "#111", overflow: "hidden", position: "relative" }}>
+                  <Image
                     src={resolveImage(item.color, item.imageUrl || item.image)}
                     alt={item.productName}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
+                    fill
+                    sizes="80px"
+                    style={{ objectFit: "cover", opacity: 0.85 }}
                   />
                 </div>
 
@@ -151,11 +154,13 @@ export default function CartPage() {
                       opacity: 0.9,
                     }}
                   >
-                    <div style={{ width: "80px", height: "100px", flexShrink: 0, background: "#111", overflow: "hidden" }}>
-                      <img
+                    <div style={{ width: "80px", height: "100px", flexShrink: 0, background: "#111", overflow: "hidden", position: "relative" }}>
+                      <Image
                         src={resolveImage(g.color, g.imageUrl || g.image)}
                         alt={g.productName}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }}
+                        fill
+                        sizes="80px"
+                        style={{ objectFit: "cover", opacity: 0.6 }}
                       />
                     </div>
                     <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>

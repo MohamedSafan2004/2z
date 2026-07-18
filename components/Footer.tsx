@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import React from "react"
 
 export default function Footer() {
@@ -59,7 +60,7 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="f-brand">
-            <img src="/logo.jpeg" alt="2Z" style={{ height: "36px", width: "36px", objectFit: "cover", borderRadius: "50%", mixBlendMode: "screen" }} />
+            <Image src="/logo.jpeg" alt="2Z" width={36} height={36} style={{ objectFit: "cover", borderRadius: "50%", mixBlendMode: "screen" }} />
             <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", lineHeight: 2, margin: 0 }}>
               Minimal Streetwear<br />6th of October, Egypt
             </p>
