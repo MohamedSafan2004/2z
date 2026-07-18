@@ -1,10 +1,7 @@
 import * as dotenv from "dotenv"
 dotenv.config()
 
-// @ts-ignore
-const { v2: cloudinary } = require("cloudinary")
-// @ts-ignore
-const path = require("path")
+import { v2 as cloudinary } from "cloudinary"
 
 cloudinary.config(true)
 
@@ -43,8 +40,9 @@ async function uploadOne(filePath: string, publicId: string, label: string) {
     })
     console.log(`  ✓ نجح → ${result.secure_url}`)
     return result.secure_url
-  } catch (error: any) {
-    console.log(`  ✗ فشل: ${error.message}`)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.log(`  ✗ فشل: ${message}`)
     return null
   }
 }

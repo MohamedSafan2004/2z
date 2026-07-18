@@ -2,12 +2,9 @@ export {}
 import * as dotenv from "dotenv"
 dotenv.config()
 
-// @ts-ignore
-const { PrismaClient } = require("../app/generated/prisma/client")
-// @ts-ignore
-const { PrismaPg } = require("@prisma/adapter-pg")
-// @ts-ignore
-const { Pool } = require("pg")
+import { PrismaClient } from "../app/generated/prisma/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { Pool } from "pg"
 
 // ─── الأرقام الجديدة حسب الجرد بتاريخ اليوم ───────────────────────────
 // المفتاح = id بتاع الـ ProductVariant، القيمة = stockQuantity الجديد
@@ -46,8 +43,9 @@ async function main() {
       })
       console.log(`✓ ${result.sku} (${result.color} ${result.size}) → stock: ${result.stockQuantity} | opening: ${result.openingStock}`)
       updated++
-    } catch (error: any) {
-      console.log(`✗ فشل تحديث ${id}: ${error.message}`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.log(`✗ فشل تحديث ${id}: ${message}`)
     }
   }
 

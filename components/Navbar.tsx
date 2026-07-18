@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useAuth } from "@/lib/store/auth"
 import { useCart } from "@/lib/store/cart"
 import { useRouter } from "next/navigation"
@@ -20,7 +21,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/">
-            <img src="/logo.jpeg" alt="2Z" style={{ height: "36px", width: "36px", objectFit: "cover", borderRadius: "50%", mixBlendMode: "screen" }} />
+            <Image src="/logo.jpeg" alt="2Z" width={36} height={36} priority style={{ objectFit: "cover", borderRadius: "50%", mixBlendMode: "screen" }} />
           </Link>
 
           {/* Desktop */}

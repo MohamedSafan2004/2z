@@ -3,12 +3,9 @@ export {}
 import * as dotenv from "dotenv"
 dotenv.config()
 
-// @ts-ignore
-const { PrismaClient } = require("../app/generated/prisma/client")
-// @ts-ignore
-const { PrismaPg } = require("@prisma/adapter-pg")
-// @ts-ignore
-const { Pool } = require("pg")
+import { PrismaClient } from "../app/generated/prisma/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { Pool } from "pg"
 
 // ─── عدّل هنا لو عايز تضيف منتج جديد أو تغير الاسم الجديد ─────────
 const NEW_BASE_NAME = "Oversize T-Shirt"

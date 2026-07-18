@@ -1,12 +1,9 @@
 import * as dotenv from "dotenv"
 dotenv.config()
 
-// @ts-ignore
-const { v2: cloudinary } = require("cloudinary")
-// @ts-ignore
-const fs = require("fs")
-// @ts-ignore
-const path = require("path")
+import { v2 as cloudinary } from "cloudinary"
+import * as fs from "fs"
+import * as path from "path"
 
 cloudinary.config(true)
 
@@ -50,8 +47,9 @@ async function uploadOne(filePath: string, publicId: string): Promise<UploadResu
 
     console.log(`  ✓ ${publicId} → ${result.secure_url}`)
     return { color: publicId, publicId, url: result.secure_url }
-  } catch (error: any) {
-    console.log(`  ✗ فشل رفع ${filePath}: ${error.message}`)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.log(`  ✗ فشل رفع ${filePath}: ${message}`)
     return null
   }
 }

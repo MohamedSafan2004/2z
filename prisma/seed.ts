@@ -1,19 +1,18 @@
 import * as dotenv from "dotenv"
 dotenv.config()
 
-// @ts-ignore
-const { PrismaClient } = require("../app/generated/prisma/client")
-const { PrismaPg } = require("@prisma/adapter-pg")
-const { Pool } = require("pg")
+import { PrismaClient, Color, Size } from "../app/generated/prisma/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { Pool } from "pg"
 
-const colorCodes: Record<string, string> = {
+const colorCodes: Record<Color, string> = {
   BLACK: "B",
   WHITE: "W",
   GREY: "GR",
   BEIGE: "BE",
 }
 
-const stocks: Record<string, Record<string, number>> = {
+const stocks: Record<Color, Record<Size, number>> = {
   BLACK: { M: 18, L: 18, XL: 18 },
   WHITE: { M: 18, L: 18, XL: 18 },
   GREY:  { M: 18, L: 18, XL: 18 },
@@ -37,7 +36,7 @@ async function main() {
     data: { name: "T-Shirts", slug: "t-shirts" },
   })
 
-  const colors = [
+  const colors: { name: string; color: Color }[] = [
     { name: "Essential Tee — Black", color: "BLACK" },
     { name: "Essential Tee — White", color: "WHITE" },
     { name: "Essential Tee — Grey",  color: "GREY"  },
@@ -54,7 +53,7 @@ async function main() {
       },
     })
 
-    for (const size of ["M", "L", "XL"]) {
+    for (const size of ["M", "L", "XL"] as Size[]) {
       const sku = `2Z-TEE-${colorCodes[item.color]}-${size}`
       const qty = stocks[item.color][size]
 
@@ -88,4 +87,3 @@ async function main() {
 }
 
 main().catch(console.error)
-

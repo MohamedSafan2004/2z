@@ -1,10 +1,8 @@
 import * as dotenv from "dotenv"
 dotenv.config()
 
-// @ts-ignore
-const { v2: cloudinary } = require("cloudinary")
-// @ts-ignore
-const path = require("path")
+import { v2 as cloudinary } from "cloudinary"
+import * as path from "path"
 
 cloudinary.config(true)
 
@@ -17,8 +15,9 @@ async function main() {
     console.log("🗑️  بمسح النسخة القديمة...")
     const destroyResult = await cloudinary.uploader.destroy(PUBLIC_ID, { resource_type: "image", invalidate: true })
     console.log("   نتيجة المسح:", destroyResult.result)
-  } catch (error: any) {
-    console.log("   تحذير أثناء المسح (ممكن يكون عادي لو الملف مش موجود):", error.message)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.log("   تحذير أثناء المسح (ممكن يكون عادي لو الملف مش موجود):", message)
   }
 
   console.log("\n⏳ بستنى 3 ثواني...")
@@ -40,8 +39,9 @@ async function main() {
     console.log(`  version: ${result.version}`)
     console.log(`  bytes: ${result.bytes}`)
     console.log(`  created_at: ${result.created_at}`)
-  } catch (error: any) {
-    console.log(`✗ فشل الرفع: ${error.message}`)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.log(`✗ فشل الرفع: ${message}`)
   }
 }
 

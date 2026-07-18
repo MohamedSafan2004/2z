@@ -3,14 +3,10 @@ export {}
 import * as dotenv from "dotenv"
 dotenv.config()
 
-// @ts-ignore
-const { PrismaClient } = require("../app/generated/prisma/client")
-// @ts-ignore
-const { PrismaPg } = require("@prisma/adapter-pg")
-// @ts-ignore
-const { Pool } = require("pg")
-// @ts-ignore
-const { google } = require("googleapis")
+import { PrismaClient } from "../app/generated/prisma/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { Pool } from "pg"
+import { google } from "googleapis"
 
 // ─── عدّل هنا بس ─────────────────────────────
 const STOCK_ADD: Record<string, Record<string, number>> = {
@@ -31,7 +27,7 @@ function skuCode(color: string): string {
   return map[color] || color
 }
 
-async function syncInventoryToSheets(prisma: any) {
+async function syncInventoryToSheets(prisma: PrismaClient) {
   try {
     const auth = new google.auth.GoogleAuth({
       credentials: {

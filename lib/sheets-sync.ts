@@ -1,8 +1,31 @@
-import { google } from "googleapis"
+import { google, sheets_v4 } from "googleapis"
 import { db } from "@/lib/db"
 
 const SALES_SHEET = "متابعة المبيعات"
 const INVENTORY_SHEET = "المخزون"
+
+// Prisma بيرجع الأرقام العشرية كـ Decimal object مش string/number مباشر — النوع ده بيقبل الاتنين
+type Numeric = number | string | { toString(): string }
+
+type SyncOrderItem = {
+  variantId: string
+  quantity: number
+  priceSnapshot: Numeric
+  colorSnapshot: string
+  sizeSnapshot: string
+  productNameSnapshot: string
+  isGift?: boolean
+}
+
+type SyncOrder = {
+  id: string
+  createdAt: string | Date
+  invoiceNumber?: number | null
+  discountAmount?: Numeric | null
+  promoCode?: string | null
+  shippingCost?: Numeric | null
+  items: SyncOrderItem[]
+}
 
 function getGoogleAuth() {
   return new google.auth.GoogleAuth({
@@ -19,15 +42,15 @@ function getSheets() {
   return google.sheets({ version: "v4", auth })
 }
 
-async function getSheetId(sheets: any, spreadsheetId: string, sheetName: string): Promise<number> {
+async function getSheetId(sheets: sheets_v4.Sheets, spreadsheetId: string, sheetName: string): Promise<number> {
   const meta = await sheets.spreadsheets.get({ spreadsheetId })
-  const sheet = meta.data.sheets?.find((s: any) => s.properties?.title === sheetName)
+  const sheet = meta.data.sheets?.find((s) => s.properties?.title === sheetName)
   return sheet?.properties?.sheetId ?? 0
 }
 
 // ─── Sales Sheet ──────────────────────────────────────────────────────────────
 
-export async function appendToSalesSheet(order: any) {
+export async function appendToSalesSheet(order: SyncOrder) {
   try {
     const sheets = getSheets()
     const spreadsheetId = process.env.GOOGLE_SHEET_ID as string
@@ -50,9 +73,9 @@ export async function appendToSalesSheet(order: any) {
     const sheetId = await getSheetId(sheets, spreadsheetId, SALES_SHEET)
 
     // subtotal الحقيقي بتاع المنتجات المدفوعة بس (مش الهدايا، من غير شحن) — عشان نحسب نسبة الخصم صح
-    const paidItems = order.items.filter((it: any) => !it.isGift)
+    const paidItems = order.items.filter((it) => !it.isGift)
     const productsSubtotal = paidItems.reduce(
-      (sum: number, it: any) => sum + Number(it.priceSnapshot) * it.quantity,
+      (sum, it) => sum + Number(it.priceSnapshot) * it.quantity,
       0
     )
 
@@ -148,7 +171,7 @@ export async function appendToSalesSheet(order: any) {
 
 // ─── Inventory Sheet (per order) ─────────────────────────────────────────────
 
-export async function updateInventorySheet(order: any) {
+export async function updateInventorySheet(order: SyncOrder) {
   try {
     const sheets = getSheets()
     const spreadsheetId = process.env.GOOGLE_SHEET_ID as string
@@ -242,7 +265,7 @@ export async function syncAllInventory() {
 
 // ─── Main sync trigger (بيتستخدم من الـ orders route) ────────────────────────
 
-export async function syncToSheets(order: any) {
+export async function syncToSheets(order: SyncOrder) {
   await appendToSalesSheet(order)
   await updateInventorySheet(order)
 }

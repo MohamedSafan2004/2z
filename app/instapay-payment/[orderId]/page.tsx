@@ -5,6 +5,14 @@ import { useParams, useSearchParams, useRouter } from "next/navigation"
 
 const WHATSAPP_NUMBER = "201114833377" // 011 1483 3377 بصيغة دولية بدون +
 
+type InstapayOrder = {
+  id: string
+  invoiceNumber: number | null
+  totalAmount: number | string
+  paymentStatus: string
+  guestEmail: string | null
+}
+
 export default function InstapayPaymentPage() {
   const params = useParams()
   const searchParams = useSearchParams()
@@ -12,7 +20,7 @@ export default function InstapayPaymentPage() {
   const orderId = params.orderId as string
   const verifyToken = searchParams.get("token") || ""
 
-  const [order, setOrder] = useState<any>(null)
+  const [order, setOrder] = useState<InstapayOrder | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [copiedField, setCopiedField] = useState<string | null>(null)
@@ -161,7 +169,7 @@ export default function InstapayPaymentPage() {
 
             {proofSent && (
               <p style={{ fontSize: "9px", color: "rgba(100,200,150,0.8)", marginTop: "16px", textAlign: "center", letterSpacing: "0.05em", lineHeight: 1.8 }}>
-                We've opened WhatsApp for you. Once we review your screenshot, we'll confirm your order and you'll get an email.
+                We&apos;ve opened WhatsApp for you. Once we review your screenshot, we&apos;ll confirm your order and you&apos;ll get an email.
               </p>
             )}
 
