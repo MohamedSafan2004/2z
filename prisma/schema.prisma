@@ -24,6 +24,7 @@ model User {
   resetAttempts    Int       @default(0)
   resetLockedUntil DateTime?
   verificationCodeExpiry DateTime?
+  tokenVersion     Int       @default(0)
   promoUsages      PromoCodeUsage[]
 }
 
@@ -76,6 +77,7 @@ model Order {
   instapayRef           String?
   createdAt             DateTime      @default(now())
   guestEmail            String?
+  guestName             String?
   user                  User?         @relation(fields: [userId], references: [id])
   items                 OrderItem[]
   address               String?

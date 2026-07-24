@@ -2,14 +2,19 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { loginRatelimit } from "@/lib/ratelimit"
 import { sendVerificationEmail } from "@/lib/email"
+import crypto from "crypto"
 
-function generateCode() {
-  return Math.floor(100000 + Math.random() * 900000).toString()
+function generateCode(): string {
+  return crypto.randomInt(100000, 1000000).toString()
+}
+
+function hashCode(code: string): string {
+  return crypto.createHash("sha256").update(code).digest("hex")
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1"
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"
     const { success } = await loginRatelimit.limit(ip)
 
     if (!success) {
@@ -45,10 +50,15 @@ export async function POST(req: NextRequest) {
     }
 
     const verificationCode = generateCode()
+    const verificationHash = hashCode(verificationCode)
+    const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000)
 
     await db.user.update({
       where: { id: userId },
-      data: { verificationCode },
+      data: {
+        verificationCode: verificationHash,
+        verificationCodeExpiry: verificationExpiry,
+      },
     })
 
     await sendVerificationEmail({ to: user.email, code: verificationCode })

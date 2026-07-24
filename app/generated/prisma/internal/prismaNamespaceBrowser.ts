@@ -94,7 +94,8 @@ export const UserScalarFieldEnum = {
   resetCodeExpiry: 'resetCodeExpiry',
   resetAttempts: 'resetAttempts',
   resetLockedUntil: 'resetLockedUntil',
-  verificationCodeExpiry: 'verificationCodeExpiry'
+  verificationCodeExpiry: 'verificationCodeExpiry',
+  tokenVersion: 'tokenVersion'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -153,6 +154,7 @@ export const OrderScalarFieldEnum = {
   instapayRef: 'instapayRef',
   createdAt: 'createdAt',
   guestEmail: 'guestEmail',
+  guestName: 'guestName',
   address: 'address',
   phone: 'phone',
   clientOrderId: 'clientOrderId',

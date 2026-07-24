@@ -2,17 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { optionalAuth } from "@/lib/middleware"
 import { sensitiveRatelimit } from "@/lib/ratelimit"
-
-// Egyptian phone numbers only — strips leading +2 or 2 country code
-// Normalizes to 01XXXXXXXXX (11 digits) to prevent format variations
-// from bypassing duplicate checks (e.g. "+201012345678" vs "01012345678")
-function normalizeEgyptianPhone(raw: string): string | null {
-  const digits = raw.replace(/\D/g, "")
-  if (digits.startsWith("2") && digits.length === 12) return digits.slice(1)  // 2012... → 012...
-  if (digits.startsWith("20") && digits.length === 12) return digits.slice(2) // 2012... already handled above
-  if (digits.startsWith("01") && digits.length === 11) return digits
-  return null
-}
+import { normalizeEgyptianPhone } from "@/lib/phone"
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {

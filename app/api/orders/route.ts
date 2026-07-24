@@ -6,6 +6,8 @@ import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 import { sanitize } from "@/lib/validation"
 import { getShippingCost, type ShippingZone } from "@/lib/shipping"
 import { calculatePromotion, type GiftSelection } from "@/lib/promotions"
+import { sendCapiEvent, getRequestMeta } from "@/lib/meta-capi"
+import { normalizeEgyptianPhone } from "@/lib/phone"
 import crypto from "crypto"
 
 type CartItem = { variantId: string; quantity: number } 
@@ -23,10 +25,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null)
     if (!body) return NextResponse.json({ error: "Invalid request" }, { status: 400 })
 
-    const { items, address, phone, email, clientOrderId, promoCode, paymentMethod, shippingZone, giftSelections } = body
+    const { items, address, phone, email, name, clientOrderId, promoCode, paymentMethod, shippingZone, giftSelections, eventId } = body
 
     if (!items || items.length === 0) return NextResponse.json({ error: "No items in order" }, { status: 400 })
     if (!email || !phone || !address) return NextResponse.json({ error: "Email, phone, and address are required" }, { status: 400 })
+
+    const trimmedName = typeof name === "string" ? name.trim() : ""
+    if (!trimmedName) return NextResponse.json({ error: "Name is required" }, { status: 400 })
 
     if (shippingZone !== "cairo" && shippingZone !== "giza") {
       return NextResponse.json({ error: "Please select a valid delivery zone" }, { status: 400 })
@@ -100,8 +105,11 @@ export async function POST(req: NextRequest) {
       const promo = await db.promoCode.findUnique({ where: { code } })
 
       if (promo && promo.isActive) {
+        // لازم نطبّع الرقم قبل الفحص والحفظ عشان محدش يقدر يستخدم الكود
+        // مرتين بصيغتين مختلفتين لنفس الرقم (زي في promo/validate)
+        const normalizedPhone = normalizeEgyptianPhone(phone) ?? phone
         const usedByPhone = await db.promoCodeUsage.findFirst({
-          where: { promoCodeId: promo.id, phone },
+          where: { promoCodeId: promo.id, phone: normalizedPhone },
         })
         const usedByUser = auth.userId
           ? await db.promoCodeUsage.findFirst({ where: { promoCodeId: promo.id, userId: auth.userId } })
@@ -126,40 +134,35 @@ export async function POST(req: NextRequest) {
     // COD: يتحفظ PENDING عادي
     const initialStatus = method === "INSTAPAY" ? "PENDING_PAYMENT" : "PENDING"
 
+    // كل عمليات خصم الستوك المطلوبة (قطع مدفوعة + هدايا)، مجمعة بالـ variantId
+    // عشان لو نفس الـ variant اتطلب كـ item عادي وكـ هدية في نفس الأوردر، يتخصم بالكمية الصح مرة واحدة
+    const stockDecrements = new Map<string, number>()
+    for (const item of items) {
+      stockDecrements.set(item.variantId, (stockDecrements.get(item.variantId) || 0) + item.quantity)
+    }
+    if (promotionResult?.applicable) {
+      for (const gift of promotionResult.gifts) {
+        stockDecrements.set(gift.variantId, (stockDecrements.get(gift.variantId) || 0) + 1)
+      }
+    }
+
     const order = await db.$transaction(async (tx) => {
-      // تحقق ستوك القطع المدفوعة
-      for (const item of items) {
-        const freshVariant = await tx.productVariant.findUnique({ where: { id: item.variantId } })
-        if (!freshVariant || freshVariant.stockQuantity < item.quantity) {
-          throw new Error(`Not enough stock for variant ${item.variantId}`)
-        }
-      }
-
-      // تحقق ستوك قطع الهدية (منفصل عن الكارت، لازم يتخصم برضو)
-      if (promotionResult?.applicable) {
-        for (const gift of promotionResult.gifts) {
-          const freshGiftVariant = await tx.productVariant.findUnique({ where: { id: gift.variantId } })
-          if (!freshGiftVariant || freshGiftVariant.stockQuantity < 1) {
-            throw new Error(`Gift item out of stock: ${gift.productName}`)
-          }
-        }
-      }
-
-      // خصم الستوك — القطع المدفوعة
-      for (const item of items) {
-        await tx.productVariant.update({
-          where: { id: item.variantId },
-          data: { stockQuantity: { decrement: item.quantity } },
+      // خصم الستوك بشكل atomic — الشرط stockQuantity >= المطلوب بيتحقق ويتخصم
+      // في نفس أمر الـ SQL، فمفيش نافذة زمنية بين "القراءة" و"الكتابة" ممكن
+      // يستغلها طلبان متزامنان (race condition). لو count === 0 يبقى مفيش
+      // ستوك كافي وقت التنفيذ الفعلي، مش وقت الفحص الأولي.
+      for (const [variantId, qty] of stockDecrements) {
+        const result = await tx.productVariant.updateMany({
+          where: { id: variantId, stockQuantity: { gte: qty } },
+          data: { stockQuantity: { decrement: qty } },
         })
-      }
-
-      // خصم الستوك — قطع الهدية
-      if (promotionResult?.applicable) {
-        for (const gift of promotionResult.gifts) {
-          await tx.productVariant.update({
-            where: { id: gift.variantId },
-            data: { stockQuantity: { decrement: 1 } },
-          })
+        if (result.count === 0) {
+          const variant = variants.find((v: typeof variants[number]) => v.id === variantId)
+          const giftVariant = promotionResult?.applicable
+            ? promotionResult.gifts.find((g) => g.variantId === variantId)
+            : undefined
+          const name = variant?.product.name || giftVariant?.productName || variantId
+          throw new Error(`Not enough stock for ${name}`)
         }
       }
 
@@ -204,6 +207,7 @@ export async function POST(req: NextRequest) {
           shippingZone,
           promoCode: validatedPromoCode,
           guestEmail: email || null,
+          guestName: !auth.userId ? sanitize(trimmedName) : null,
           address: sanitize(address),
           phone: sanitize(phone),
           clientOrderId: clientOrderId || null,
@@ -223,7 +227,7 @@ export async function POST(req: NextRequest) {
           data: {
             promoCodeId: promoId,
             userId: auth.userId || null,
-            phone,
+            phone: normalizeEgyptianPhone(phone) ?? phone,
           },
         })
       }
@@ -235,6 +239,7 @@ export async function POST(req: NextRequest) {
     // لو COD: الإيميلات تتبعت فورًا زي العادي
     if (method === "COD") {
       const emailTo = email || user?.email
+      const customerName = user?.name || order.guestName || "Guest"
       const invoiceNum = `INV-${String(order.invoiceNumber).padStart(4, "0")}`
 
       if (emailTo) {
@@ -264,7 +269,7 @@ export async function POST(req: NextRequest) {
         await sendAdminNotification({
           orderNumber: order.id,
           invoiceNumber: invoiceNum,
-          customerName: user?.name || "Guest",
+          customerName: customerName,
           customerEmail: emailTo || "",
           customerPhone: phone || "",
           address: address || "",
@@ -282,6 +287,30 @@ export async function POST(req: NextRequest) {
       } catch (error) {
         console.error("Admin notification failed:", error)
       }
+
+      // ─── Meta CAPI: Purchase ────────────────────────────────────────────
+      // COD بيتأكد فورًا وقت الإنشاء، فده أقرب لحظة حقيقية للـ "شراء".
+      // eventId جاي من نفس الـ event_id اللي الـ Pixel بعته من المتصفح
+      // (لو موجود) عشان Meta تعمل dedup صح؛ لو مش موجود، بنولّد واحد جديد.
+      try {
+        const { clientIp, userAgent } = getRequestMeta(req)
+        await sendCapiEvent({
+          eventName: "Purchase",
+          eventId: typeof eventId === "string" && eventId ? eventId : crypto.randomUUID(),
+          eventSourceUrl: "https://www.2zstore.com/checkout",
+          user: { email: emailTo || undefined, phone: phone || undefined, clientIp, userAgent },
+          customData: {
+            content_ids: order.items.map((item: typeof order.items[number]) => item.variantId),
+            content_type: "product",
+            value: totalAmount,
+            num_items: order.items.reduce((sum: number, item: typeof order.items[number]) => sum + item.quantity, 0),
+            currency: "EGP",
+            order_id: order.id,
+          },
+        })
+      } catch (error) {
+        console.error("Meta CAPI Purchase failed:", error)
+      }
     }
 
     return NextResponse.json({ ...order, verifyToken }, { status: 201 })
@@ -293,7 +322,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = requireAuth(req)
+    const auth = await requireAuth(req)
     if ("error" in auth) return auth.error
 
     const orders = await db.order.findMany({

@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { useCart } from "@/lib/store/cart"
 import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { SHIPPING_RATES, SHIPPING_LABELS, type ShippingZone } from "@/lib/shipping"
 import { saveGuestOrderToken } from "@/lib/store/orderTracking"
+import { trackInitiateCheckout, trackPurchase, generateEventId } from "@/lib/meta-pixel"
 
 import CheckoutCard from "./components/Checkoutcard "
 import InputField from "./components/Inputfield"
@@ -42,6 +43,10 @@ export default function CheckoutPage() {
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState("")
   const [sheetOpen, setSheetOpen] = useState(false)
+
+  // clientOrderId ثابت لكل محاولة checkout واحدة — لو الطلب اتبعت مرتين (ضعف شبكة، ضغط زرار
+  // مرتين) السيرفر هيعرف يرجّع نفس الأوردر بدل ما يعمل واحد جديد ويخصم ستوك مرتين
+  const [clientOrderId] = useState(() => crypto.randomUUID())
 
   const [promoInput, setPromoInput]       = useState("")
   const [promoApplied, setPromoApplied]   = useState("")
@@ -133,6 +138,21 @@ export default function CheckoutPage() {
     setPromoError("")
   }
 
+  // ─── Meta Pixel: InitiateCheckout ───────────────────────────────────────
+  // بيتبعت مرة واحدة لما العميل يوصل لصفحة الـ checkout ومعاه حاجة في الكارت
+  const trackedCheckoutRef = useRef(false)
+  useEffect(() => {
+    if (trackedCheckoutRef.current) return
+    if (items.length === 0) return
+    trackedCheckoutRef.current = true
+    trackInitiateCheckout({
+      content_ids: items.map((i) => i.variantId),
+      value: subtotal,
+      num_items: items.reduce((sum, i) => sum + i.quantity, 0),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   if (items.length === 0) return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace" }}>
       <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "24px" }}>Your cart is empty</p>
@@ -168,6 +188,10 @@ export default function CheckoutPage() {
     setLoading(true)
     setError("")
 
+    // event_id واحد لكل محاولة أوردر — بيتبعت للسيرفر عشان الـ CAPI Purchase
+    // يستخدم نفسه، فـ Meta تعمل dedup صح بين الـ Pixel (browser) والـ CAPI (server)
+    const purchaseEventId = generateEventId()
+
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -181,23 +205,40 @@ export default function CheckoutPage() {
           address: trimmedAddress,
           phone: trimmedPhone,
           email: trimmedEmail,
+          name: trimmedName,
+          clientOrderId,
           paymentMethod: payment,
           shippingZone: zone,
           promoCode: promoApplied || undefined,
+          eventId: purchaseEventId,
         }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error); return }
 
+      const contentIds = items.map((i) => i.variantId)
+      const numItems = items.reduce((sum, i) => sum + i.quantity, 0)
+
       clearCart()
 
       if (payment === "instapay") {
+        // الـ Purchase الحقيقي لطلبات InstaPay بيتبعت بعد ما العميل يدخل رقم
+        // الحوالة (submit-instapay-ref) — مش هنا، عشان لسه مافيش نية دفع جادة
         saveGuestOrderToken(data.id, data.verifyToken)
-        router.push(`/instapay-payment/${data.id}?token=${data.verifyToken}`)
-      } else if (user) {
-        router.push("/orders")
+        router.push(`/instapay-payment/${data.id}?token=${data.verifyToken}&eid=${purchaseEventId}`)
       } else {
-        router.push(`/order-confirmed?email=${encodeURIComponent(trimmedEmail)}`)
+        // COD: الأوردر اتأكد فعليًا في نفس اللحظة — ابعت الـ Purchase دلوقتي
+        trackPurchase({
+          content_ids: contentIds,
+          value: finalTotal,
+          num_items: numItems,
+          eventId: purchaseEventId,
+        })
+        if (user) {
+          router.push("/orders")
+        } else {
+          router.push(`/order-confirmed?email=${encodeURIComponent(trimmedEmail)}`)
+        }
       }
     } catch {
       setError("Something went wrong")

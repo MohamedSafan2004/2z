@@ -28,10 +28,12 @@ export type AggregateUser = {
 
 export type UserAvgAggregateOutputType = {
   resetAttempts: number | null
+  tokenVersion: number | null
 }
 
 export type UserSumAggregateOutputType = {
   resetAttempts: number | null
+  tokenVersion: number | null
 }
 
 export type UserMinAggregateOutputType = {
@@ -50,6 +52,7 @@ export type UserMinAggregateOutputType = {
   resetAttempts: number | null
   resetLockedUntil: Date | null
   verificationCodeExpiry: Date | null
+  tokenVersion: number | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -68,6 +71,7 @@ export type UserMaxAggregateOutputType = {
   resetAttempts: number | null
   resetLockedUntil: Date | null
   verificationCodeExpiry: Date | null
+  tokenVersion: number | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -86,16 +90,19 @@ export type UserCountAggregateOutputType = {
   resetAttempts: number
   resetLockedUntil: number
   verificationCodeExpiry: number
+  tokenVersion: number
   _all: number
 }
 
 
 export type UserAvgAggregateInputType = {
   resetAttempts?: true
+  tokenVersion?: true
 }
 
 export type UserSumAggregateInputType = {
   resetAttempts?: true
+  tokenVersion?: true
 }
 
 export type UserMinAggregateInputType = {
@@ -114,6 +121,7 @@ export type UserMinAggregateInputType = {
   resetAttempts?: true
   resetLockedUntil?: true
   verificationCodeExpiry?: true
+  tokenVersion?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -132,6 +140,7 @@ export type UserMaxAggregateInputType = {
   resetAttempts?: true
   resetLockedUntil?: true
   verificationCodeExpiry?: true
+  tokenVersion?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -150,6 +159,7 @@ export type UserCountAggregateInputType = {
   resetAttempts?: true
   resetLockedUntil?: true
   verificationCodeExpiry?: true
+  tokenVersion?: true
   _all?: true
 }
 
@@ -255,6 +265,7 @@ export type UserGroupByOutputType = {
   resetAttempts: number
   resetLockedUntil: Date | null
   verificationCodeExpiry: Date | null
+  tokenVersion: number
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
   _sum: UserSumAggregateOutputType | null
@@ -296,6 +307,7 @@ export type UserWhereInput = {
   resetAttempts?: Prisma.IntFilter<"User"> | number
   resetLockedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   verificationCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  tokenVersion?: Prisma.IntFilter<"User"> | number
   orders?: Prisma.OrderListRelationFilter
   promoUsages?: Prisma.PromoCodeUsageListRelationFilter
 }
@@ -316,6 +328,7 @@ export type UserOrderByWithRelationInput = {
   resetAttempts?: Prisma.SortOrder
   resetLockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   verificationCodeExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
+  tokenVersion?: Prisma.SortOrder
   orders?: Prisma.OrderOrderByRelationAggregateInput
   promoUsages?: Prisma.PromoCodeUsageOrderByRelationAggregateInput
 }
@@ -339,6 +352,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   resetAttempts?: Prisma.IntFilter<"User"> | number
   resetLockedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   verificationCodeExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  tokenVersion?: Prisma.IntFilter<"User"> | number
   orders?: Prisma.OrderListRelationFilter
   promoUsages?: Prisma.PromoCodeUsageListRelationFilter
 }, "id" | "email">
@@ -359,6 +373,7 @@ export type UserOrderByWithAggregationInput = {
   resetAttempts?: Prisma.SortOrder
   resetLockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   verificationCodeExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
+  tokenVersion?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -385,6 +400,7 @@ export type UserScalarWhereWithAggregatesInput = {
   resetAttempts?: Prisma.IntWithAggregatesFilter<"User"> | number
   resetLockedUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   verificationCodeExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  tokenVersion?: Prisma.IntWithAggregatesFilter<"User"> | number
 }
 
 export type UserCreateInput = {
@@ -403,6 +419,7 @@ export type UserCreateInput = {
   resetAttempts?: number
   resetLockedUntil?: Date | string | null
   verificationCodeExpiry?: Date | string | null
+  tokenVersion?: number
   orders?: Prisma.OrderCreateNestedManyWithoutUserInput
   promoUsages?: Prisma.PromoCodeUsageCreateNestedManyWithoutUserInput
 }
@@ -423,6 +440,7 @@ export type UserUncheckedCreateInput = {
   resetAttempts?: number
   resetLockedUntil?: Date | string | null
   verificationCodeExpiry?: Date | string | null
+  tokenVersion?: number
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
   promoUsages?: Prisma.PromoCodeUsageUncheckedCreateNestedManyWithoutUserInput
 }
@@ -443,6 +461,7 @@ export type UserUpdateInput = {
   resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
   promoUsages?: Prisma.PromoCodeUsageUpdateManyWithoutUserNestedInput
 }
@@ -463,6 +482,7 @@ export type UserUncheckedUpdateInput = {
   resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
   promoUsages?: Prisma.PromoCodeUsageUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -483,6 +503,7 @@ export type UserCreateManyInput = {
   resetAttempts?: number
   resetLockedUntil?: Date | string | null
   verificationCodeExpiry?: Date | string | null
+  tokenVersion?: number
 }
 
 export type UserUpdateManyMutationInput = {
@@ -501,6 +522,7 @@ export type UserUpdateManyMutationInput = {
   resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -519,6 +541,7 @@ export type UserUncheckedUpdateManyInput = {
   resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -537,10 +560,12 @@ export type UserCountOrderByAggregateInput = {
   resetAttempts?: Prisma.SortOrder
   resetLockedUntil?: Prisma.SortOrder
   verificationCodeExpiry?: Prisma.SortOrder
+  tokenVersion?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
   resetAttempts?: Prisma.SortOrder
+  tokenVersion?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -559,6 +584,7 @@ export type UserMaxOrderByAggregateInput = {
   resetAttempts?: Prisma.SortOrder
   resetLockedUntil?: Prisma.SortOrder
   verificationCodeExpiry?: Prisma.SortOrder
+  tokenVersion?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -577,10 +603,12 @@ export type UserMinOrderByAggregateInput = {
   resetAttempts?: Prisma.SortOrder
   resetLockedUntil?: Prisma.SortOrder
   verificationCodeExpiry?: Prisma.SortOrder
+  tokenVersion?: Prisma.SortOrder
 }
 
 export type UserSumOrderByAggregateInput = {
   resetAttempts?: Prisma.SortOrder
+  tokenVersion?: Prisma.SortOrder
 }
 
 export type UserNullableScalarRelationFilter = {
@@ -668,6 +696,7 @@ export type UserCreateWithoutOrdersInput = {
   resetAttempts?: number
   resetLockedUntil?: Date | string | null
   verificationCodeExpiry?: Date | string | null
+  tokenVersion?: number
   promoUsages?: Prisma.PromoCodeUsageCreateNestedManyWithoutUserInput
 }
 
@@ -687,6 +716,7 @@ export type UserUncheckedCreateWithoutOrdersInput = {
   resetAttempts?: number
   resetLockedUntil?: Date | string | null
   verificationCodeExpiry?: Date | string | null
+  tokenVersion?: number
   promoUsages?: Prisma.PromoCodeUsageUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -722,6 +752,7 @@ export type UserUpdateWithoutOrdersInput = {
   resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   promoUsages?: Prisma.PromoCodeUsageUpdateManyWithoutUserNestedInput
 }
 
@@ -741,6 +772,7 @@ export type UserUncheckedUpdateWithoutOrdersInput = {
   resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   promoUsages?: Prisma.PromoCodeUsageUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -760,6 +792,7 @@ export type UserCreateWithoutPromoUsagesInput = {
   resetAttempts?: number
   resetLockedUntil?: Date | string | null
   verificationCodeExpiry?: Date | string | null
+  tokenVersion?: number
   orders?: Prisma.OrderCreateNestedManyWithoutUserInput
 }
 
@@ -779,6 +812,7 @@ export type UserUncheckedCreateWithoutPromoUsagesInput = {
   resetAttempts?: number
   resetLockedUntil?: Date | string | null
   verificationCodeExpiry?: Date | string | null
+  tokenVersion?: number
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -814,6 +848,7 @@ export type UserUpdateWithoutPromoUsagesInput = {
   resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
 }
 
@@ -833,6 +868,7 @@ export type UserUncheckedUpdateWithoutPromoUsagesInput = {
   resetAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   resetLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   verificationCodeExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -892,6 +928,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   resetAttempts?: boolean
   resetLockedUntil?: boolean
   verificationCodeExpiry?: boolean
+  tokenVersion?: boolean
   orders?: boolean | Prisma.User$ordersArgs<ExtArgs>
   promoUsages?: boolean | Prisma.User$promoUsagesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -913,6 +950,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   resetAttempts?: boolean
   resetLockedUntil?: boolean
   verificationCodeExpiry?: boolean
+  tokenVersion?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -931,6 +969,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   resetAttempts?: boolean
   resetLockedUntil?: boolean
   verificationCodeExpiry?: boolean
+  tokenVersion?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -949,9 +988,10 @@ export type UserSelectScalar = {
   resetAttempts?: boolean
   resetLockedUntil?: boolean
   verificationCodeExpiry?: boolean
+  tokenVersion?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "address" | "role" | "createdAt" | "emailVerified" | "verificationCode" | "resetCode" | "resetCodeExpiry" | "resetAttempts" | "resetLockedUntil" | "verificationCodeExpiry", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "address" | "role" | "createdAt" | "emailVerified" | "verificationCode" | "resetCode" | "resetCodeExpiry" | "resetAttempts" | "resetLockedUntil" | "verificationCodeExpiry" | "tokenVersion", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orders?: boolean | Prisma.User$ordersArgs<ExtArgs>
   promoUsages?: boolean | Prisma.User$promoUsagesArgs<ExtArgs>
@@ -982,6 +1022,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     resetAttempts: number
     resetLockedUntil: Date | null
     verificationCodeExpiry: Date | null
+    tokenVersion: number
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -1422,6 +1463,7 @@ export interface UserFieldRefs {
   readonly resetAttempts: Prisma.FieldRef<"User", 'Int'>
   readonly resetLockedUntil: Prisma.FieldRef<"User", 'DateTime'>
   readonly verificationCodeExpiry: Prisma.FieldRef<"User", 'DateTime'>
+  readonly tokenVersion: Prisma.FieldRef<"User", 'Int'>
 }
     
 

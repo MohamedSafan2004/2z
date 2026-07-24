@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
+import { trackPurchase, generateEventId } from "@/lib/meta-pixel"
 
 const WHATSAPP_NUMBER = "201114833377" // 011 1483 3377 بصيغة دولية بدون +
 
@@ -11,6 +12,8 @@ type InstapayOrder = {
   totalAmount: number | string
   paymentStatus: string
   guestEmail: string | null
+  instapayRef: string | null
+  status: string
 }
 
 export default function InstapayPaymentPage() {
@@ -19,12 +22,20 @@ export default function InstapayPaymentPage() {
   const router = useRouter()
   const orderId = params.orderId as string
   const verifyToken = searchParams.get("token") || ""
+  // event_id جاي من صفحة الـ checkout (?eid=) عشان يبقى نفسه بين الـ Pixel
+  // والـ CAPI؛ لو مش موجود (مثلاً العميل رجع للصفحة من رابط قديم) بنولّد واحد جديد
+  const purchaseEventIdRef = useRef(searchParams.get("eid") || generateEventId())
+  const trackedPurchaseRef = useRef(false)
 
   const [order, setOrder] = useState<InstapayOrder | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [proofSent, setProofSent] = useState(false)
+  const [refInput, setRefInput] = useState("")
+  const [refError, setRefError] = useState("")
+  const [refSubmitting, setRefSubmitting] = useState(false)
+  const [refSubmitted, setRefSubmitted] = useState(false)
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -34,6 +45,7 @@ export default function InstapayPaymentPage() {
         const data = await res.json()
         setOrder(data)
         if (data.paymentStatus === "PAID") setProofSent(true)
+        if (data.instapayRef) { setProofSent(true); setRefSubmitted(true) }
       } catch {
         setError("Something went wrong")
       } finally {
@@ -47,6 +59,38 @@ export default function InstapayPaymentPage() {
     navigator.clipboard.writeText(text)
     setCopiedField(field)
     setTimeout(() => setCopiedField(null), 2000)
+  }
+
+  const handleSubmitRef = async () => {
+    if (refSubmitting) return
+    const trimmed = refInput.trim()
+    if (trimmed.length < 6) {
+      setRefError("Please enter a valid InstaPay reference number")
+      return
+    }
+
+    setRefSubmitting(true)
+    setRefError("")
+
+    try {
+      const res = await fetch(`/api/orders/${orderId}/submit-instapay-ref`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instapayRef: trimmed, verifyToken }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setRefError(data.error || "Something went wrong")
+        return
+      }
+      setOrder((prev) => (prev ? { ...prev, instapayRef: trimmed, status: "PENDING" } : prev))
+      setRefSubmitted(true)
+      setProofSent(true)
+    } catch {
+      setRefError("Something went wrong")
+    } finally {
+      setRefSubmitting(false)
+    }
   }
 
   if (loading) return (
@@ -73,6 +117,33 @@ export default function InstapayPaymentPage() {
   const handleWhatsappClick = () => {
     setProofSent(true)
     window.open(whatsappLink, "_blank")
+
+    // ─── Meta Pixel + CAPI: Purchase ───────────────────────────────────────
+    // دي أقرب لحظة لنية دفع جادة في الفلو الحالي (العميل جاهز يبعت إثبات
+    // الدفع) — منستناش تأكيد الأدمن اليدوي عشان ده ممكن ياخد وقت طويل.
+    if (!trackedPurchaseRef.current && order) {
+      trackedPurchaseRef.current = true
+      const eventId = purchaseEventIdRef.current
+
+      trackPurchase({
+        content_ids: [order.id],
+        value: amount,
+        num_items: 1,
+        eventId,
+      })
+
+      fetch("/api/meta/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventName: "Purchase",
+          eventId,
+          orderId: order.id,
+          verifyToken,
+          eventSourceUrl: `https://www.2zstore.com/instapay-payment/${order.id}`,
+        }),
+      }).catch(() => {})
+    }
   }
 
   return (
@@ -172,6 +243,45 @@ export default function InstapayPaymentPage() {
                 We&apos;ve opened WhatsApp for you. Once we review your screenshot, we&apos;ll confirm your order and you&apos;ll get an email.
               </p>
             )}
+
+            {/* ─── InstaPay reference number form ─────────────────────────────── */}
+            <div style={{ marginTop: "28px", paddingTop: "28px", borderTop: "1px solid rgba(240,237,230,0.1)" }}>
+              {refSubmitted ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "14px 16px", background: "rgba(100,200,150,0.08)", border: "1px solid rgba(100,200,150,0.25)", borderRadius: "4px" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(100,200,150,0.9)" strokeWidth="2.5" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+                  <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.7)", letterSpacing: "0.03em", lineHeight: 1.6, margin: 0 }}>
+                    Reference number submitted{order?.instapayRef ? ` (${order.instapayRef})` : ""}. We&apos;ll confirm your order shortly.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", marginBottom: "12px" }}>
+                    Then, enter your reference number here
+                  </p>
+                  <p style={{ fontSize: "9.5px", color: "rgba(240,237,230,0.45)", lineHeight: 1.7, marginBottom: "14px" }}>
+                    After the transfer, your bank app shows a reference/transaction number. Enter it below so we can match your payment — this is required to confirm your order, in addition to the WhatsApp screenshot.
+                  </p>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <input
+                      type="text"
+                      value={refInput}
+                      onChange={(e) => { setRefInput(e.target.value); setRefError("") }}
+                      onKeyDown={(e) => e.key === "Enter" && handleSubmitRef()}
+                      placeholder="e.g. 123456789012"
+                      style={{ flex: 1, padding: "14px 16px", background: "rgba(255,255,255,0.02)", border: "1.5px solid rgba(240,237,230,0.18)", color: "#f0ede6", fontFamily: "Space Mono, monospace", fontSize: "12px", outline: "none", boxSizing: "border-box" }}
+                    />
+                    <button
+                      onClick={handleSubmitRef}
+                      disabled={refSubmitting}
+                      style={{ padding: "0 20px", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", background: refSubmitting ? "rgba(240,237,230,0.15)" : "#f0ede6", color: "#080808", border: "none", cursor: refSubmitting ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
+                    >
+                      {refSubmitting ? "..." : "Submit"}
+                    </button>
+                  </div>
+                  {refError && <p style={{ fontSize: "9px", color: "#ff6b6b", marginTop: "10px", letterSpacing: "0.05em" }}>{refError}</p>}
+                </>
+              )}
+            </div>
 
             <p style={{ fontSize: "8px", color: "rgba(240,237,230,0.3)", marginTop: "16px", textAlign: "center", letterSpacing: "0.05em" }}>
               Your order is saved — you can come back to this page anytime to send your payment proof.

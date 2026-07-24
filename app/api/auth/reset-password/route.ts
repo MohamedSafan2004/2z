@@ -145,6 +145,7 @@ import { NextRequest, NextResponse } from "next/server"
           resetCode: null,
           resetCodeExpiry: null,
           resetAttempts: 0,
+          tokenVersion: { increment: 1 }, // يلغي أي توكن قديم مسروق أو مخزّن في جهاز تاني فورًا
         },
       })
 

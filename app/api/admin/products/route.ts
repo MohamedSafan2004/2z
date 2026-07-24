@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/middleware"
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = requireAdmin(req)
+    const auth = await requireAdmin(req)
     if ("error" in auth) return auth.error
 
     const products = await db.product.findMany({

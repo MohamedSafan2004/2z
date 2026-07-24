@@ -78,7 +78,7 @@ export async function POST(
       await sendAdminNotification({
         orderNumber: order.id,
         invoiceNumber: invoiceNum,
-        customerName: order.user?.name || "Guest",
+        customerName: order.user?.name || order.guestName || "Guest",
         customerEmail: emailTo || "",
         customerPhone: order.phone || "",
         address: order.address || "",

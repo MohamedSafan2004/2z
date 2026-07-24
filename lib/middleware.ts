@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "./auth"
+import { db } from "./db"
 
 type AuthSuccess = { userId: string; role: string }
 type AuthError   = { error: NextResponse }
@@ -20,7 +21,7 @@ function extractBearerToken(req: NextRequest): string | null {
   return token
 }
 
-export function requireAuth(req: NextRequest): AuthSuccess | AuthError {
+export async function requireAuth(req: NextRequest): Promise<AuthSuccess | AuthError> {
   const token = extractBearerToken(req)
 
   if (!token) {
@@ -36,11 +37,21 @@ export function requireAuth(req: NextRequest): AuthSuccess | AuthError {
     }
   }
 
+  // نتأكد إن التوكن لسه صالح مقارنة بـ tokenVersion الحالي في الداتابيز — لو اليوزر
+  // غير الباسورد (أو الأدمن عمل force logout)، tokenVersion بيتزود في الداتابيز
+  // فأي توكن قديم معنده رقم أقدم يبقى مرفوض فورًا
+  const user = await db.user.findUnique({ where: { id: payload.userId }, select: { tokenVersion: true } })
+  if (!user || user.tokenVersion !== payload.tokenVersion) {
+    return {
+      error: NextResponse.json({ error: "Session expired, please log in again" }, { status: 401 }),
+    }
+  }
+
   return { userId: payload.userId, role: payload.role }
 }
 
-export function requireAdmin(req: NextRequest): AuthSuccess | AuthError {
-  const auth = requireAuth(req)
+export async function requireAdmin(req: NextRequest): Promise<AuthSuccess | AuthError> {
+  const auth = await requireAuth(req)
   if ("error" in auth) return auth
 
   if (auth.role !== "ADMIN") {

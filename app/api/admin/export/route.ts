@@ -5,7 +5,7 @@ import ExcelJS from "exceljs"
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = requireAdmin(req)
+    const auth = await requireAdmin(req)
     if ("error" in auth) return auth.error
 
     const orders = await db.order.findMany({

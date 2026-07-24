@@ -11,22 +11,22 @@ interface OrderSummarySheetProps {
 export default function OrderSummarySheet({ open, onClose, children }: OrderSummarySheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null)
   const [dragY, setDragY] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
   const dragStartY = useRef(0)
-  const isDragging = useRef(false)
 
   const handleTouchStart = (e: React.TouchEvent) => {
     dragStartY.current = e.touches[0].clientY
-    isDragging.current = true
+    setIsDragging(true)
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current) return
+    if (!isDragging) return
     const delta = e.touches[0].clientY - dragStartY.current
     if (delta > 0) setDragY(delta)
   }
 
   const handleTouchEnd = () => {
-    isDragging.current = false
+    setIsDragging(false)
     if (dragY > 100) {
       onClose()
     }
@@ -62,7 +62,7 @@ export default function OrderSummarySheet({ open, onClose, children }: OrderSumm
           border: "1px solid rgba(240,237,230,0.12)",
           borderBottom: "none",
           transform: open ? `translateY(${dragY}px)` : "translateY(100%)",
-          transition: isDragging.current ? "none" : "transform 0.32s cubic-bezier(0.32, 0.72, 0, 1)",
+          transition: isDragging ? "none" : "transform 0.32s cubic-bezier(0.32, 0.72, 0, 1)",
           zIndex: 91,
           maxHeight: "78vh",
           display: "flex",

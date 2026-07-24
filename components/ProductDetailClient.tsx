@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/lib/store/cart"
+import { trackViewContent, trackAddToCart } from "@/lib/meta-pixel"
 
 const colorImages: Record<string, string[]> = {
   BLACK: [
@@ -181,6 +182,16 @@ export default function ProductDetailClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productColor])
 
+  // ─── Meta Pixel: ViewContent ────────────────────────────────────────────
+  useEffect(() => {
+    trackViewContent({
+      content_ids: [product.id],
+      content_name: product.name,
+      value: Number(product.price),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id])
+
   const goToImage = (index: number) => setImgIndex(index)
   const nextImage = () => goToImage((imgIndex + 1) % images.length)
   const prevImage = () => goToImage((imgIndex - 1 + images.length) % images.length)
@@ -206,6 +217,12 @@ export default function ProductDetailClient({
     const item = buildCartItem()
     if (!item) return
     addItem(item)
+    trackAddToCart({
+      content_ids: [selectedVariant?.id || product.id],
+      content_name: product.name,
+      value: Number(product.price) * item.quantity,
+      contents: [{ id: selectedVariant?.id || product.id, quantity: item.quantity, item_price: Number(product.price) }],
+    })
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
@@ -227,6 +244,12 @@ export default function ProductDetailClient({
         size: variant.size,
         quantity: toAdd,
         imageUrl: images[0],
+      })
+      trackAddToCart({
+        content_ids: [variant.id],
+        content_name: product.name,
+        value: Number(product.price) * toAdd,
+        contents: [{ id: variant.id, quantity: toAdd, item_price: Number(product.price) }],
       })
     }
 

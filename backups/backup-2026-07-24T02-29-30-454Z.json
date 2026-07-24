@@ -1,0 +1,239 @@
+{
+  "User": [
+    {
+      "id": "cmquekari0000xou3sejwt8cr",
+      "name": "7adido",
+      "email": "super20.mh2004@gmail.com",
+      "password": "$2b$12$JRy9x4kGKkLznx/ge3rkuuq8we.Wg/O4CxEaQHoFWUpmEtjCzwnfu",
+      "phone": "01553594689",
+      "address": null,
+      "role": "ADMIN",
+      "createdAt": "2026-06-26T00:59:57.822Z",
+      "emailVerified": true,
+      "verificationCode": null,
+      "resetCode": null,
+      "resetCodeExpiry": null,
+      "resetAttempts": 0,
+      "resetLockedUntil": null,
+      "verificationCodeExpiry": null
+    },
+    {
+      "id": "cmr30k0xj000004ic9dpvfwtf",
+      "name": "Mohamed Sayed",
+      "email": "shp7999gh@gmail.com",
+      "password": "$2b$12$x54ttE2IsgVYrYuOz.piQ.kkbc1UCllzXxjiJ92ttODzmEvXScCH2",
+      "phone": "01065178342",
+      "address": null,
+      "role": "ADMIN",
+      "createdAt": "2026-07-02T01:37:46.040Z",
+      "emailVerified": true,
+      "verificationCode": null,
+      "resetCode": null,
+      "resetCodeExpiry": null,
+      "resetAttempts": 0,
+      "resetLockedUntil": null,
+      "verificationCodeExpiry": null
+    }
+  ],
+  "Category": [
+    {
+      "id": "cmqueien3000080u367r0ag3m",
+      "name": "T-Shirts",
+      "slug": "t-shirts"
+    }
+  ],
+  "Product": [
+    {
+      "id": "cmqueiepo000180u3dekxur9p",
+      "categoryId": "cmqueien3000080u367r0ag3m",
+      "name": "Oversize T-Shirt — Black",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "550.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-06-26T00:58:29.628Z",
+      "originalPrice": "750.000000000000000000000000000000"
+    },
+    {
+      "id": "cmqueif03000580u3rr9sg4ww",
+      "categoryId": "cmqueien3000080u367r0ag3m",
+      "name": "Oversize T-Shirt — White",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "550.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-06-26T00:58:30.003Z",
+      "originalPrice": "750.000000000000000000000000000000"
+    },
+    {
+      "id": "cmqueifam000980u3ncbjkm7h",
+      "categoryId": "cmqueien3000080u367r0ag3m",
+      "name": "Oversize T-Shirt — Grey",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "550.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-06-26T00:58:30.382Z",
+      "originalPrice": "750.000000000000000000000000000000"
+    },
+    {
+      "id": "cmqueifkt000d80u33o34k7x1",
+      "categoryId": "cmqueien3000080u367r0ag3m",
+      "name": "Oversize T-Shirt — Beige",
+      "description": "Premium quality tee. Minimal by design, built to last.",
+      "price": "550.000000000000000000000000000000",
+      "isActive": true,
+      "createdAt": "2026-06-26T00:58:30.749Z",
+      "originalPrice": "750.000000000000000000000000000000"
+    }
+  ],
+  "ProductVariant": [
+    {
+      "id": "cmqueiesc000280u31v17t3rf",
+      "productId": "cmqueiepo000180u3dekxur9p",
+      "color": "BLACK",
+      "size": "M",
+      "stockQuantity": 16,
+      "sku": "2Z-TEE-B-M",
+      "openingStock": 16
+    },
+    {
+      "id": "cmqueieux000380u3jxh94f2q",
+      "productId": "cmqueiepo000180u3dekxur9p",
+      "color": "BLACK",
+      "size": "L",
+      "stockQuantity": 14,
+      "sku": "2Z-TEE-B-L",
+      "openingStock": 14
+    },
+    {
+      "id": "cmqueif2p000680u377lm05xl",
+      "productId": "cmqueif03000580u3rr9sg4ww",
+      "color": "WHITE",
+      "size": "M",
+      "stockQuantity": 7,
+      "sku": "2Z-TEE-W-M",
+      "openingStock": 7
+    },
+    {
+      "id": "cmqueif5a000780u3q39q9hs2",
+      "productId": "cmqueif03000580u3rr9sg4ww",
+      "color": "WHITE",
+      "size": "L",
+      "stockQuantity": 9,
+      "sku": "2Z-TEE-W-L",
+      "openingStock": 9
+    },
+    {
+      "id": "cmqueif80000880u36wa94j8f",
+      "productId": "cmqueif03000580u3rr9sg4ww",
+      "color": "WHITE",
+      "size": "XL",
+      "stockQuantity": 14,
+      "sku": "2Z-TEE-W-XL",
+      "openingStock": 14
+    },
+    {
+      "id": "cmqueifd7000a80u36vyep1qh",
+      "productId": "cmqueifam000980u3ncbjkm7h",
+      "color": "GREY",
+      "size": "M",
+      "stockQuantity": 17,
+      "sku": "2Z-TEE-GR-M",
+      "openingStock": 17
+    },
+    {
+      "id": "cmqueiffr000b80u306zsxejz",
+      "productId": "cmqueifam000980u3ncbjkm7h",
+      "color": "GREY",
+      "size": "L",
+      "stockQuantity": 17,
+      "sku": "2Z-TEE-GR-L",
+      "openingStock": 17
+    },
+    {
+      "id": "cmqueifib000c80u3g9gcoumi",
+      "productId": "cmqueifam000980u3ncbjkm7h",
+      "color": "GREY",
+      "size": "XL",
+      "stockQuantity": 18,
+      "sku": "2Z-TEE-GR-XL",
+      "openingStock": 18
+    },
+    {
+      "id": "cmqueifnc000e80u3189rkk2m",
+      "productId": "cmqueifkt000d80u33o34k7x1",
+      "color": "BEIGE",
+      "size": "M",
+      "stockQuantity": 18,
+      "sku": "2Z-TEE-BE-M",
+      "openingStock": 18
+    },
+    {
+      "id": "cmqueifq6000f80u3ia14itol",
+      "productId": "cmqueifkt000d80u33o34k7x1",
+      "color": "BEIGE",
+      "size": "L",
+      "stockQuantity": 19,
+      "sku": "2Z-TEE-BE-L",
+      "openingStock": 19
+    },
+    {
+      "id": "cmqueifss000g80u3bc5lg0c9",
+      "productId": "cmqueifkt000d80u33o34k7x1",
+      "color": "BEIGE",
+      "size": "XL",
+      "stockQuantity": 17,
+      "sku": "2Z-TEE-BE-XL",
+      "openingStock": 17
+    },
+    {
+      "id": "cmqueiexi000480u3qu58ao54",
+      "productId": "cmqueiepo000180u3dekxur9p",
+      "color": "BLACK",
+      "size": "XL",
+      "stockQuantity": 17,
+      "sku": "2Z-TEE-B-XL",
+      "openingStock": 18
+    }
+  ],
+  "Order": [
+    {
+      "id": "cmrjqjqj2000004kw90l8r507",
+      "userId": null,
+      "totalAmount": "600.000000000000000000000000000000",
+      "status": "DELIVERED",
+      "paymentId": null,
+      "paymentStatus": "PAID",
+      "createdAt": "2026-07-13T18:29:41.390Z",
+      "guestEmail": "youssefmmgomaa@gmail.com",
+      "address": "٧ش السادات الملك فيصل امام كليه التربيه الرياضيه الجيزه",
+      "phone": "01280121981",
+      "clientOrderId": null,
+      "paymobTransactionId": null,
+      "lastPaymentCheckAt": null,
+      "verifyToken": "7b6a2d44d2db923c4f409796ea6534b327b3f558823f78523a5917fa7bc1ae5f",
+      "adminEmailSent": false,
+      "confirmationEmailSent": false,
+      "discountAmount": "0.000000000000000000000000000000",
+      "promoCode": null,
+      "invoiceNumber": 5,
+      "sheetSynced": true,
+      "instapayRef": null,
+      "paymentMethod": "COD",
+      "shippingCost": "50.000000000000000000000000000000",
+      "shippingZone": "giza",
+      "promotionDiscount": "0.000000000000000000000000000000"
+    }
+  ],
+  "OrderItem": [
+    {
+      "id": "cmrjqjqln000104kw0e17pvj7",
+      "orderId": "cmrjqjqj2000004kw90l8r507",
+      "variantId": "cmqueiexi000480u3qu58ao54",
+      "productNameSnapshot": "Oversize T-Shirt — Black",
+      "priceSnapshot": "550.000000000000000000000000000000",
+      "colorSnapshot": "BLACK",
+      "sizeSnapshot": "XL",
+      "quantity": 1,
+      "isGift": false
+    }
+  ]
+}
