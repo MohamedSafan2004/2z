@@ -41,7 +41,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAdmin(req)
+    const auth = await requireAdmin(req)
     if ("error" in auth) return auth.error
 
     const { id } = await params
@@ -75,7 +75,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAdmin(req)
+    const auth = await requireAdmin(req)
     if ("error" in auth) return auth.error
 
     const { id } = await params

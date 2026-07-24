@@ -30,7 +30,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = requireAdmin(req)
+    const auth = await requireAdmin(req)
     if ("error" in auth) return auth.error
 
     const { name, slug } = await req.json()
