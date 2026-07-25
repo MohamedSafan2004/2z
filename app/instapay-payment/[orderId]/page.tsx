@@ -73,10 +73,11 @@ export default function InstapayPaymentPage() {
     setRefError("")
 
     try {
+      const eventId = purchaseEventIdRef.current
       const res = await fetch(`/api/orders/${orderId}/submit-instapay-ref`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ instapayRef: trimmed, verifyToken }),
+        body: JSON.stringify({ instapayRef: trimmed, verifyToken, eventId }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -86,6 +87,20 @@ export default function InstapayPaymentPage() {
       setOrder((prev) => (prev ? { ...prev, instapayRef: trimmed, status: "PENDING" } : prev))
       setRefSubmitted(true)
       setProofSent(true)
+
+      // ─── Meta Pixel: Purchase ─────────────────────────────────────────
+      // دي لحظة تأكيد دفع موثقة فعلًا (رقم الحوالة اتسجل) مش
+      // مجرد ضغطة واتساب (العميل ممكن يقفل من غير ما يبعت). نفس event_id
+      // بيتبعت للسيرفر فوق عشان الـ CAPI Purchase يعمل dedup صح.
+      if (!trackedPurchaseRef.current) {
+        trackedPurchaseRef.current = true
+        trackPurchase({
+          content_ids: [orderId],
+          value: amount,
+          num_items: 1,
+          eventId,
+        })
+      }
     } catch {
       setRefError("Something went wrong")
     } finally {
@@ -117,33 +132,9 @@ export default function InstapayPaymentPage() {
   const handleWhatsappClick = () => {
     setProofSent(true)
     window.open(whatsappLink, "_blank")
-
-    // ─── Meta Pixel + CAPI: Purchase ───────────────────────────────────────
-    // دي أقرب لحظة لنية دفع جادة في الفلو الحالي (العميل جاهز يبعت إثبات
-    // الدفع) — منستناش تأكيد الأدمن اليدوي عشان ده ممكن ياخد وقت طويل.
-    if (!trackedPurchaseRef.current && order) {
-      trackedPurchaseRef.current = true
-      const eventId = purchaseEventIdRef.current
-
-      trackPurchase({
-        content_ids: [order.id],
-        value: amount,
-        num_items: 1,
-        eventId,
-      })
-
-      fetch("/api/meta/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventName: "Purchase",
-          eventId,
-          orderId: order.id,
-          verifyToken,
-          eventSourceUrl: `https://www.2zstore.com/instapay-payment/${order.id}`,
-        }),
-      }).catch(() => {})
-    }
+    // ملاحظة: الـ Purchase بيتبعت من handleSubmitRef بعد نجاح إرسال رقم
+    // الحوالة مش من هنا — ضغطة الواتساب لوحدها مش دليل إن العميل
+    // دفع فعلًا (ممكن يقفل من غير ما يبعت).
   }
 
   return (

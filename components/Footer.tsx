@@ -93,7 +93,7 @@ export default function Footer() {
             <div className="f-col">
               <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.2)", margin: 0 }}>Info</p>
               <Link href="/contact" className="f-link" style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", textDecoration: "none", transition: "color 0.2s" }}>Contact</Link>
-              <Link href="/privacy" className="f-link" style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", textDecoration: "none", transition: "color 0.2s" }}>Privacy</Link>
+              <Link href="/privacy" className="f-link" style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", textDecoration: "none", transition: "color 0.2s" }}>Privacy & Policy</Link>
               <Link href="/terms" className="f-link" style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", textDecoration: "none", transition: "color 0.2s" }}>Terms</Link>
             </div>
           </div>

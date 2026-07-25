@@ -4,7 +4,7 @@ import { requireAuth, optionalAuth } from "@/lib/middleware"
 import { orderRatelimit } from "@/lib/ratelimit"
 import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 import { sanitize } from "@/lib/validation"
-import { getShippingCost, type ShippingZone } from "@/lib/shipping"
+import { getFinalShippingCost, type ShippingZone } from "@/lib/shipping"
 import { calculatePromotion, type GiftSelection } from "@/lib/promotions"
 import { sendCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 import { normalizeEgyptianPhone } from "@/lib/phone"
@@ -125,7 +125,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const shippingCost = getShippingCost(shippingZone as ShippingZone)
+    // الفري شيبينج بيتحسب على المبلغ الفعلي اللي العميل هيدفعه في المنتجات (بعد خصم الـ bundle + promo code)
+    const amountAfterDiscounts = subtotal - promotionDiscount - discountAmount
+    const shippingCost = getFinalShippingCost(shippingZone as ShippingZone, amountAfterDiscounts)
     const totalAmount = subtotal - promotionDiscount - discountAmount + shippingCost
     const user = auth.userId ? await db.user.findUnique({ where: { id: auth.userId } }) : null
     const verifyToken = crypto.randomBytes(32).toString("hex")

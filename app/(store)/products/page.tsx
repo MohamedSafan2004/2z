@@ -154,6 +154,28 @@ export default async function ProductsPage() {
         @media (max-width: 420px) {
           .promo-row-title { font-size: 10px; white-space: normal; }
         }
+
+        /* ── Shipping info banner ── */
+        .shipping-info-banner {
+          border: 1px solid rgba(240,237,230,0.1);
+          background: rgba(240,237,230,0.02);
+          margin-bottom: 32px;
+          padding: 14px 16px;
+        }
+        .shipping-info-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: rgba(240,237,230,0.55);
+        }
+        .shipping-info-row svg { flex-shrink: 0; opacity: 0.7; }
+        .shipping-info-text {
+          font-family: 'Space Mono', monospace;
+          font-size: 10.5px;
+          letter-spacing: 0.02em;
+          line-height: 1.5;
+        }
+        .shipping-info-text strong { color: #f0ede6; font-weight: 700; }
       `}</style>
 
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "80px 20px 80px" }}>
@@ -184,18 +206,13 @@ export default async function ProductsPage() {
           </div>
         </div>
 
-        <div className="promo-banner">
-          <div className="promo-row">
-            <span className="promo-row-tier">2 FOR 1</span>
-            <span className="promo-row-divider" />
-            <span className="promo-row-title">Buy 2, get 1 free</span>
+        <div className="shipping-info-banner">
+          <div className="shipping-info-row">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="1" y="6" width="14" height="11"/><path d="M15 9h4l3 3v5h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="17.5" cy="19" r="2"/>
+            </svg>
+            <span className="shipping-info-text">Estimated delivery: <strong>1–3 business days</strong> (Cairo &amp; Giza)</span>
           </div>
-          <div className="promo-row">
-            <span className="promo-row-tier">3 FOR 2</span>
-            <span className="promo-row-divider" />
-            <span className="promo-row-title">Buy 3, get 2 free</span>
-          </div>
-          <span className="promo-row-sub">Mix any colors & sizes</span>
         </div>
 
         <p style={{

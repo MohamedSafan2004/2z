@@ -7,83 +7,58 @@ export default function TermsPage() {
         <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "52px", fontWeight: 300, color: "#f0ede6", marginBottom: "16px", lineHeight: 1 }}>
           Terms &<br /><em style={{ color: "rgba(240,237,230,0.4)" }}>Conditions.</em>
         </h1>
-        <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)", letterSpacing: "0.1em", marginBottom: "8px" }}>Last updated: May 2026</p>
         <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)", lineHeight: 2, marginBottom: "56px" }}>
           By using this website or placing an order, you agree to these Terms and Conditions. Please read them carefully before proceeding.
         </p>
 
         {[
           {
-            title: "About 2Z",
-            content: "2Z is a clothing brand based in Cairo, Egypt. We sell and deliver products exclusively within Egypt. Contact: super20.mh2004@gmail.com | +20 10 6517 8342."
+            title: "Order Acceptance",
+            content: "By placing an order with 2Z, customers fully agree to adhere to these Terms and Conditions."
           },
           {
-            title: "Acceptance of Terms",
-            content: "By accessing this website or submitting an order, you confirm that you have read, understood, and agree to be bound by these Terms and Conditions and our Privacy Policy, in accordance with Egyptian Consumer Protection Law No. 181 of 2018."
+            title: "Legal Compliance",
+            content: "Nothing in these terms limits or overrides mandatory consumer rights under applicable Egyptian laws."
           },
           {
-            title: "Acceptable Use",
-            content: "This website may only be used for lawful personal purposes. You agree not to use it in any way that violates applicable laws, infringes third-party rights, or disrupts the website's operation. We reserve the right to deny access to any user who violates these terms."
+            title: "Pricing & Availability",
+            content: "All orders are subject to product availability. Prices are explicitly displayed in Egyptian Pounds (EGP)."
           },
           {
-            title: "Account Registration",
-            content: "You may use this website and place orders without creating an account. If you choose to register, you are responsible for maintaining the confidentiality of your login credentials and for all activities under your account. You must notify us immediately if you suspect unauthorized access."
+            title: "Product Representation",
+            content: "Product colours may vary slightly from the actual items due to individual screen settings and display configurations."
           },
           {
-            title: "Product Descriptions & Pricing",
-            content: "All prices are in Egyptian Pounds (EGP) and include applicable taxes. Prices and product availability may change without prior notice. While we strive for accuracy, product images and descriptions are for reference only and minor variations may occur. We reserve the right to correct any pricing errors before confirming your order."
+            title: "Order Cancellation",
+            content: "2Z reserves the right to cancel any orders suspected of fraud or those containing technical errors. In such cases, any eligible payments will be fully refunded."
           },
           {
-            title: "Order Submission & Acceptance",
-            content: "By submitting an order, you enter into a binding purchase agreement and commit to paying the specified price. You will receive an order confirmation by email or WhatsApp. We reserve the right to refuse or cancel any order at our discretion, including cases of suspected fraud, pricing errors, or unavailability. You will be notified promptly in such cases."
+            title: "Shipping Coverage",
+            content: "2Z currently limits its shipping operations exclusively to Cairo and Giza."
           },
           {
-            title: "Retention of Ownership",
-            content: "Ownership of ordered products does not transfer to you until full payment has been received. For cash on delivery orders, ownership transfers at the moment of successful payment upon delivery."
+            title: "Processing & Delivery",
+            content: "Orders are typically processed within 24 hours of placement and delivered within 1–3 business days. Delivery estimates are approximate and may vary due to public holidays, severe weather conditions, heavy traffic, or unforeseen courier delays."
+          },
+          {
+            title: "Return, Refund & Exchange",
+            content: "Customers retain all mandatory protection and rights granted under the Egyptian Consumer Protection Law. To be eligible for a return or exchange, products must normally be sent back unused, unwashed, and with all original tags attached. Issues regarding manufacturing defects or incorrectly shipped items will be handled entirely at 2Z's expense following proper verification."
           },
           {
             title: "Payment Methods",
-            content: "Currently accepted payment method: Cash on Delivery. Additional methods (Vodafone Cash, InstaPay, credit/debit cards) will be added in the future. Payment is due at the time of delivery for cash on delivery orders. We reserve the right to cancel orders where payment is refused upon delivery."
-          },
-          {
-            title: "Delivery",
-            content: "We deliver within Egypt only. Delivery times are estimates and not guaranteed. We are not liable for delays caused by courier partners, incorrect address information, or events beyond our control. You are responsible for providing a complete and accurate delivery address. Delivery fees, if any, are shown at checkout."
-          },
-          {
-            title: "Failed Delivery",
-            content: "If delivery fails due to an incorrect address or the recipient being unavailable, we will contact you to arrange a second delivery attempt. Any additional delivery costs incurred after a second failed attempt will be at your expense. Uncollected orders may be returned and the order cancelled."
-          },
-          {
-            title: "Returns & Exchanges",
-            content: "We accept returns within 14 days of delivery in accordance with Egyptian Consumer Protection Law. Items must be unworn, unwashed, and in original condition with all tags attached. Sale items are non-returnable. To initiate a return, contact us via WhatsApp at +20 10 6517 8342 or email at super20.mh2004@gmail.com. Return shipping costs are the customer's responsibility unless the item is defective or incorrect."
-          },
-          {
-            title: "Refunds",
-            content: "Refunds are processed within 7–14 business days of receiving and inspecting the returned item. For cash on delivery orders, refunds are issued via Vodafone Cash or bank transfer. We reserve the right to refuse a refund if the item does not meet our return conditions."
+            content: "We accept payments via Cash on Delivery (COD) and InstaPay. To ensure your financial security, 2Z does not intentionally store complete payment details on its servers. Orders may undergo a verification process to mitigate fraud and secure transactions."
           },
           {
             title: "Intellectual Property",
-            content: "All content on this website — including logos, images, text, product designs, and layout — is the exclusive property of 2Z and is protected under applicable intellectual property laws. You may not reproduce, copy, distribute, or use any content without our prior written consent."
+            content: "All brand logos, trademarks, photographs, graphics, and textual website content are the exclusive property of 2Z unless stated otherwise. Any unauthorized commercial copying, reproduction, or reuse of these materials without explicit written permission is strictly prohibited."
           },
           {
-            title: "Limitation of Liability",
-            content: "To the maximum extent permitted by Egyptian law, 2Z shall not be liable for any indirect, incidental, or consequential damages arising from the use of this website or our products. Our total liability shall not exceed the amount paid for the specific order in question. Nothing in these terms excludes liability for personal injury, fraud, or any liability that cannot be excluded by law."
+            title: "Complaints & Contact",
+            content: "For any inquiries, feedback, or support, customers can reach us via email at 2z.eg2004@gmail.com. All customer complaints will be thoroughly reviewed and addressed as promptly as reasonably possible."
           },
           {
-            title: "Severability",
-            content: "If any provision of these Terms is found to be invalid or unenforceable under applicable law, that provision shall be modified to the minimum extent necessary to make it enforceable. All other provisions shall remain in full force and effect."
-          },
-          {
-            title: "Changes to Terms",
-            content: "We reserve the right to update these Terms and Conditions at any time. Changes take effect immediately upon publication on this website. Your continued use of the website after any changes constitutes acceptance of the revised terms. The date of the last revision is always shown at the top of this page."
-          },
-          {
-            title: "Governing Law & Jurisdiction",
-            content: "These Terms are governed by the laws of the Arab Republic of Egypt, including Consumer Protection Law No. 181 of 2018 and Personal Data Protection Law No. 151 of 2020. Any disputes shall be subject to the exclusive jurisdiction of Egyptian courts in Cairo."
-          },
-          {
-            title: "Contact",
-            content: "For any questions regarding these Terms, contact us at 2z.eg2004@gmail.com or +20 10 6517 8342. We are available daily - 24/7."
+            title: "Governing Law",
+            content: "These policies, terms, and conditions are fully governed by and construed in accordance with the laws of the Arab Republic of Egypt. Nothing within this document waives or removes mandatory consumer rights provided by Egyptian law."
           },
         ].map((section, i) => (
           <div key={i} style={{ marginBottom: "40px", paddingBottom: "40px", borderBottom: "1px solid rgba(240,237,230,0.06)" }}>

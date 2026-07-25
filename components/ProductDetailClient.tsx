@@ -470,6 +470,65 @@ export default function ProductDetailClient({
         @media (max-width: 420px) {
           .promo-row-title { font-size: 10px; white-space: normal; }
         }
+
+        /* ── Shipping info banner (top of product page) ── */
+        .shipping-info-banner {
+          border: 1px solid rgba(240,237,230,0.1);
+          background: rgba(240,237,230,0.02);
+          margin-bottom: 20px;
+          padding: 14px 16px;
+        }
+        .shipping-info-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: rgba(240,237,230,0.55);
+        }
+        .shipping-info-row svg { flex-shrink: 0; opacity: 0.7; }
+        .shipping-info-text {
+          font-family: 'Space Mono', monospace;
+          font-size: 10.5px;
+          letter-spacing: 0.02em;
+          line-height: 1.5;
+        }
+        .shipping-info-text strong { color: #f0ede6; font-weight: 700; }
+
+        /* ── Product info accordion ── */
+        .info-accordion {
+          margin-bottom: 28px;
+          border-top: 1px solid rgba(240,237,230,0.08);
+        }
+        .info-accordion-item {
+          border-bottom: 1px solid rgba(240,237,230,0.08);
+        }
+        .info-accordion-header {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 14px 0;
+          font-family: 'Space Mono', monospace;
+          font-size: 10px;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: #f0ede6;
+        }
+        .info-accordion-icon {
+          font-size: 14px;
+          color: rgba(240,237,230,0.4);
+          transition: transform 0.2s ease;
+        }
+        .info-accordion-body {
+          padding: 0 0 18px;
+          font-size: 11px;
+          line-height: 1.9;
+          color: rgba(240,237,230,0.5);
+          letter-spacing: 0.02em;
+          animation: slideDown 0.3s ease both;
+        }
       `}</style>
 
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "70px 20px 80px" }}>
@@ -478,7 +537,7 @@ export default function ProductDetailClient({
           ← Back to Products
         </Link>
 
-        <PromoBanner />
+        <ShippingInfoBanner />
 
         <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", marginTop: "24px" }}>
 
@@ -545,13 +604,25 @@ export default function ProductDetailClient({
               </p>
             )}
 
+            <ProductInfoTabs />
+
             <div style={{ marginBottom: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
                 <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", margin: 0 }}>Size</p>
                 <button
                   onClick={() => setSizeChartOpen(true)}
-                  style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", background: "none", border: "none", borderBottom: "1px solid rgba(240,237,230,0.3)", cursor: "pointer", padding: 0 }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "6px",
+                    fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase",
+                    color: "#f0ede6", background: "none",
+                    border: "1px solid rgba(240,237,230,0.3)",
+                    padding: "6px 10px", cursor: "pointer",
+                  }}
                 >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <rect x="2" y="7" width="20" height="10" rx="1"/>
+                    <path d="M6 7v3M10 7v5M14 7v3M18 7v5"/>
+                  </svg>
                   Size Chart
                 </button>
               </div>
@@ -640,17 +711,6 @@ export default function ProductDetailClient({
             >
               {buying ? "Redirecting…" : "Buy It Now"}
             </button>
-
-            {/* ── BUNDLE PROGRESS + GIFT PICKER ── */}
-            <BundleSection
-              currentCartQuantity={currentCartQuantity}
-              eligibleNow={eligibleNow}
-              nextTier={nextTier}
-              gifts={gifts}
-              setGift={setGift}
-              availableGiftVariants={availableGiftVariants}
-              loadingGiftVariants={loadingGiftVariants}
-            />
 
           </div>
 
@@ -941,9 +1001,12 @@ function BundleSection({
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Promo banner — static, both tiers shown side by side, calm and legible
+// Promo banner — DISABLED (kept for reference, not rendered anywhere).
+// To bring back: swap <ShippingInfoBanner /> for <PromoBanner /> in the
+// main component, and re-add ".promo-banner" styles if removed.
 // ─────────────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function PromoBanner() {
   return (
     <div className="promo-banner">
@@ -958,6 +1021,91 @@ function PromoBanner() {
         <span className="promo-row-title">Buy 3, get 2 free</span>
       </div>
       <span className="promo-row-sub">Mix any colors & sizes · applied automatically at checkout</span>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Shipping info banner — replaces the promo banner at top of product page
+// ─────────────────────────────────────────────────────────────────────────
+
+function ShippingInfoBanner() {
+  return (
+    <div className="shipping-info-banner">
+      <div className="shipping-info-row">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="1" y="6" width="14" height="11"/><path d="M15 9h4l3 3v5h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="17.5" cy="19" r="2"/>
+        </svg>
+        <span className="shipping-info-text">Estimated delivery: <strong>1–3 business days</strong> (Cairo &amp; Giza)</span>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Product info accordion — Description / Shipping & Returns / Return Policies
+// ─────────────────────────────────────────────────────────────────────────
+
+function ProductInfoTabs() {
+  const [openSection, setOpenSection] = useState<string | null>(null)
+
+  const toggle = (key: string) => setOpenSection((prev) => (prev === key ? null : key))
+
+  const sections = [
+    {
+      key: "description",
+      title: "Description",
+      content: (
+        <>
+          <strong>Material:</strong> 100% Premium Interlock Cotton<br />
+          <strong>Fit:</strong> Relaxed Oversized Boxy Fit<br />
+          <strong>Construction:</strong> Double-Sided Interlock Fabric<br />
+          <strong>Designed &amp; Made in:</strong> Cairo, Egypt
+        </>
+      ),
+    },
+    {
+      key: "shipping",
+      title: "Shipping and Returns",
+      content: (
+        <>
+          We currently ship to Cairo and Giza only. Orders are processed within 24 hours and delivered within 1–3 business days. Delivery estimates may vary due to holidays, weather, or courier delays.
+          <br /><br />
+          To be eligible for a return or exchange, items must be unused, unwashed, and with all original tags attached. Manufacturing defects or incorrectly shipped items are handled entirely at 2Z&apos;s expense.
+        </>
+      ),
+    },
+    {
+      key: "returns",
+      title: "Return Policies",
+      content: (
+        <>
+          You retain all rights granted under the Egyptian Consumer Protection Law. Returns and exchanges are accepted on unused, unwashed items with original tags attached.
+          <br /><br />
+          If an item arrives defective or incorrect, contact us at <strong>2z.eg2004@gmail.com</strong> and we&apos;ll handle the return at our own expense after verification.
+        </>
+      ),
+    },
+  ]
+
+  return (
+    <div className="info-accordion">
+      {sections.map((s) => {
+        const isOpen = openSection === s.key
+        return (
+          <div key={s.key} className="info-accordion-item">
+            <button className="info-accordion-header" onClick={() => toggle(s.key)}>
+              <span>{s.title}</span>
+              <span className={`info-accordion-icon ${isOpen ? "open" : ""}`}>{isOpen ? "−" : "+"}</span>
+            </button>
+            {isOpen && (
+              <div className="info-accordion-body">
+                {s.content}
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

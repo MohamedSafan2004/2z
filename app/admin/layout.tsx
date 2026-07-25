@@ -7,7 +7,7 @@ export default function AdminLayout({
 }) {
   return (
     <>
-      <Navbar />
+      <Navbar hideAnnouncementOffset />
       <main className="pt-14">
         {children}
       </main>

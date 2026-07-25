@@ -288,6 +288,28 @@ export default function Home() {
         .newin-section { padding: 56px 20px 40px; max-width: 100%; }
         @media (min-width: 640px) { .newin-section { padding: 64px 24px 40px; } }
 
+        /* ── SHIPPING BANNER (home) ── */
+        .home-shipping-banner {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          border: 1px solid rgba(240,237,230,0.1);
+          background: rgba(240,237,230,0.02);
+          padding: 12px 16px;
+          color: rgba(240,237,230,0.55);
+        }
+        .home-shipping-banner svg { flex-shrink: 0; opacity: 0.7; }
+        .home-shipping-text {
+          font-family: 'Space Mono', monospace;
+          font-size: 9.5px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          line-height: 1.5;
+        }
+        .home-shipping-text strong { color: #f0ede6; font-weight: 700; }
+        @media (min-width: 480px) { .home-shipping-text { font-size: 10.5px; } }
+
         .newin-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; flex-wrap: wrap; gap: 10px; }
         .newin-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: #f0ede6; }
         .newin-viewall { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.3); text-decoration: none; border-bottom: 1px solid rgba(240,237,230,0.2); padding-bottom: 1px; }

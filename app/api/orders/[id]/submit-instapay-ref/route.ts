@@ -3,6 +3,8 @@ import { db } from "@/lib/db"
 import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 import { sanitize } from "@/lib/validation"
 import { sensitiveRatelimit } from "@/lib/ratelimit"
+import { sendCapiEvent, getRequestMeta } from "@/lib/meta-capi"
+import crypto from "crypto"
 
 export async function POST(
   req: NextRequest,
@@ -19,7 +21,7 @@ export async function POST(
     const body = await req.json().catch(() => null)
     if (!body) return NextResponse.json({ error: "Invalid request" }, { status: 400 })
 
-    const { instapayRef, verifyToken } = body
+    const { instapayRef, verifyToken, eventId } = body
     const ref = instapayRef?.trim()
 
     if (!ref || ref.length < 6) {
@@ -95,6 +97,30 @@ export async function POST(
       })
     } catch (error) {
       console.error("Admin notification failed:", error)
+    }
+
+    // ─── Meta CAPI: Purchase ──────────────────────────────────────────────
+    // دي أول لحظة فيها نية دفع موثقة لطلب InstaPay (العميل حول فعلًا وبعت
+    // رقم الحوالة) — مش هننتظر تأكيد الأدمن اليدوي عشان ده ممكن ياخد وقت
+    // طويل ويضعف الـ optimization بتاع Meta.
+    try {
+      const { clientIp, userAgent } = getRequestMeta(req)
+      await sendCapiEvent({
+        eventName: "Purchase",
+        eventId: typeof eventId === "string" && eventId ? eventId : crypto.randomUUID(),
+        eventSourceUrl: `https://www.2zstore.com/instapay-payment/${order.id}`,
+        user: { email: emailTo || undefined, phone: order.phone || undefined, clientIp, userAgent },
+        customData: {
+          content_ids: updated.items.map((item) => item.variantId),
+          content_type: "product",
+          value: Number(order.totalAmount),
+          num_items: updated.items.reduce((sum, item) => sum + item.quantity, 0),
+          currency: "EGP",
+          order_id: order.id,
+        },
+      })
+    } catch (error) {
+      console.error("Meta CAPI Purchase failed:", error)
     }
 
     return NextResponse.json(updated)

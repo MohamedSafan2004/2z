@@ -17,7 +17,7 @@ export default function ContactPage() {
           
           <a href="https://wa.me/201114833377" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <div>
-              <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "26px", fontWeight: 300, color: "#f0ede6", marginBottom: "4px" }}>+20 10 6517 8342</p>
+              <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "26px", fontWeight: 300, color: "#f0ede6", marginBottom: "4px" }}>+20 111 483 3377</p>
               <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.5)", letterSpacing: "0.1em" }}>Available daily — 24/7</p>
             </div>
             <div style={{ fontSize: "24px", color: "rgba(240,237,230,0.2)" }}>↗</div>

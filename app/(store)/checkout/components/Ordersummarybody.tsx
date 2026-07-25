@@ -25,6 +25,7 @@ interface OrderSummaryBodyProps {
   discountValue: number
   shippingCost: number
   shippingLabel: string
+  isFreeShipping?: boolean
   finalTotal: number
   promoInput: string
   onPromoInputChange: (v: string) => void
@@ -38,7 +39,7 @@ interface OrderSummaryBodyProps {
 }
 
 export default function OrderSummaryBody({
-  items, gifts, giftDisplayValue, subtotal, discountValue, shippingCost, shippingLabel, finalTotal,
+  items, gifts, giftDisplayValue, subtotal, discountValue, shippingCost, shippingLabel, isFreeShipping, finalTotal,
   promoInput, onPromoInputChange, promoApplied, promoDiscount, promoLoading, promoError, promoSuccess,
   onApplyPromo, onRemovePromo,
 }: OrderSummaryBodyProps) {
@@ -104,7 +105,9 @@ export default function OrderSummaryBody({
 
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
           <span style={{ fontSize: "12.5px", color: "rgba(240,237,230,0.5)" }}>Shipping {shippingLabel && `(${shippingLabel})`}</span>
-          <span style={{ fontSize: "12.5px", color: "rgba(240,237,230,0.7)" }}>{shippingLabel ? `${shippingCost} EGP` : "—"}</span>
+          <span style={{ fontSize: "12.5px", color: isFreeShipping ? "#c8f04f" : "rgba(240,237,230,0.7)" }}>
+            {shippingLabel ? (isFreeShipping ? "Free" : `${shippingCost} EGP`) : "—"}
+          </span>
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "14px", paddingTop: "14px", borderTop: "1px solid rgba(240,237,230,0.1)" }}>

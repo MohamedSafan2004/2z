@@ -5,7 +5,7 @@ import { useCart } from "@/lib/store/cart"
 import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { SHIPPING_RATES, SHIPPING_LABELS, type ShippingZone } from "@/lib/shipping"
+import { SHIPPING_RATES, SHIPPING_LABELS, getFinalShippingCost, FREE_SHIPPING_THRESHOLD, type ShippingZone } from "@/lib/shipping"
 import { saveGuestOrderToken } from "@/lib/store/orderTracking"
 import { trackInitiateCheckout, trackPurchase, generateEventId } from "@/lib/meta-pixel"
 
@@ -86,7 +86,9 @@ export default function CheckoutPage() {
     return sum + (referenceItem?.price || 0)
   }, 0)
   const discountValue = promoApplied ? Math.round((subtotal * promoDiscount) / 100) : 0
-  const shippingCost   = zone ? SHIPPING_RATES[zone] : 0
+  const amountAfterDiscounts = subtotal - discountValue
+  const shippingCost   = zone ? getFinalShippingCost(zone, amountAfterDiscounts) : 0
+  const isFreeShipping = zone !== "" && FREE_SHIPPING_THRESHOLD !== null && amountAfterDiscounts >= FREE_SHIPPING_THRESHOLD
   const finalTotal      = subtotal - discountValue + shippingCost
 
   const handleApplyPromo = async () => {
@@ -287,7 +289,7 @@ export default function CheckoutPage() {
               </div>
               <div style={{ fontSize: "10.5px", color: "rgba(240,237,230,0.45)", letterSpacing: "0.02em" }}>
                 {itemCount} item{itemCount !== 1 ? "s" : ""}
-                {zone && ` · Shipping ${shippingCost} EGP`}
+                {zone && ` · Shipping ${isFreeShipping ? "Free" : `${shippingCost} EGP`}`}
                 {promoApplied && ` · ${promoDiscount}% off`}
               </div>
             </div>
@@ -360,6 +362,7 @@ export default function CheckoutPage() {
             discountValue={discountValue}
             shippingCost={shippingCost}
             shippingLabel={zone ? SHIPPING_LABELS[zone] : ""}
+            isFreeShipping={isFreeShipping}
             finalTotal={finalTotal}
             promoInput={promoInput}
             onPromoInputChange={handlePromoInputChange}
@@ -577,7 +580,9 @@ export default function CheckoutPage() {
 
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "9px" }}>
                   <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.45)" }}>Shipping {zone && `(${SHIPPING_LABELS[zone]})`}</span>
-                  <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.7)" }}>{zone ? `${shippingCost} EGP` : "—"}</span>
+                  <span style={{ fontSize: "11px", color: isFreeShipping ? "#c8f04f" : "rgba(240,237,230,0.7)" }}>
+                    {zone ? (isFreeShipping ? "Free" : `${shippingCost} EGP`) : "—"}
+                  </span>
                 </div>
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid rgba(240,237,230,0.08)" }}>

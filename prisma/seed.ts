@@ -47,7 +47,7 @@ async function main() {
     const product = await prisma.product.create({
       data: {
         name: item.name,
-        description: "Premium quality tee. Minimal by design, built to last.",
+        description: "100% premium interlock cotton, relaxed oversized boxy fit. Designed & made in Cairo, Egypt.",
         price: 700,
         categoryId: tshirts.id,
       },
