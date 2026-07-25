@@ -10,7 +10,7 @@ export default function InstapayPaymentLayout({
     <>
       <AnnouncementBar />
       <Navbar />
-      <main className="pt-[84px]">
+      <main className="pt-[90px]">
         {children}
       </main>
     </>

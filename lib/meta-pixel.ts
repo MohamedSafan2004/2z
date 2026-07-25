@@ -103,3 +103,19 @@ export function trackPurchase(params: {
     params.eventId
   )
 }
+
+/**
+ * بتتبعت لما العميل يسجل إيميله عشان ياخد كود خصم (popup الـ 10%).
+ * eventId لازم يبقى نفسه اللي اتبعت للسيرفر مع الـ lead API call عشان الـ dedup.
+ */
+export function trackLead(params: { eventId: string; value?: number; currency?: string }) {
+  fbqTrack(
+    "Lead",
+    {
+      value: params.value ?? 0,
+      currency: params.currency || "EGP",
+      content_name: "10% Off Popup",
+    },
+    params.eventId
+  )
+}

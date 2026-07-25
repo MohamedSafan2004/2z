@@ -393,7 +393,8 @@ export const ModelName = {
   InvoiceCounter: 'InvoiceCounter',
   PromoCode: 'PromoCode',
   PromoCodeUsage: 'PromoCodeUsage',
-  Promotion: 'Promotion'
+  Promotion: 'Promotion',
+  EmailLead: 'EmailLead'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -409,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "category" | "product" | "productVariant" | "order" | "orderItem" | "invoiceCounter" | "promoCode" | "promoCodeUsage" | "promotion"
+    modelProps: "user" | "category" | "product" | "productVariant" | "order" | "orderItem" | "invoiceCounter" | "promoCode" | "promoCodeUsage" | "promotion" | "emailLead"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1153,6 +1154,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    EmailLead: {
+      payload: Prisma.$EmailLeadPayload<ExtArgs>
+      fields: Prisma.EmailLeadFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EmailLeadFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailLeadPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EmailLeadFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailLeadPayload>
+        }
+        findFirst: {
+          args: Prisma.EmailLeadFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailLeadPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EmailLeadFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailLeadPayload>
+        }
+        findMany: {
+          args: Prisma.EmailLeadFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailLeadPayload>[]
+        }
+        create: {
+          args: Prisma.EmailLeadCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailLeadPayload>
+        }
+        createMany: {
+          args: Prisma.EmailLeadCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EmailLeadCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailLeadPayload>[]
+        }
+        delete: {
+          args: Prisma.EmailLeadDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailLeadPayload>
+        }
+        update: {
+          args: Prisma.EmailLeadUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailLeadPayload>
+        }
+        deleteMany: {
+          args: Prisma.EmailLeadDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EmailLeadUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EmailLeadUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailLeadPayload>[]
+        }
+        upsert: {
+          args: Prisma.EmailLeadUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailLeadPayload>
+        }
+        aggregate: {
+          args: Prisma.EmailLeadAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEmailLead>
+        }
+        groupBy: {
+          args: Prisma.EmailLeadGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EmailLeadGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EmailLeadCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EmailLeadCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1337,6 +1412,17 @@ export const PromotionScalarFieldEnum = {
 } as const
 
 export type PromotionScalarFieldEnum = (typeof PromotionScalarFieldEnum)[keyof typeof PromotionScalarFieldEnum]
+
+
+export const EmailLeadScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  promoCode: 'promoCode',
+  source: 'source',
+  createdAt: 'createdAt'
+} as const
+
+export type EmailLeadScalarFieldEnum = (typeof EmailLeadScalarFieldEnum)[keyof typeof EmailLeadScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1663,6 +1749,7 @@ export type GlobalOmitConfig = {
   promoCode?: Prisma.PromoCodeOmit
   promoCodeUsage?: Prisma.PromoCodeUsageOmit
   promotion?: Prisma.PromotionOmit
+  emailLead?: Prisma.EmailLeadOmit
 }
 
 /* Types for Logging */

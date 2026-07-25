@@ -16,7 +16,7 @@ export default function Navbar({ hideAnnouncementOffset = false }: { hideAnnounc
 
   return (
     <>
-      <nav style={{ position: "fixed", top: hideAnnouncementOffset ? 0 : "32px", left: 0, right: 0, zIndex: 50, background: "rgba(8,8,8,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(240,237,230,0.06)" }}>
+      <nav style={{ position: "fixed", top: hideAnnouncementOffset ? 0 : "38px", left: 0, right: 0, zIndex: 50, background: "rgba(8,8,8,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(240,237,230,0.06)" }}>
         <div style={{ padding: "0 20px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
 
           {/* Logo */}

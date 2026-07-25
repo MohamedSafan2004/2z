@@ -60,7 +60,8 @@ export const ModelName = {
   InvoiceCounter: 'InvoiceCounter',
   PromoCode: 'PromoCode',
   PromoCodeUsage: 'PromoCodeUsage',
-  Promotion: 'Promotion'
+  Promotion: 'Promotion',
+  EmailLead: 'EmailLead'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -224,6 +225,17 @@ export const PromotionScalarFieldEnum = {
 } as const
 
 export type PromotionScalarFieldEnum = (typeof PromotionScalarFieldEnum)[keyof typeof PromotionScalarFieldEnum]
+
+
+export const EmailLeadScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  promoCode: 'promoCode',
+  source: 'source',
+  createdAt: 'createdAt'
+} as const
+
+export type EmailLeadScalarFieldEnum = (typeof EmailLeadScalarFieldEnum)[keyof typeof EmailLeadScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -30,7 +30,7 @@ export interface CapiUserData {
 }
 
 interface CapiEventParams {
-  eventName: "PageView" | "ViewContent" | "AddToCart" | "InitiateCheckout" | "Purchase"
+  eventName: "PageView" | "ViewContent" | "AddToCart" | "InitiateCheckout" | "Purchase" | "Lead"
   eventId: string
   eventSourceUrl: string
   actionSource?: "website"

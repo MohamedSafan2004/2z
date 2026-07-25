@@ -150,6 +150,16 @@ model Promotion {
   @@index([isActive])
 }
 
+model EmailLead {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  promoCode  String
+  source     String   @default("popup_10off")
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 enum Role {
   CUSTOMER
   ADMIN

@@ -91,3 +91,8 @@ export type PromoCodeUsage = Prisma.PromoCodeUsageModel
  * 
  */
 export type Promotion = Prisma.PromotionModel
+/**
+ * Model EmailLead
+ * 
+ */
+export type EmailLead = Prisma.EmailLeadModel
