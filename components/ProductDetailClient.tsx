@@ -1036,7 +1036,7 @@ function ShippingInfoBanner() {
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
           <rect x="1" y="6" width="14" height="11"/><path d="M15 9h4l3 3v5h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="17.5" cy="19" r="2"/>
         </svg>
-        <span className="shipping-info-text">Estimated delivery: <strong>1–3 business days</strong> (Cairo &amp; Giza)</span>
+        <span className="shipping-info-text">Estimated delivery: <strong>1–3 business days</strong></span>
       </div>
     </div>
   )
@@ -1069,7 +1069,7 @@ function ProductInfoTabs() {
       title: "Shipping and Returns",
       content: (
         <>
-          We currently ship to Cairo and Giza only. Orders are processed within 24 hours and delivered within 1–3 business days. Delivery estimates may vary due to holidays, weather, or courier delays.
+          shiping all over Egypt. Orders are processed within 24 hours and delivered within 1–3 business days. Delivery estimates may vary due to holidays, weather, or courier delays.
           <br /><br />
           To be eligible for a return or exchange, items must be unused, unwashed, and with all original tags attached. Manufacturing defects or incorrectly shipped items are handled entirely at 2Z&apos;s expense.
         </>

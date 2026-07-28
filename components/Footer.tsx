@@ -62,7 +62,7 @@ export default function Footer() {
           <div className="f-brand">
             <Image src="/logo.jpeg" alt="2Z" width={36} height={36} style={{ objectFit: "cover", borderRadius: "50%", mixBlendMode: "screen" }} />
             <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", lineHeight: 2, margin: 0 }}>
-              Minimal Streetwear<br />6th of October, Egypt
+              Minimal Streetwear<br />Egypt
             </p>
             <div className="f-socials">
               <a href="https://www.instagram.com/2z.official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="f-social"
@@ -103,7 +103,7 @@ export default function Footer() {
         {/* Bottom */}
         <div style={{ borderTop: "1px solid rgba(240,237,230,0.06)", paddingTop: "24px", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
           <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.2)", margin: 0 }}>© 2026 2Z</p>
-          <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.2)", margin: 0 }}>6th of October, Egypt</p>
+          <p style={{ fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(240,237,230,0.2)", margin: 0 }}>Egypt</p>
         </div>
 
       </div>

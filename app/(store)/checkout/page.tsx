@@ -319,7 +319,7 @@ export default function CheckoutPage() {
                 </label>
                 <DeliveryCard zones={zones} selected={zone} onSelect={setZone} />
                 <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)", marginTop: "8px", lineHeight: 1.55 }}>
-                  We currently deliver to Cairo and Giza only.
+                  Shipping all over Egypt.
                 </p>
               </div>
             </div>
@@ -458,7 +458,7 @@ export default function CheckoutPage() {
                       )
                     })}
                   </div>
-                  <p style={{ fontSize: "8.5px", color: "rgba(240,237,230,0.4)", marginTop: "7px", letterSpacing: "0.04em", lineHeight: 1.6 }}>We currently deliver to Cairo and Giza only</p>
+                  <p style={{ fontSize: "8.5px", color: "rgba(240,237,230,0.4)", marginTop: "7px", letterSpacing: "0.04em", lineHeight: 1.6 }}>Shiping all over Egypt</p>
                 </div>
               </div>
 

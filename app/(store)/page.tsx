@@ -423,7 +423,7 @@ export default function Home() {
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{ width: "20px", height: "1px", background: "rgba(240,237,230,0.3)" }} />
             <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>
-              Cairo · SS26
+              Egypt · SS26
             </span>
           </div>
           <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>
@@ -548,7 +548,7 @@ export default function Home() {
       {/* ── FOOTER STRIP ── */}
       <RevealSection>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 20px", borderTop: "1px solid rgba(240,237,230,0.06)", marginTop: "2px", flexWrap: "wrap", gap: "8px" }}>
-          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.25)" }}>2Z — 6th of October</span>
+          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.25)" }}>2Z — Egypt</span>
           <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.25)" }}>Oversized T-Shirts</span>
         </div>
       </RevealSection>
