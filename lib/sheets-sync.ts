@@ -48,7 +48,21 @@ async function getSheetId(sheets: sheets_v4.Sheets, spreadsheetId: string, sheet
   return sheet?.properties?.sheetId ?? 0
 }
 
+// بيجمع القيم المتكررة لنفس المفتاح مع عدّها — مثلاً [White, White, Grey] بيرجع "White ×2, Grey ×1"
+function summarizeWithCounts(values: string[]): string {
+  const counts = new Map<string, number>()
+  for (const v of values) {
+    counts.set(v, (counts.get(v) || 0) + 1)
+  }
+  return Array.from(counts.entries())
+    .map(([val, count]) => (count > 1 ? `${val} ×${count}` : val))
+    .join(", ")
+}
+
 // ─── Sales Sheet ──────────────────────────────────────────────────────────────
+// الأوردر بياخد صف واحد بس في الشيت مهما كان عدد القطع أو الألوان/المقاسات مختلفة —
+// مفيش صف لكل item زي الأول، عشان مييجيش عك في الشيت (نفس رقم الأوردر مكرر في عدة صفوف).
+// عمود اللون والمقاس والـ SKU بيجمعوا كل القطع في نفس الخلية.
 
 export async function appendToSalesSheet(order: SyncOrder) {
   try {
@@ -69,11 +83,13 @@ export async function appendToSalesSheet(order: SyncOrder) {
       }
     }
 
-    let nextRow = lastDataRow + 3
+    const nextRow = lastDataRow + 3
     const sheetId = await getSheetId(sheets, spreadsheetId, SALES_SHEET)
 
-    // subtotal الحقيقي بتاع المنتجات المدفوعة بس (مش الهدايا، من غير شحن) — عشان نحسب نسبة الخصم صح
     const paidItems = order.items.filter((it) => !it.isGift)
+    const giftItems = order.items.filter((it) => it.isGift)
+
+    // subtotal الحقيقي بتاع المنتجات المدفوعة بس (مش الهدايا، من غير شحن) — عشان نحسب نسبة الخصم صح
     const productsSubtotal = paidItems.reduce(
       (sum, it) => sum + Number(it.priceSnapshot) * it.quantity,
       0
@@ -86,90 +102,102 @@ export async function appendToSalesSheet(order: SyncOrder) {
 
     const shippingCost = Number(order.shippingCost || 0)
 
-    for (let idx = 0; idx < order.items.length; idx++) {
-      const item = order.items[idx]
-      const isLastRow = idx === order.items.length - 1
+    // إجمالي الكمية المدفوعة (مش شامل الهدايا في عمود الكمية الأساسي، بس بتتوضح في الاسم/اللون لو موجودة)
+    const totalPaidQuantity = paidItems.reduce((sum, it) => sum + it.quantity, 0)
 
-      const variant = await db.productVariant.findUnique({
-        where: { id: item.variantId },
-      })
+    // إجمالي السعر النهائي بعد خصم الكود (الهدايا سعرها صفر أصلاً فمالهاش تأثير على الحساب)
+    const totalFinalPrice = paidItems.reduce((sum, it) => {
+      const unitPrice = Number(it.priceSnapshot)
+      return sum + unitPrice * it.quantity * (1 - discount / 100)
+    }, 0)
+    const revenue = totalFinalPrice
 
-      const unitPrice = Number(item.priceSnapshot)
-      const quantity = item.quantity
+    const date = new Date(order.createdAt).toLocaleDateString("ar-EG", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+    })
 
-      // الهدية سعرها صفر أصلاً — مفيش خصم كود ينطبق عليها، والإيراد منها = 0
-      const finalPrice = item.isGift ? 0 : unitPrice * quantity * (1 - discount / 100)
-      const revenue = finalPrice
+    const invoiceNum = order.invoiceNumber
+      ? `INV-${String(order.invoiceNumber).padStart(4, "0")}`
+      : order.id.slice(0, 8).toUpperCase()
 
-      const date = new Date(order.createdAt).toLocaleDateString("ar-EG", {
-        day: "2-digit", month: "2-digit", year: "numeric",
-      })
+    // اسم المنتج — لو كل القطع نفس المنتج (الحالة الشائعة) بيبقى اسم واحد،
+    // ولو فيه أكتر من منتج مختلف (نادر) بيجمعهم بفاصلة من غير تكرار
+    const productNames = Array.from(new Set(order.items.map((it) => it.productNameSnapshot)))
+    const productNameCell = productNames.join(", ")
 
-      const invoiceNum = order.invoiceNumber
-        ? `INV-${String(order.invoiceNumber).padStart(4, "0")}`
-        : order.id.slice(0, 8).toUpperCase()
-
-      const productName = item.isGift
-        ? `${item.productNameSnapshot} (هدية)`
-        : item.productNameSnapshot
-
-      const row = [
-        date,
-        variant?.sku || item.variantId.slice(0, 8).toUpperCase(),
-        productName,
-        item.colorSnapshot,
-        item.sizeSnapshot,
-        quantity,
-        unitPrice,
-        item.isGift ? 0 : discount.toFixed(1),
-        finalPrice.toFixed(2),
-        revenue.toFixed(2),
-        invoiceNum,
-        isLastRow ? shippingCost : "", // L: الشحن — آخر صف بس من صفوف الأوردر
-      ]
-
-      // كتابة البيانات
-      await sheets.spreadsheets.values.update({
-        spreadsheetId,
-        range: `${SALES_SHEET}!A${nextRow}:L${nextRow}`,
-        valueInputOption: "USER_ENTERED",
-        requestBody: { values: [row] },
-      })
-
-      // center alignment على الصف
-      await sheets.spreadsheets.batchUpdate({
-        spreadsheetId,
-        requestBody: {
-          requests: [
-            {
-              repeatCell: {
-                range: {
-                  sheetId,
-                  startRowIndex: nextRow - 1,
-                  endRowIndex: nextRow,
-                  startColumnIndex: 0,
-                  endColumnIndex: 12,
-                },
-                cell: {
-                  userEnteredFormat: {
-                    horizontalAlignment: "CENTER",
-                  },
-                },
-                fields: "userEnteredFormat.horizontalAlignment",
-              },
-            },
-          ],
-        },
-      })
-
-      nextRow++
+    // كل الـ SKUs مجمعة في خلية واحدة — الهدايا متعلّم عليها "(هدية)" عشان تتفرق
+    const skuParts: string[] = []
+    for (const item of order.items) {
+      const variant = await db.productVariant.findUnique({ where: { id: item.variantId } })
+      const sku = variant?.sku || item.variantId.slice(0, 8).toUpperCase()
+      skuParts.push(item.isGift ? `${sku} (هدية)` : sku)
     }
+    const skuCell = skuParts.join(", ")
+
+    // كل الألوان وكل المقاسات مجمعة مع عدّها — مثلاً "White ×2, Grey ×1"
+    const colorCell = summarizeWithCounts(order.items.map((it) => it.colorSnapshot))
+    const sizeCell = summarizeWithCounts(order.items.map((it) => it.sizeSnapshot))
+
+    const giftNote = giftItems.length > 0
+      ? ` + ${giftItems.length} هدية`
+      : ""
+
+    const row = [
+      date,
+      skuCell,
+      productNameCell + giftNote,
+      colorCell,
+      sizeCell,
+      totalPaidQuantity,
+      paidItems.length > 0 ? (productsSubtotal / totalPaidQuantity).toFixed(2) : 0, // متوسط سعر الوحدة
+      discount.toFixed(1),
+      totalFinalPrice.toFixed(2),
+      revenue.toFixed(2),
+      invoiceNum,
+      shippingCost,
+    ]
+
+    // كتابة البيانات
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${SALES_SHEET}!A${nextRow}:L${nextRow}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [row] },
+    })
+
+    // center alignment على الصف
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            repeatCell: {
+              range: {
+                sheetId,
+                startRowIndex: nextRow - 1,
+                endRowIndex: nextRow,
+                startColumnIndex: 0,
+                endColumnIndex: 12,
+              },
+              cell: {
+                userEnteredFormat: {
+                  horizontalAlignment: "CENTER",
+                },
+              },
+              fields: "userEnteredFormat.horizontalAlignment",
+            },
+          },
+        ],
+      },
+    })
   } catch (error) {
     console.error("Sales sheet error:", error)
   }
 }
 
 // ─── Inventory Sheet (per order) ─────────────────────────────────────────────
+// ده بيفضل يلف على كل item لوحده (مش الأوردر ككل) لأن كل SKU محتاج يتحدث في
+// صفه الخاص بيه في تاب المخزون — ده مختلف تمامًا عن شكل تاب المبيعات.
 
 export async function updateInventorySheet(order: SyncOrder) {
   try {

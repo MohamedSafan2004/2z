@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/lib/store/cart"
 import { trackViewContent, trackAddToCart } from "@/lib/meta-pixel"
+import ActiveOfferBanner from "@/components/ActiveOfferBanner"
 
 
 const colorImages: Record<string, string[]> = {
@@ -46,7 +47,8 @@ function optimizeCloudinaryUrl(url: string, width: number): string {
   return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`)
 }
 
-const sizes = ["M", "L", "XL"]
+const sizes = ["M", "L", "XL", "XXL"] // XXL مضاف UI بس دلوقتي — مفيش variant ليه في الداتابيز فبيظهر Sold Out دايمًا تلقائيًا لحد 21 يضيفوه في الداتابيز
+const giftSizes = ["M", "L", "XL"] // مقاسات الهدية المجانية — مش فيها XXL لأنه مفيش variant حقيقي يتم اختياره فعليًا للهدية
 const colorsList = ["BLACK", "WHITE", "GREY", "BEIGE"]
 const LOW_STOCK_THRESHOLD = 3
 const ACCENT = "#c8f04f"
@@ -539,7 +541,7 @@ export default function ProductDetailClient({
         </Link>
 
         <ShippingInfoBanner />
-        {/* <ActiveOfferBanner /> */}
+        <ActiveOfferBanner /> 
         <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", marginTop: "24px" }}>
 
           <div style={{ position: "relative", aspectRatio: "4/5", overflow: "hidden", background: "#0d0d0d" }}>
@@ -570,8 +572,13 @@ export default function ProductDetailClient({
             )}
 
             {isSoldOut && (
-              <div style={{ position: "absolute", inset: 0, background: "rgba(8,8,8,0.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <p style={{ fontSize: "12px", letterSpacing: "0.4em", textTransform: "uppercase", color: "rgba(220,80,80,0.9)" }}>Sold Out</p>
+              <div style={{
+                position: "absolute", top: "16px", right: "16px",
+                background: "rgba(8,8,8,0.75)", backdropFilter: "blur(8px)",
+                border: "1px solid rgba(240,237,230,0.2)",
+                padding: "7px 14px",
+              }}>
+                <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.75)", margin: 0 }}>Sold Out</p>
               </div>
             )}
           </div>
@@ -642,9 +649,10 @@ export default function ProductDetailClient({
                         flex: 1, padding: "14px 0", fontSize: "11px", fontFamily: "Space Mono, monospace",
                         letterSpacing: "0.1em", cursor: disabled ? "not-allowed" : "pointer",
                         background: isSelected ? "#f0ede6" : "transparent",
-                        color: disabled ? "rgba(240,237,230,0.15)" : isSelected ? "#080808" : "#f0ede6",
+                        color: disabled ? "rgba(240,237,230,0.2)" : isSelected ? "#080808" : "#f0ede6",
                         border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.15)",
                         textDecoration: disabled ? "line-through" : "none",
+                        textDecorationColor: "rgba(240,237,230,0.3)",
                         transition: "all 0.2s",
                       }}
                     >
@@ -961,7 +969,7 @@ function BundleSection({
                             Size
                           </p>
                           <div style={{ display: "flex", gap: "6px", opacity: currentGift?.color ? 1 : 0.35 }}>
-                            {sizes.map((s) => {
+                            {giftSizes.map((s) => {
                               const isAvailable = sizeOptionsForColor.includes(s)
                               const isSelected = currentGift?.size === s
                               const disabled = !currentGift?.color || !isAvailable

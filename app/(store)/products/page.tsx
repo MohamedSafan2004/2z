@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { db } from "@/lib/db"
+import ActiveOfferBanner from "@/components/ActiveOfferBanner"
 
 // صورة الـ Main بس لكل لون — دي اللي بتظهر في صفحة قائمة المنتجات
 const colorImages: Record<string, string> = {
@@ -214,6 +215,8 @@ export default async function ProductsPage() {
             <span className="shipping-info-text">Estimated delivery: <strong>1–3 business days</strong></span>
           </div>
         </div>
+
+        <ActiveOfferBanner />
 
         <p style={{
           fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase",
