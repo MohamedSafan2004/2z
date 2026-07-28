@@ -5,13 +5,12 @@ import { useCart } from "@/lib/store/cart"
 import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { SHIPPING_RATES, SHIPPING_LABELS, getFinalShippingCost, FREE_SHIPPING_THRESHOLD, type ShippingZone } from "@/lib/shipping"
+import { SHIPPING_RATES, SHIPPING_LABELS, getFinalShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping"
 import { saveGuestOrderToken } from "@/lib/store/orderTracking"
 import { trackInitiateCheckout, trackPurchase, generateEventId } from "@/lib/meta-pixel"
 
 import CheckoutCard from "./components/Checkoutcard "
 import InputField from "./components/Inputfield"
-import DeliveryCard from "./components//Deliverycard"
 import PaymentCard from "./components/Paymentcard"
 import PromoCard from "./components/Promocard"
 import OrderSummaryBody from "./components/Ordersummarybody"
@@ -25,8 +24,6 @@ const paymentMethods = [
   { id: "instapay" as PaymentMethod, label: "InstaPay",          sub: "Transfer and confirm instantly" },
 ]
 
-const zones: ShippingZone[] = ["cairo", "giza"]
-
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function CheckoutPage() {
@@ -38,7 +35,8 @@ export default function CheckoutPage() {
   const [email, setEmail]         = useState("")
   const [phone, setPhone]         = useState("")
   const [address, setAddress]     = useState("")
-  const [zone, setZone]           = useState<ShippingZone | "">("")
+  // منطقة التوصيل ثابتة دلوقتي (شحن موحّد لمصر كله) — مفيش اختيار للعميل
+  const zone = "egypt" as const
   const [payment, setPayment]     = useState<PaymentMethod>("cod")
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState("")
@@ -87,8 +85,8 @@ export default function CheckoutPage() {
   }, 0)
   const discountValue = promoApplied ? Math.round((subtotal * promoDiscount) / 100) : 0
   const amountAfterDiscounts = subtotal - discountValue
-  const shippingCost   = zone ? getFinalShippingCost(zone, amountAfterDiscounts) : 0
-  const isFreeShipping = zone !== "" && FREE_SHIPPING_THRESHOLD !== null && amountAfterDiscounts >= FREE_SHIPPING_THRESHOLD
+  const shippingCost   = getFinalShippingCost(zone, amountAfterDiscounts)
+  const isFreeShipping = FREE_SHIPPING_THRESHOLD !== null && amountAfterDiscounts >= FREE_SHIPPING_THRESHOLD
   const finalTotal      = subtotal - discountValue + shippingCost
 
   const handleApplyPromo = async () => {
@@ -180,10 +178,6 @@ export default function CheckoutPage() {
     }
     if (!/^01[0-9]{9}$/.test(trimmedPhone)) {
       setError("Please enter a valid Egyptian phone number (01XXXXXXXXX)")
-      return
-    }
-    if (!zone) {
-      setError("Please select your delivery zone")
       return
     }
 
@@ -289,7 +283,7 @@ export default function CheckoutPage() {
               </div>
               <div style={{ fontSize: "10.5px", color: "rgba(240,237,230,0.45)", letterSpacing: "0.02em" }}>
                 {itemCount} item{itemCount !== 1 ? "s" : ""}
-                {zone && ` · Shipping ${isFreeShipping ? "Free" : `${shippingCost} EGP`}`}
+                {` · Shipping ${isFreeShipping ? "Free" : `${shippingCost} EGP`}`}
                 {promoApplied && ` · ${promoDiscount}% off`}
               </div>
             </div>
@@ -313,14 +307,12 @@ export default function CheckoutPage() {
               <InputField label="Full name" value={name} onChange={setName} />
               <InputField label="Phone" type="tel" value={phone} onChange={setPhone} placeholder="01XXXXXXXXX" />
               <InputField label="Delivery address" value={address} onChange={setAddress} multiline rows={3} placeholder="Street, area, city, governorate" />
-              <div>
-                <label style={{ fontSize: "10.5px", letterSpacing: "0.06em", color: "rgba(240,237,230,0.5)", marginBottom: "9px", display: "block" }}>
-                  Delivery zone
-                </label>
-                <DeliveryCard zones={zones} selected={zone} onSelect={setZone} />
-                <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.4)", marginTop: "8px", lineHeight: 1.55 }}>
-                  Shipping all over Egypt.
-                </p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: "14px", border: "1.5px solid rgba(240,237,230,0.14)", background: "rgba(255,255,255,0.015)" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <span style={{ fontSize: "14.5px", letterSpacing: "0.01em" }}>Standard Delivery</span>
+                  <span style={{ fontSize: "10.5px", color: "rgba(240,237,230,0.4)" }}>Shipping all over Egypt · 2–4 business days</span>
+                </div>
+                <span style={{ fontSize: "14px", color: "rgba(240,237,230,0.9)", flexShrink: 0 }}>{SHIPPING_RATES.egypt} EGP</span>
               </div>
             </div>
           </CheckoutCard>
@@ -361,7 +353,7 @@ export default function CheckoutPage() {
             subtotal={subtotal}
             discountValue={discountValue}
             shippingCost={shippingCost}
-            shippingLabel={zone ? SHIPPING_LABELS[zone] : ""}
+            shippingLabel={SHIPPING_LABELS[zone]}
             isFreeShipping={isFreeShipping}
             finalTotal={finalTotal}
             promoInput={promoInput}
@@ -437,28 +429,12 @@ export default function CheckoutPage() {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "8px", display: "block" }}>Delivery zone *</label>
-                  <div style={{ border: "1px solid rgba(240,237,230,0.18)" }}>
-                    {zones.map((z) => {
-                      const isSelected = zone === z
-                      return (
-                        <button
-                          key={z}
-                          onClick={() => setZone(z)}
-                          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", padding: "15px 16px", background: isSelected ? "rgba(240,237,230,0.05)" : "transparent", border: "none", borderBottom: "1px solid rgba(240,237,230,0.1)", color: "#f0ede6", cursor: "pointer", fontFamily: "Space Mono, monospace", textAlign: "left" }}
-                        >
-                          <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                            <span style={{ width: "14px", height: "14px", borderRadius: "50%", border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              {isSelected && <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#f0ede6" }} />}
-                            </span>
-                            <span style={{ fontSize: "11px", letterSpacing: "0.05em" }}>{SHIPPING_LABELS[z]}</span>
-                          </span>
-                          <span style={{ fontSize: "10.5px", color: isSelected ? "rgba(240,237,230,0.85)" : "rgba(240,237,230,0.5)", flexShrink: 0 }}>{SHIPPING_RATES[z]} EGP</span>
-                        </button>
-                      )
-                    })}
+                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "8px", display: "block" }}>Delivery</label>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 16px", border: "1px solid rgba(240,237,230,0.18)" }}>
+                    <span style={{ fontSize: "11px", letterSpacing: "0.05em" }}>Standard Delivery — all over Egypt</span>
+                    <span style={{ fontSize: "10.5px", color: "rgba(240,237,230,0.85)", flexShrink: 0 }}>{SHIPPING_RATES.egypt} EGP</span>
                   </div>
-                  <p style={{ fontSize: "8.5px", color: "rgba(240,237,230,0.4)", marginTop: "7px", letterSpacing: "0.04em", lineHeight: 1.6 }}>Shiping all over Egypt</p>
+                  <p style={{ fontSize: "8.5px", color: "rgba(240,237,230,0.4)", marginTop: "7px", letterSpacing: "0.04em", lineHeight: 1.6 }}>2–4 business days</p>
                 </div>
               </div>
 
@@ -579,9 +555,9 @@ export default function CheckoutPage() {
                 )}
 
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "9px" }}>
-                  <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.45)" }}>Shipping {zone && `(${SHIPPING_LABELS[zone]})`}</span>
+                  <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.45)" }}>Shipping ({SHIPPING_LABELS[zone]})</span>
                   <span style={{ fontSize: "11px", color: isFreeShipping ? "#c8f04f" : "rgba(240,237,230,0.7)" }}>
-                    {zone ? (isFreeShipping ? "Free" : `${shippingCost} EGP`) : "—"}
+                    {isFreeShipping ? "Free" : `${shippingCost} EGP`}
                   </span>
                 </div>
 

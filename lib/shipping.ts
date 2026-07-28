@@ -1,13 +1,12 @@
-export type ShippingZone = "cairo" | "giza"
+// دلوقتي شحن موحّد لمصر كله بسعر ثابت (داخليًا بس: لحد ما نتربط بـ Bosta API)
+export type ShippingZone = "egypt"
 
 export const SHIPPING_RATES: Record<ShippingZone, number> = {
-  cairo: 80,
-  giza: 50,
+  egypt: 80,
 }
 
 export const SHIPPING_LABELS: Record<ShippingZone, string> = {
-  cairo: "Cairo",
-  giza: "Giza",
+  egypt: "Egypt",
 }
 
 // ── Free shipping threshold ──
@@ -18,7 +17,7 @@ export const SHIPPING_LABELS: Record<ShippingZone, string> = {
 export const FREE_SHIPPING_THRESHOLD: number | null = 1000
 
 export function getShippingCost(zone: string | null | undefined): number {
-  if (zone === "cairo" || zone === "giza") return SHIPPING_RATES[zone]
+  if (zone === "egypt") return SHIPPING_RATES.egypt
   return 0
 }
 

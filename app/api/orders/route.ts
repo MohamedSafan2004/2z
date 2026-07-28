@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
     const trimmedName = typeof name === "string" ? name.trim() : ""
     if (!trimmedName) return NextResponse.json({ error: "Name is required" }, { status: 400 })
 
-    if (shippingZone !== "cairo" && shippingZone !== "giza") {
-      return NextResponse.json({ error: "Please select a valid delivery zone" }, { status: 400 })
+    if (shippingZone !== "egypt") {
+      return NextResponse.json({ error: "Invalid delivery zone" }, { status: 400 })
     }
 
     const method = paymentMethod === "instapay" ? "INSTAPAY" : "COD"
