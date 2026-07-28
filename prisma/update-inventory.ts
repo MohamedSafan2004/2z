@@ -17,7 +17,12 @@ const STOCK_ADD: Record<string, Record<string, number>> = {
 }
 
 const NEW_PRICE: number | null = 550
-const NEW_ORIGINAL_PRICE: number | null = 700
+// السعر الأصلي اتشال خالص — مفيش Sale/originalPrice دلوقتي (كل الـ UI اللي بيعتمد عليه
+// بيختفي أوتوماتيك لو originalPrice = null، محتاجش تلمس أي كومبوننت تاني)
+const NEW_ORIGINAL_PRICE: number | null = null
+// عشان نقدر نمسح originalPrice الموجود فعلاً في الداتابيز (updateMany بيتجاهل undefined
+// لكن مش null)، لازم نبعتها صراحةً لو عايزين null
+const CLEAR_ORIGINAL_PRICE = true
 // ────────────────────────────────────────────────────────────────
 
 function skuCode(color: string): string {
@@ -122,10 +127,14 @@ async function main() {
     await prisma.product.updateMany({
       data: {
         price: NEW_PRICE,
-        ...(NEW_ORIGINAL_PRICE !== null && { originalPrice: NEW_ORIGINAL_PRICE }),
+        ...(CLEAR_ORIGINAL_PRICE
+          ? { originalPrice: null }
+          : NEW_ORIGINAL_PRICE !== null
+          ? { originalPrice: NEW_ORIGINAL_PRICE }
+          : {}),
       },
     })
-    console.log(`✓ السعر اتحدد → ${NEW_PRICE} EGP (السعر الأصلي: ${NEW_ORIGINAL_PRICE} EGP)`)
+    console.log(`✓ السعر اتحدد → ${NEW_PRICE} EGP (السعر الأصلي: ${CLEAR_ORIGINAL_PRICE ? "null (مفيش Sale)" : NEW_ORIGINAL_PRICE + " EGP"})`)
   }
 
   console.log(`\n✓ تم تحديث ${updated} variant`)

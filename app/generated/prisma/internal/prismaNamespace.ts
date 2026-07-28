@@ -1419,7 +1419,8 @@ export const EmailLeadScalarFieldEnum = {
   email: 'email',
   promoCode: 'promoCode',
   source: 'source',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  codeExpiresAt: 'codeExpiresAt'
 } as const
 
 export type EmailLeadScalarFieldEnum = (typeof EmailLeadScalarFieldEnum)[keyof typeof EmailLeadScalarFieldEnum]

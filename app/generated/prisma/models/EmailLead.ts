@@ -30,6 +30,7 @@ export type EmailLeadMinAggregateOutputType = {
   promoCode: string | null
   source: string | null
   createdAt: Date | null
+  codeExpiresAt: Date | null
 }
 
 export type EmailLeadMaxAggregateOutputType = {
@@ -38,6 +39,7 @@ export type EmailLeadMaxAggregateOutputType = {
   promoCode: string | null
   source: string | null
   createdAt: Date | null
+  codeExpiresAt: Date | null
 }
 
 export type EmailLeadCountAggregateOutputType = {
@@ -46,6 +48,7 @@ export type EmailLeadCountAggregateOutputType = {
   promoCode: number
   source: number
   createdAt: number
+  codeExpiresAt: number
   _all: number
 }
 
@@ -56,6 +59,7 @@ export type EmailLeadMinAggregateInputType = {
   promoCode?: true
   source?: true
   createdAt?: true
+  codeExpiresAt?: true
 }
 
 export type EmailLeadMaxAggregateInputType = {
@@ -64,6 +68,7 @@ export type EmailLeadMaxAggregateInputType = {
   promoCode?: true
   source?: true
   createdAt?: true
+  codeExpiresAt?: true
 }
 
 export type EmailLeadCountAggregateInputType = {
@@ -72,6 +77,7 @@ export type EmailLeadCountAggregateInputType = {
   promoCode?: true
   source?: true
   createdAt?: true
+  codeExpiresAt?: true
   _all?: true
 }
 
@@ -153,6 +159,7 @@ export type EmailLeadGroupByOutputType = {
   promoCode: string
   source: string
   createdAt: Date
+  codeExpiresAt: Date
   _count: EmailLeadCountAggregateOutputType | null
   _min: EmailLeadMinAggregateOutputType | null
   _max: EmailLeadMaxAggregateOutputType | null
@@ -182,6 +189,7 @@ export type EmailLeadWhereInput = {
   promoCode?: Prisma.StringFilter<"EmailLead"> | string
   source?: Prisma.StringFilter<"EmailLead"> | string
   createdAt?: Prisma.DateTimeFilter<"EmailLead"> | Date | string
+  codeExpiresAt?: Prisma.DateTimeFilter<"EmailLead"> | Date | string
 }
 
 export type EmailLeadOrderByWithRelationInput = {
@@ -190,6 +198,7 @@ export type EmailLeadOrderByWithRelationInput = {
   promoCode?: Prisma.SortOrder
   source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  codeExpiresAt?: Prisma.SortOrder
 }
 
 export type EmailLeadWhereUniqueInput = Prisma.AtLeast<{
@@ -201,6 +210,7 @@ export type EmailLeadWhereUniqueInput = Prisma.AtLeast<{
   promoCode?: Prisma.StringFilter<"EmailLead"> | string
   source?: Prisma.StringFilter<"EmailLead"> | string
   createdAt?: Prisma.DateTimeFilter<"EmailLead"> | Date | string
+  codeExpiresAt?: Prisma.DateTimeFilter<"EmailLead"> | Date | string
 }, "id" | "email">
 
 export type EmailLeadOrderByWithAggregationInput = {
@@ -209,6 +219,7 @@ export type EmailLeadOrderByWithAggregationInput = {
   promoCode?: Prisma.SortOrder
   source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  codeExpiresAt?: Prisma.SortOrder
   _count?: Prisma.EmailLeadCountOrderByAggregateInput
   _max?: Prisma.EmailLeadMaxOrderByAggregateInput
   _min?: Prisma.EmailLeadMinOrderByAggregateInput
@@ -223,6 +234,7 @@ export type EmailLeadScalarWhereWithAggregatesInput = {
   promoCode?: Prisma.StringWithAggregatesFilter<"EmailLead"> | string
   source?: Prisma.StringWithAggregatesFilter<"EmailLead"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"EmailLead"> | Date | string
+  codeExpiresAt?: Prisma.DateTimeWithAggregatesFilter<"EmailLead"> | Date | string
 }
 
 export type EmailLeadCreateInput = {
@@ -231,6 +243,7 @@ export type EmailLeadCreateInput = {
   promoCode: string
   source?: string
   createdAt?: Date | string
+  codeExpiresAt: Date | string
 }
 
 export type EmailLeadUncheckedCreateInput = {
@@ -239,6 +252,7 @@ export type EmailLeadUncheckedCreateInput = {
   promoCode: string
   source?: string
   createdAt?: Date | string
+  codeExpiresAt: Date | string
 }
 
 export type EmailLeadUpdateInput = {
@@ -247,6 +261,7 @@ export type EmailLeadUpdateInput = {
   promoCode?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  codeExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmailLeadUncheckedUpdateInput = {
@@ -255,6 +270,7 @@ export type EmailLeadUncheckedUpdateInput = {
   promoCode?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  codeExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmailLeadCreateManyInput = {
@@ -263,6 +279,7 @@ export type EmailLeadCreateManyInput = {
   promoCode: string
   source?: string
   createdAt?: Date | string
+  codeExpiresAt: Date | string
 }
 
 export type EmailLeadUpdateManyMutationInput = {
@@ -271,6 +288,7 @@ export type EmailLeadUpdateManyMutationInput = {
   promoCode?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  codeExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmailLeadUncheckedUpdateManyInput = {
@@ -279,6 +297,7 @@ export type EmailLeadUncheckedUpdateManyInput = {
   promoCode?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  codeExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmailLeadCountOrderByAggregateInput = {
@@ -287,6 +306,7 @@ export type EmailLeadCountOrderByAggregateInput = {
   promoCode?: Prisma.SortOrder
   source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  codeExpiresAt?: Prisma.SortOrder
 }
 
 export type EmailLeadMaxOrderByAggregateInput = {
@@ -295,6 +315,7 @@ export type EmailLeadMaxOrderByAggregateInput = {
   promoCode?: Prisma.SortOrder
   source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  codeExpiresAt?: Prisma.SortOrder
 }
 
 export type EmailLeadMinOrderByAggregateInput = {
@@ -303,6 +324,7 @@ export type EmailLeadMinOrderByAggregateInput = {
   promoCode?: Prisma.SortOrder
   source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  codeExpiresAt?: Prisma.SortOrder
 }
 
 
@@ -313,6 +335,7 @@ export type EmailLeadSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   promoCode?: boolean
   source?: boolean
   createdAt?: boolean
+  codeExpiresAt?: boolean
 }, ExtArgs["result"]["emailLead"]>
 
 export type EmailLeadSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -321,6 +344,7 @@ export type EmailLeadSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   promoCode?: boolean
   source?: boolean
   createdAt?: boolean
+  codeExpiresAt?: boolean
 }, ExtArgs["result"]["emailLead"]>
 
 export type EmailLeadSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -329,6 +353,7 @@ export type EmailLeadSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   promoCode?: boolean
   source?: boolean
   createdAt?: boolean
+  codeExpiresAt?: boolean
 }, ExtArgs["result"]["emailLead"]>
 
 export type EmailLeadSelectScalar = {
@@ -337,9 +362,10 @@ export type EmailLeadSelectScalar = {
   promoCode?: boolean
   source?: boolean
   createdAt?: boolean
+  codeExpiresAt?: boolean
 }
 
-export type EmailLeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "promoCode" | "source" | "createdAt", ExtArgs["result"]["emailLead"]>
+export type EmailLeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "promoCode" | "source" | "createdAt" | "codeExpiresAt", ExtArgs["result"]["emailLead"]>
 
 export type $EmailLeadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "EmailLead"
@@ -350,6 +376,7 @@ export type $EmailLeadPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     promoCode: string
     source: string
     createdAt: Date
+    codeExpiresAt: Date
   }, ExtArgs["result"]["emailLead"]>
   composites: {}
 }
@@ -778,6 +805,7 @@ export interface EmailLeadFieldRefs {
   readonly promoCode: Prisma.FieldRef<"EmailLead", 'String'>
   readonly source: Prisma.FieldRef<"EmailLead", 'String'>
   readonly createdAt: Prisma.FieldRef<"EmailLead", 'DateTime'>
+  readonly codeExpiresAt: Prisma.FieldRef<"EmailLead", 'DateTime'>
 }
     
 

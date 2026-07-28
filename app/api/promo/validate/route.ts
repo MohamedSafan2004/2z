@@ -4,6 +4,9 @@ import { optionalAuth } from "@/lib/middleware"
 import { sensitiveRatelimit } from "@/lib/ratelimit"
 import { normalizeEgyptianPhone } from "@/lib/phone"
 
+// الكود المرتبط بالـ flash offer popup — لازم يطابق اللي في app/api/leads/subscribe/route.ts
+const EMAIL_LINKED_PROMO_CODE = "2ZSAVE10"
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"
@@ -19,10 +22,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 })
     }
 
-    const { code: rawCode, phone: rawPhone } = body as Record<string, unknown>
+    const { code: rawCode, phone: rawPhone, email: rawEmail } = body as Record<string, unknown>
 
     const code = typeof rawCode === "string" ? rawCode.trim().toUpperCase() : ""
     const phone = typeof rawPhone === "string" ? rawPhone.trim() : ""
+    const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : ""
 
     if (!code)  return NextResponse.json({ error: "Enter a promo code" }, { status: 400 })
     if (!phone) return NextResponse.json({ error: "Enter your phone number first" }, { status: 400 })
@@ -41,6 +45,26 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // 404 leaks whether the code exists — use 422 to give a uniform "invalid" signal
     if (!promo || !promo.isActive) {
       return NextResponse.json({ error: "Invalid or expired promo code" }, { status: 422 })
+    }
+
+    // صلاحية 48 ساعة للكود المرتبط بالإيميل.
+    // الكود 2ZSAVE10 مش صالح للعميل إلا لو بعت إيميله في البوب أب ولسه داخل حدود
+    // الـ48 ساعة من وقت ما طلب الكود. لو نضيف كودات تانية مستقبلاً مش مرتبطة
+    // بالمفهوم ده، الفحص هنا بيتفعّل بس لو الكود يساوي EMAIL_LINKED_PROMO_CODE بالظبط.
+    if (code === EMAIL_LINKED_PROMO_CODE) {
+      if (!email) {
+        return NextResponse.json({ error: "Enter the email you used to get this code" }, { status: 400 })
+      }
+      const lead = await db.emailLead.findUnique({
+        where: { email },
+        select: { promoCode: true, codeExpiresAt: true },
+      })
+      if (!lead || lead.promoCode !== code) {
+        return NextResponse.json({ error: "This code isn't linked to that email" }, { status: 422 })
+      }
+      if (lead.codeExpiresAt.getTime() < Date.now()) {
+        return NextResponse.json({ error: "This code has expired" }, { status: 422 })
+      }
     }
 
     // RACE CONDITION NOTE:

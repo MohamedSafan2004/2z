@@ -5,6 +5,7 @@ import { validateEmail, sanitize } from "@/lib/validation"
 import { sendCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 
 const LEAD_PROMO_CODE = "2ZSAVE10"
+const CODE_VALIDITY_HOURS = 48
 
 export async function POST(req: Request) {
   try {
@@ -32,14 +33,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "إيميل غير صالح" }, { status: 400 })
     }
 
-    // لو الإيميل ده سجل قبل كده، رجّعله نفس الكود بدل ما نرفض الطلب
+    // لو الإيميل ده سجل قبل كده، رجّعله نفس الكود والـexpiry المحفوظ بدل ما نرفض الطلب
+    // أو نجدد الصلاحية (مش عايزين حد يجدد الكود لنفسه بلا حدود بمجرد ما يبعت نفس الإيميل تاني)
     const existing = await db.emailLead.findUnique({ where: { email } })
     if (existing) {
-      return NextResponse.json({ success: true, promoCode: existing.promoCode, alreadyExisted: true })
+      return NextResponse.json({
+        success: true,
+        promoCode: existing.promoCode,
+        expiresAt: existing.codeExpiresAt.toISOString(),
+        alreadyExisted: true,
+      })
     }
 
+    const codeExpiresAt = new Date(Date.now() + CODE_VALIDITY_HOURS * 60 * 60 * 1000)
+
     await db.emailLead.create({
-      data: { email, promoCode: LEAD_PROMO_CODE, source: "popup_10off" },
+      data: { email, promoCode: LEAD_PROMO_CODE, source: "popup_10off", codeExpiresAt },
     })
 
     // Meta CAPI — Lead event (server-side، بيكمّل الـ Pixel client-side)
@@ -53,7 +62,12 @@ export async function POST(req: Request) {
       })
     }
 
-    return NextResponse.json({ success: true, promoCode: LEAD_PROMO_CODE, alreadyExisted: false })
+    return NextResponse.json({
+      success: true,
+      promoCode: LEAD_PROMO_CODE,
+      expiresAt: codeExpiresAt.toISOString(),
+      alreadyExisted: false,
+    })
   } catch (error) {
     console.error("[leads/subscribe] error:", error)
     return NextResponse.json({ error: "حصل خطأ، جرب تاني" }, { status: 500 })

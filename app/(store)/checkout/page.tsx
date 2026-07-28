@@ -108,7 +108,7 @@ export default function CheckoutPage() {
           "Content-Type": "application/json",
           ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify({ code, phone: phone.trim() }),
+        body: JSON.stringify({ code, phone: phone.trim(), email: email.trim() }),
       })
       const data = await res.json()
       if (!res.ok) {

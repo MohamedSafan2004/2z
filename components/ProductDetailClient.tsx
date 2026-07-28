@@ -538,6 +538,7 @@ export default function ProductDetailClient({
         </Link>
 
         <ShippingInfoBanner />
+        <ActiveOfferBanner />
 
         <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", marginTop: "24px" }}>
 

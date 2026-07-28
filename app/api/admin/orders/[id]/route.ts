@@ -22,7 +22,8 @@ export async function PATCH(
       if (!current) return NextResponse.json({ error: "Order not found" }, { status: 404 })
       if (current.paymentMethod !== "INSTAPAY") return NextResponse.json({ error: "Not an InstaPay order" }, { status: 400 })
       if (current.paymentStatus === "PAID") return NextResponse.json({ error: "Already confirmed" }, { status: 400 })
-      if (!current.instapayRef) return NextResponse.json({ error: "Customer hasn't submitted a reference number yet" }, { status: 400 })
+      // instapayRef مش جزء من الفلو الفعلي — العميل بيبعت إثبات الدفع على الواتساب
+      // والأدمن بيتأكد يدوي من الإنترنت بانكينج بنفسه، فمفيش داعي نمنع الـconfirm بسببه
 
       const updated = await db.order.update({
         where: { id },

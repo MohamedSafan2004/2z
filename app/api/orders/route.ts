@@ -10,6 +10,9 @@ import { sendCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 import { normalizeEgyptianPhone } from "@/lib/phone"
 import crypto from "crypto"
 
+// الكود المرتبط بالـ flash offer popup — لازم يطابق اللي في app/api/leads/subscribe وapp/api/promo/validate
+const EMAIL_LINKED_PROMO_CODE = "2ZSAVE10"
+
 type CartItem = { variantId: string; quantity: number } 
 
 export async function POST(req: NextRequest) {
@@ -104,7 +107,25 @@ export async function POST(req: NextRequest) {
       const code = promoCode.trim().toUpperCase()
       const promo = await db.promoCode.findUnique({ where: { code } })
 
-      if (promo && promo.isActive) {
+      // صلاحية الـ 48 ساعة للكود المرتبط بالإيميل — نفس الفحص اللي في promo/validate،
+      // بس هنا هو الفحص الحقيقي لأن هنا بيتعمل الخصم فعليًا. لو الكود انتهت
+      // صلاحيته أو مش مرتبط بالإيميل المبعوت، بنتجاهله بصمت بدل ما نرفض
+      // الأوردر كله (الفرونت لو طبّق صح مش هيبعت كود منتهي أصلاً).
+      let promoBlockedByExpiry = false
+      if (promo && promo.isActive && code === EMAIL_LINKED_PROMO_CODE) {
+        const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : ""
+        const lead = normalizedEmail
+          ? await db.emailLead.findUnique({
+              where: { email: normalizedEmail },
+              select: { promoCode: true, codeExpiresAt: true },
+            })
+          : null
+        if (!lead || lead.promoCode !== code || lead.codeExpiresAt.getTime() < Date.now()) {
+          promoBlockedByExpiry = true
+        }
+      }
+
+      if (promo && promo.isActive && !promoBlockedByExpiry) {
         // لازم نطبّع الرقم قبل الفحص والحفظ عشان محدش يقدر يستخدم الكود
         // مرتين بصيغتين مختلفتين لنفس الرقم (زي في promo/validate)
         const normalizedPhone = normalizeEgyptianPhone(phone) ?? phone

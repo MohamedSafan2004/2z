@@ -152,6 +152,8 @@ export default function AdminPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [hydrated, setHydrated] = useState(false)
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [confirmError, setConfirmError] = useState<{ orderId: string; message: string } | null>(null)
 
   useEffect(() => {
     queueMicrotask(() => setHydrated(true))
@@ -190,6 +192,33 @@ export default function AdminPage() {
     })
     if (res.status === 401) { logout(); router.push("/login?expired=1"); return }
     setOrders(orders.map((o) => o.id === orderId ? { ...o, status } : o))
+  }
+
+  const confirmInstapay = async (orderId: string) => {
+    setConfirmingId(orderId)
+    setConfirmError(null)
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: "confirm_instapay" }),
+      })
+      if (res.status === 401) { logout(); router.push("/login?expired=1"); return }
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setConfirmError({ orderId, message: data.error || `Failed (${res.status})` })
+        return
+      }
+
+      setOrders(orders.map((o) =>
+        o.id === orderId ? { ...o, paymentStatus: "PAID", status: "PAID" } : o
+      ))
+    } catch {
+      setConfirmError({ orderId, message: "Network error — check your connection" })
+    } finally {
+      setConfirmingId(null)
+    }
   }
 
   const syncInventory = async () => {
@@ -441,26 +470,20 @@ export default function AdminPage() {
                     </button>
 
                     {order.paymentMethod === "INSTAPAY" && order.paymentStatus !== "PAID" && (
-                      <button
-                        onClick={async () => {
-                          const res = await fetch(`/api/admin/orders/${order.id}`, {
-                            method: "PATCH",
-                            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                            body: JSON.stringify({ action: "confirm_instapay" }),
-                          })
-                          if (res.status === 401) { logout(); router.push("/login?expired=1"); return }
-                          if (res.ok) {
-                            setOrders(orders.map((o) =>
-                              o.id === order.id
-                                ? { ...o, paymentStatus: "PAID", status: "PAID" }
-                                : o
-                            ))
-                          }
-                        }}
-                        style={{ padding: "8px 14px", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: "pointer", background: "rgba(100,200,150,0.1)", color: "rgba(100,200,150,0.9)", border: "1px solid rgba(100,200,150,0.3)" }}
-                      >
-                        ✓ Confirm InstaPay
-                      </button>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-start" }}>
+                        <button
+                          onClick={() => confirmInstapay(order.id)}
+                          disabled={confirmingId === order.id}
+                          style={{ padding: "8px 14px", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: confirmingId === order.id ? "not-allowed" : "pointer", background: "rgba(100,200,150,0.1)", color: confirmingId === order.id ? "rgba(100,200,150,0.4)" : "rgba(100,200,150,0.9)", border: "1px solid rgba(100,200,150,0.3)" }}
+                        >
+                          {confirmingId === order.id ? "..." : "✓ Confirm InstaPay"}
+                        </button>
+                        {confirmError?.orderId === order.id && (
+                          <span style={{ fontSize: "8px", color: "rgba(220,100,100,0.9)", letterSpacing: "0.05em", maxWidth: "200px" }}>
+                            {confirmError.message}
+                          </span>
+                        )}
+                      </div>
                     )}
 
                     {order.paymentMethod === "INSTAPAY" && order.instapayRef && (

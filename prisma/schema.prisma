@@ -151,13 +151,15 @@ model Promotion {
 }
 
 model EmailLead {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  promoCode  String
-  source     String   @default("popup_10off")
-  createdAt  DateTime @default(now())
+  id             String   @id @default(cuid())
+  email          String   @unique
+  promoCode      String
+  source         String   @default("popup_10off")
+  createdAt      DateTime @default(now())
+  codeExpiresAt  DateTime // صلاحية الكود للإيميل ده بالذات — 48 ساعة من وقت التسجيل
 
   @@index([createdAt])
+  @@index([email, codeExpiresAt])
 }
 
 enum Role {
