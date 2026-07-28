@@ -3,8 +3,7 @@
 import { SHIPPING_RATES, SHIPPING_LABELS, type ShippingZone } from "@/lib/shipping"
 
 const ZONE_DESCRIPTIONS: Record<ShippingZone, string> = {
-  cairo: "2–3 business days",
-  giza: "2–3 business days",
+  egypt: "2–3 business days"
 }
 
 interface DeliveryCardProps {
