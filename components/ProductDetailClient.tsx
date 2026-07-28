@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useCart } from "@/lib/store/cart"
 import { trackViewContent, trackAddToCart } from "@/lib/meta-pixel"
 
+
 const colorImages: Record<string, string[]> = {
   BLACK: [
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black.jpg",
@@ -538,8 +539,7 @@ export default function ProductDetailClient({
         </Link>
 
         <ShippingInfoBanner />
-        <ActiveOfferBanner />
-
+        {/* <ActiveOfferBanner /> */}
         <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", marginTop: "24px" }}>
 
           <div style={{ position: "relative", aspectRatio: "4/5", overflow: "hidden", background: "#0d0d0d" }}>
