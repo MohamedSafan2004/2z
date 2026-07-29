@@ -434,7 +434,7 @@ export default function AdminPage() {
                     {order.address && <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", marginTop: "6px", lineHeight: 1.7 }}>{order.address}</p>}
                     {order.shippingZone && (
                       <p style={{ fontSize: "9px", color: "rgba(240,200,150,0.7)", marginTop: "4px", letterSpacing: "0.05em" }}>
-                        📍 {order.shippingZone === "cairo" ? "Cairo" : "Giza"} · {Number(order.shippingCost).toLocaleString()} EGP shipping
+                        📍 {Number(order.shippingCost).toLocaleString()} EGP shipping
                       </p>
                     )}
                   </div>

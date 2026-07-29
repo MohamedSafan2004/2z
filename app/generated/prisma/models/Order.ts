@@ -69,6 +69,11 @@ export type OrderMinAggregateOutputType = {
   confirmationEmailSent: boolean | null
   adminEmailSent: boolean | null
   sheetSynced: boolean | null
+  bostaDeliveryId: string | null
+  bostaTrackingNumber: string | null
+  bostaState: string | null
+  bostaCreatedAt: Date | null
+  bostaLastSyncAt: Date | null
 }
 
 export type OrderMaxAggregateOutputType = {
@@ -98,6 +103,11 @@ export type OrderMaxAggregateOutputType = {
   confirmationEmailSent: boolean | null
   adminEmailSent: boolean | null
   sheetSynced: boolean | null
+  bostaDeliveryId: string | null
+  bostaTrackingNumber: string | null
+  bostaState: string | null
+  bostaCreatedAt: Date | null
+  bostaLastSyncAt: Date | null
 }
 
 export type OrderCountAggregateOutputType = {
@@ -127,6 +137,11 @@ export type OrderCountAggregateOutputType = {
   confirmationEmailSent: number
   adminEmailSent: number
   sheetSynced: number
+  bostaDeliveryId: number
+  bostaTrackingNumber: number
+  bostaState: number
+  bostaCreatedAt: number
+  bostaLastSyncAt: number
   _all: number
 }
 
@@ -174,6 +189,11 @@ export type OrderMinAggregateInputType = {
   confirmationEmailSent?: true
   adminEmailSent?: true
   sheetSynced?: true
+  bostaDeliveryId?: true
+  bostaTrackingNumber?: true
+  bostaState?: true
+  bostaCreatedAt?: true
+  bostaLastSyncAt?: true
 }
 
 export type OrderMaxAggregateInputType = {
@@ -203,6 +223,11 @@ export type OrderMaxAggregateInputType = {
   confirmationEmailSent?: true
   adminEmailSent?: true
   sheetSynced?: true
+  bostaDeliveryId?: true
+  bostaTrackingNumber?: true
+  bostaState?: true
+  bostaCreatedAt?: true
+  bostaLastSyncAt?: true
 }
 
 export type OrderCountAggregateInputType = {
@@ -232,6 +257,11 @@ export type OrderCountAggregateInputType = {
   confirmationEmailSent?: true
   adminEmailSent?: true
   sheetSynced?: true
+  bostaDeliveryId?: true
+  bostaTrackingNumber?: true
+  bostaState?: true
+  bostaCreatedAt?: true
+  bostaLastSyncAt?: true
   _all?: true
 }
 
@@ -348,6 +378,11 @@ export type OrderGroupByOutputType = {
   confirmationEmailSent: boolean
   adminEmailSent: boolean
   sheetSynced: boolean
+  bostaDeliveryId: string | null
+  bostaTrackingNumber: string | null
+  bostaState: string | null
+  bostaCreatedAt: Date | null
+  bostaLastSyncAt: Date | null
   _count: OrderCountAggregateOutputType | null
   _avg: OrderAvgAggregateOutputType | null
   _sum: OrderSumAggregateOutputType | null
@@ -400,6 +435,11 @@ export type OrderWhereInput = {
   confirmationEmailSent?: Prisma.BoolFilter<"Order"> | boolean
   adminEmailSent?: Prisma.BoolFilter<"Order"> | boolean
   sheetSynced?: Prisma.BoolFilter<"Order"> | boolean
+  bostaDeliveryId?: Prisma.StringNullableFilter<"Order"> | string | null
+  bostaTrackingNumber?: Prisma.StringNullableFilter<"Order"> | string | null
+  bostaState?: Prisma.StringNullableFilter<"Order"> | string | null
+  bostaCreatedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  bostaLastSyncAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
 }
@@ -431,6 +471,11 @@ export type OrderOrderByWithRelationInput = {
   confirmationEmailSent?: Prisma.SortOrder
   adminEmailSent?: Prisma.SortOrder
   sheetSynced?: Prisma.SortOrder
+  bostaDeliveryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  bostaTrackingNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  bostaState?: Prisma.SortOrderInput | Prisma.SortOrder
+  bostaCreatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  bostaLastSyncAt?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   items?: Prisma.OrderItemOrderByRelationAggregateInput
 }
@@ -440,6 +485,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   invoiceNumber?: number
   clientOrderId?: string
   verifyToken?: string
+  bostaDeliveryId?: string
   AND?: Prisma.OrderWhereInput | Prisma.OrderWhereInput[]
   OR?: Prisma.OrderWhereInput[]
   NOT?: Prisma.OrderWhereInput | Prisma.OrderWhereInput[]
@@ -465,9 +511,13 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   confirmationEmailSent?: Prisma.BoolFilter<"Order"> | boolean
   adminEmailSent?: Prisma.BoolFilter<"Order"> | boolean
   sheetSynced?: Prisma.BoolFilter<"Order"> | boolean
+  bostaTrackingNumber?: Prisma.StringNullableFilter<"Order"> | string | null
+  bostaState?: Prisma.StringNullableFilter<"Order"> | string | null
+  bostaCreatedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  bostaLastSyncAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
-}, "id" | "invoiceNumber" | "clientOrderId" | "verifyToken">
+}, "id" | "invoiceNumber" | "clientOrderId" | "verifyToken" | "bostaDeliveryId">
 
 export type OrderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -496,6 +546,11 @@ export type OrderOrderByWithAggregationInput = {
   confirmationEmailSent?: Prisma.SortOrder
   adminEmailSent?: Prisma.SortOrder
   sheetSynced?: Prisma.SortOrder
+  bostaDeliveryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  bostaTrackingNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  bostaState?: Prisma.SortOrderInput | Prisma.SortOrder
+  bostaCreatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  bostaLastSyncAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
   _avg?: Prisma.OrderAvgOrderByAggregateInput
   _max?: Prisma.OrderMaxOrderByAggregateInput
@@ -533,6 +588,11 @@ export type OrderScalarWhereWithAggregatesInput = {
   confirmationEmailSent?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
   adminEmailSent?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
   sheetSynced?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
+  bostaDeliveryId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  bostaTrackingNumber?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  bostaState?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  bostaCreatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  bostaLastSyncAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
 }
 
 export type OrderCreateInput = {
@@ -561,6 +621,11 @@ export type OrderCreateInput = {
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: string | null
+  bostaTrackingNumber?: string | null
+  bostaState?: string | null
+  bostaCreatedAt?: Date | string | null
+  bostaLastSyncAt?: Date | string | null
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
 }
@@ -592,6 +657,11 @@ export type OrderUncheckedCreateInput = {
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: string | null
+  bostaTrackingNumber?: string | null
+  bostaState?: string | null
+  bostaCreatedAt?: Date | string | null
+  bostaLastSyncAt?: Date | string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
 }
 
@@ -621,6 +691,11 @@ export type OrderUpdateInput = {
   confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sheetSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  bostaDeliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaTrackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bostaLastSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
 }
@@ -652,6 +727,11 @@ export type OrderUncheckedUpdateInput = {
   confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sheetSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  bostaDeliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaTrackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bostaLastSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
 }
 
@@ -682,6 +762,11 @@ export type OrderCreateManyInput = {
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: string | null
+  bostaTrackingNumber?: string | null
+  bostaState?: string | null
+  bostaCreatedAt?: Date | string | null
+  bostaLastSyncAt?: Date | string | null
 }
 
 export type OrderUpdateManyMutationInput = {
@@ -710,6 +795,11 @@ export type OrderUpdateManyMutationInput = {
   confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sheetSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  bostaDeliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaTrackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bostaLastSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type OrderUncheckedUpdateManyInput = {
@@ -739,6 +829,11 @@ export type OrderUncheckedUpdateManyInput = {
   confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sheetSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  bostaDeliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaTrackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bostaLastSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type OrderListRelationFilter = {
@@ -778,6 +873,11 @@ export type OrderCountOrderByAggregateInput = {
   confirmationEmailSent?: Prisma.SortOrder
   adminEmailSent?: Prisma.SortOrder
   sheetSynced?: Prisma.SortOrder
+  bostaDeliveryId?: Prisma.SortOrder
+  bostaTrackingNumber?: Prisma.SortOrder
+  bostaState?: Prisma.SortOrder
+  bostaCreatedAt?: Prisma.SortOrder
+  bostaLastSyncAt?: Prisma.SortOrder
 }
 
 export type OrderAvgOrderByAggregateInput = {
@@ -815,6 +915,11 @@ export type OrderMaxOrderByAggregateInput = {
   confirmationEmailSent?: Prisma.SortOrder
   adminEmailSent?: Prisma.SortOrder
   sheetSynced?: Prisma.SortOrder
+  bostaDeliveryId?: Prisma.SortOrder
+  bostaTrackingNumber?: Prisma.SortOrder
+  bostaState?: Prisma.SortOrder
+  bostaCreatedAt?: Prisma.SortOrder
+  bostaLastSyncAt?: Prisma.SortOrder
 }
 
 export type OrderMinOrderByAggregateInput = {
@@ -844,6 +949,11 @@ export type OrderMinOrderByAggregateInput = {
   confirmationEmailSent?: Prisma.SortOrder
   adminEmailSent?: Prisma.SortOrder
   sheetSynced?: Prisma.SortOrder
+  bostaDeliveryId?: Prisma.SortOrder
+  bostaTrackingNumber?: Prisma.SortOrder
+  bostaState?: Prisma.SortOrder
+  bostaCreatedAt?: Prisma.SortOrder
+  bostaLastSyncAt?: Prisma.SortOrder
 }
 
 export type OrderSumOrderByAggregateInput = {
@@ -961,6 +1071,11 @@ export type OrderCreateWithoutUserInput = {
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: string | null
+  bostaTrackingNumber?: string | null
+  bostaState?: string | null
+  bostaCreatedAt?: Date | string | null
+  bostaLastSyncAt?: Date | string | null
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
 }
 
@@ -990,6 +1105,11 @@ export type OrderUncheckedCreateWithoutUserInput = {
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: string | null
+  bostaTrackingNumber?: string | null
+  bostaState?: string | null
+  bostaCreatedAt?: Date | string | null
+  bostaLastSyncAt?: Date | string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
 }
 
@@ -1049,6 +1169,11 @@ export type OrderScalarWhereInput = {
   confirmationEmailSent?: Prisma.BoolFilter<"Order"> | boolean
   adminEmailSent?: Prisma.BoolFilter<"Order"> | boolean
   sheetSynced?: Prisma.BoolFilter<"Order"> | boolean
+  bostaDeliveryId?: Prisma.StringNullableFilter<"Order"> | string | null
+  bostaTrackingNumber?: Prisma.StringNullableFilter<"Order"> | string | null
+  bostaState?: Prisma.StringNullableFilter<"Order"> | string | null
+  bostaCreatedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  bostaLastSyncAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
 }
 
 export type OrderCreateWithoutItemsInput = {
@@ -1077,6 +1202,11 @@ export type OrderCreateWithoutItemsInput = {
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: string | null
+  bostaTrackingNumber?: string | null
+  bostaState?: string | null
+  bostaCreatedAt?: Date | string | null
+  bostaLastSyncAt?: Date | string | null
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
 }
 
@@ -1107,6 +1237,11 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: string | null
+  bostaTrackingNumber?: string | null
+  bostaState?: string | null
+  bostaCreatedAt?: Date | string | null
+  bostaLastSyncAt?: Date | string | null
 }
 
 export type OrderCreateOrConnectWithoutItemsInput = {
@@ -1151,6 +1286,11 @@ export type OrderUpdateWithoutItemsInput = {
   confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sheetSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  bostaDeliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaTrackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bostaLastSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
 }
 
@@ -1181,6 +1321,11 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sheetSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  bostaDeliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaTrackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bostaLastSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type OrderCreateManyUserInput = {
@@ -1209,6 +1354,11 @@ export type OrderCreateManyUserInput = {
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: string | null
+  bostaTrackingNumber?: string | null
+  bostaState?: string | null
+  bostaCreatedAt?: Date | string | null
+  bostaLastSyncAt?: Date | string | null
 }
 
 export type OrderUpdateWithoutUserInput = {
@@ -1237,6 +1387,11 @@ export type OrderUpdateWithoutUserInput = {
   confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sheetSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  bostaDeliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaTrackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bostaLastSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
 }
 
@@ -1266,6 +1421,11 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sheetSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  bostaDeliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaTrackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bostaLastSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
 }
 
@@ -1295,6 +1455,11 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   confirmationEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   adminEmailSent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sheetSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  bostaDeliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaTrackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bostaCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bostaLastSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -1355,6 +1520,11 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: boolean
+  bostaTrackingNumber?: boolean
+  bostaState?: boolean
+  bostaCreatedAt?: boolean
+  bostaLastSyncAt?: boolean
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
   _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
@@ -1387,6 +1557,11 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: boolean
+  bostaTrackingNumber?: boolean
+  bostaState?: boolean
+  bostaCreatedAt?: boolean
+  bostaLastSyncAt?: boolean
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
@@ -1417,6 +1592,11 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: boolean
+  bostaTrackingNumber?: boolean
+  bostaState?: boolean
+  bostaCreatedAt?: boolean
+  bostaLastSyncAt?: boolean
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
@@ -1447,9 +1627,14 @@ export type OrderSelectScalar = {
   confirmationEmailSent?: boolean
   adminEmailSent?: boolean
   sheetSynced?: boolean
+  bostaDeliveryId?: boolean
+  bostaTrackingNumber?: boolean
+  bostaState?: boolean
+  bostaCreatedAt?: boolean
+  bostaLastSyncAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceNumber" | "userId" | "totalAmount" | "discountAmount" | "promotionDiscount" | "shippingCost" | "shippingZone" | "promoCode" | "status" | "paymentMethod" | "paymentId" | "paymentStatus" | "instapayRef" | "createdAt" | "guestEmail" | "guestName" | "address" | "phone" | "clientOrderId" | "verifyToken" | "lastPaymentCheckAt" | "paymobTransactionId" | "confirmationEmailSent" | "adminEmailSent" | "sheetSynced", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceNumber" | "userId" | "totalAmount" | "discountAmount" | "promotionDiscount" | "shippingCost" | "shippingZone" | "promoCode" | "status" | "paymentMethod" | "paymentId" | "paymentStatus" | "instapayRef" | "createdAt" | "guestEmail" | "guestName" | "address" | "phone" | "clientOrderId" | "verifyToken" | "lastPaymentCheckAt" | "paymobTransactionId" | "confirmationEmailSent" | "adminEmailSent" | "sheetSynced" | "bostaDeliveryId" | "bostaTrackingNumber" | "bostaState" | "bostaCreatedAt" | "bostaLastSyncAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
@@ -1495,6 +1680,11 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     confirmationEmailSent: boolean
     adminEmailSent: boolean
     sheetSynced: boolean
+    bostaDeliveryId: string | null
+    bostaTrackingNumber: string | null
+    bostaState: string | null
+    bostaCreatedAt: Date | null
+    bostaLastSyncAt: Date | null
   }, ExtArgs["result"]["order"]>
   composites: {}
 }
@@ -1946,6 +2136,11 @@ export interface OrderFieldRefs {
   readonly confirmationEmailSent: Prisma.FieldRef<"Order", 'Boolean'>
   readonly adminEmailSent: Prisma.FieldRef<"Order", 'Boolean'>
   readonly sheetSynced: Prisma.FieldRef<"Order", 'Boolean'>
+  readonly bostaDeliveryId: Prisma.FieldRef<"Order", 'String'>
+  readonly bostaTrackingNumber: Prisma.FieldRef<"Order", 'String'>
+  readonly bostaState: Prisma.FieldRef<"Order", 'String'>
+  readonly bostaCreatedAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly bostaLastSyncAt: Prisma.FieldRef<"Order", 'DateTime'>
 }
     
 

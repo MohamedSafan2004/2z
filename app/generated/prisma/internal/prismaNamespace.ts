@@ -1351,7 +1351,12 @@ export const OrderScalarFieldEnum = {
   paymobTransactionId: 'paymobTransactionId',
   confirmationEmailSent: 'confirmationEmailSent',
   adminEmailSent: 'adminEmailSent',
-  sheetSynced: 'sheetSynced'
+  sheetSynced: 'sheetSynced',
+  bostaDeliveryId: 'bostaDeliveryId',
+  bostaTrackingNumber: 'bostaTrackingNumber',
+  bostaState: 'bostaState',
+  bostaCreatedAt: 'bostaCreatedAt',
+  bostaLastSyncAt: 'bostaLastSyncAt'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]

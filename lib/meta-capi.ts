@@ -107,3 +107,45 @@ export function getRequestMeta(req: Request): { clientIp?: string; userAgent?: s
   const userAgent = req.headers.get("user-agent") || undefined
   return { clientIp, userAgent }
 }
+
+/**
+ * بتبعت حدث Purchase لأوردر معين — دالة موحّدة تُستخدم من مكانين:
+ * 1. orders/route.ts (COD) — وقت إنشاء الأوردر مباشرة، لأنه بيتأكد فورًا.
+ * 2. admin/orders/[id]/route.ts (InstaPay) — وقت ما الأدمن يعمل Confirm InstaPay
+ *    فعليًا، لأن ده أول لحظة حقيقية يتأكد فيها الدفع.
+ * eventId المفروض يبقى نفسه اللي الـ Pixel بعته من المتصفح (لو موجود) عشان
+ * Meta تعمل dedup صح؛ لو مش موجود، بنولّد واحد جديد بس من غير Pixel-side
+ * تطابق مش هيحصل dedup (وده أفضل من عدم إرسال الحدث خالص).
+ */
+export async function sendPurchaseCapiEvent(params: {
+  eventId?: string | null
+  eventSourceUrl?: string
+  email?: string | null
+  phone?: string | null
+  clientIp?: string
+  userAgent?: string
+  contentIds: string[]
+  value: number
+  numItems: number
+  orderId: string
+}): Promise<void> {
+  await sendCapiEvent({
+    eventName: "Purchase",
+    eventId: params.eventId || crypto.randomUUID(),
+    eventSourceUrl: params.eventSourceUrl || "https://www.2zstore.com/checkout",
+    user: {
+      email: params.email || undefined,
+      phone: params.phone || undefined,
+      clientIp: params.clientIp,
+      userAgent: params.userAgent,
+    },
+    customData: {
+      content_ids: params.contentIds,
+      content_type: "product",
+      value: params.value,
+      num_items: params.numItems,
+      currency: "EGP",
+      order_id: params.orderId,
+    },
+  })
+}

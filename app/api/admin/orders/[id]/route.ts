@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { requireAdmin } from "@/lib/middleware"
 import { syncToSheets } from "@/lib/sheets-sync"
+import { sendPurchaseCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 
 const VALID_STATUSES = ["PENDING_PAYMENT", "PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]
 
@@ -18,7 +19,7 @@ export async function PATCH(
     const { status, action } = body
 
     if (action === "confirm_instapay") {
-      const current = await db.order.findUnique({ where: { id } })
+      const current = await db.order.findUnique({ where: { id }, include: { items: true } })
       if (!current) return NextResponse.json({ error: "Order not found" }, { status: 404 })
       if (current.paymentMethod !== "INSTAPAY") return NextResponse.json({ error: "Not an InstaPay order" }, { status: 400 })
       if (current.paymentStatus === "PAID") return NextResponse.json({ error: "Already confirmed" }, { status: 400 })
@@ -40,6 +41,27 @@ export async function PATCH(
 
       if (!current.sheetSynced) {
         await syncToSheets(updated)
+      }
+
+      // ─── Meta CAPI: Purchase ────────────────────────────────────────────
+      // دي أول لحظة حقيقية يتأكد فيها الدفع بالنسبة لأوردرات InstaPay —
+      // مفيش eventId من الـ Pixel هنا لأن العميل خرج من الموقع بالفعل من
+      // ساعة ما عمل الأوردر، فبنولّد واحد جديد (مفيش dedup، بس أهم حاجة
+      // إن الحدث يتبعت أصلاً بدل ما يضيع خالص زي ما كان بيحصل قبل كده).
+      try {
+        const { clientIp, userAgent } = getRequestMeta(req)
+        await sendPurchaseCapiEvent({
+          email: updated.user?.email || updated.guestEmail,
+          phone: updated.phone,
+          clientIp,
+          userAgent,
+          contentIds: updated.items.map((item) => item.variantId),
+          value: Number(updated.totalAmount),
+          numItems: updated.items.reduce((sum, item) => sum + item.quantity, 0),
+          orderId: updated.id,
+        })
+      } catch (error) {
+        console.error("Meta CAPI Purchase (InstaPay confirm) failed:", error)
       }
 
       return NextResponse.json(updated)

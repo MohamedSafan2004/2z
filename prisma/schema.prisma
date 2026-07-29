@@ -90,6 +90,13 @@ model Order {
   adminEmailSent        Boolean       @default(false)
   sheetSynced           Boolean       @default(false)
 
+  // ─── Bosta — جاهزة لحد ما نتربط بالـ API فعليًا (مفيش منطق بيستخدمها دلوقتي) ───
+  bostaDeliveryId       String?       @unique // معرف الشحنة عند Bosta
+  bostaTrackingNumber   String?       // رقم التتبع اللي بيظهر للعميل
+  bostaState            String?       // آخر حالة معروفة من Bosta (created, pickedUp, inTransit, delivered, إلخ...)
+  bostaCreatedAt        DateTime?     // وقت إنشاء الشحنة عند Bosta
+  bostaLastSyncAt       DateTime?     // آخر مرة اتحدثت فيها حالة الشحنة من Bosta
+
   @@index([paymentStatus])
   @@index([createdAt])
   @@index([userId])

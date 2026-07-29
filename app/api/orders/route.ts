@@ -6,7 +6,7 @@ import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 import { sanitize } from "@/lib/validation"
 import { getFinalShippingCost, type ShippingZone } from "@/lib/shipping"
 import { calculatePromotion, type GiftSelection } from "@/lib/promotions"
-import { sendCapiEvent, getRequestMeta } from "@/lib/meta-capi"
+import { sendPurchaseCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 import { normalizeEgyptianPhone } from "@/lib/phone"
 import crypto from "crypto"
 
@@ -312,24 +312,21 @@ export async function POST(req: NextRequest) {
       }
 
       // ─── Meta CAPI: Purchase ────────────────────────────────────────────
-      // COD بيتأكد فورًا وقت الإنشاء، فده أقرب لحظة حقيقية للـ "شراء".
-      // eventId جاي من نفس الـ event_id اللي الـ Pixel بعته من المتصفح
-      // (لو موجود) عشان Meta تعمل dedup صح؛ لو مش موجود، بنولّد واحد جديد.
+      // COD بيتأكد فورًا وقت الإنشاء، فده أقرب لحظة حقيقية لـ "الشراء". لو
+      // InstaPay، الحدث ده بيتبعت من مكان تاني (admin/orders/[id]/route.ts)
+      // وقت ما الأدمن يعمل Confirm InstaPay فعليًا — مش هنا خالص.
       try {
         const { clientIp, userAgent } = getRequestMeta(req)
-        await sendCapiEvent({
-          eventName: "Purchase",
-          eventId: typeof eventId === "string" && eventId ? eventId : crypto.randomUUID(),
-          eventSourceUrl: "https://www.2zstore.com/checkout",
-          user: { email: emailTo || undefined, phone: phone || undefined, clientIp, userAgent },
-          customData: {
-            content_ids: order.items.map((item: typeof order.items[number]) => item.variantId),
-            content_type: "product",
-            value: totalAmount,
-            num_items: order.items.reduce((sum: number, item: typeof order.items[number]) => sum + item.quantity, 0),
-            currency: "EGP",
-            order_id: order.id,
-          },
+        await sendPurchaseCapiEvent({
+          eventId: typeof eventId === "string" && eventId ? eventId : null,
+          email: emailTo,
+          phone,
+          clientIp,
+          userAgent,
+          contentIds: order.items.map((item: typeof order.items[number]) => item.variantId),
+          value: totalAmount,
+          numItems: order.items.reduce((sum: number, item: typeof order.items[number]) => sum + item.quantity, 0),
+          orderId: order.id,
         })
       } catch (error) {
         console.error("Meta CAPI Purchase failed:", error)
