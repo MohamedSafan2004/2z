@@ -42,8 +42,6 @@ const colorImages: Record<string, string[]> = {
   ],
 }
 
-const SIZE_CHART_IMAGE = "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/size-chart.jpg"
-
 function optimizeCloudinaryUrl(url: string, width: number): string {
   return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`)
 }
@@ -112,8 +110,7 @@ export default function ProductDetailClient({
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
   const [imgIndex, setImgIndex] = useState(0)
-  const [sizeChartOpen, setSizeChartOpen] = useState(false)
-  const [sizeFinderOpen, setSizeFinderOpen] = useState(false)
+  const [sizeGuideTab, setSizeGuideTab] = useState<"CHART" | "FINDER" | null>(null)
   const [buying, setBuying] = useState(false)
   const { addItem, items, gifts, setGift, clearGifts, paidQuantity } = useCart()
   const router = useRouter()
@@ -668,7 +665,7 @@ export default function ProductDetailClient({
                 <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", margin: 0 }}>Size</p>
                 <div className="size-tools-row">
                   <button
-                    onClick={() => setSizeFinderOpen(true)}
+                    onClick={() => setSizeGuideTab("FINDER")}
                     className="size-tool-link accent"
                   >
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -677,7 +674,7 @@ export default function ProductDetailClient({
                     Size Recommendation
                   </button>
                   <button
-                    onClick={() => setSizeChartOpen(true)}
+                    onClick={() => setSizeGuideTab("CHART")}
                     className="size-tool-link"
                   >
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -836,34 +833,13 @@ export default function ProductDetailClient({
         )}
       </div>
 
-      {sizeChartOpen && (
-        <div
-          onClick={() => setSizeChartOpen(false)}
-          style={{
-            position: "fixed", inset: 0, background: "rgba(8,8,8,0.9)", backdropFilter: "blur(6px)",
-            zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px",
-          }}
-        >
-          <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", maxWidth: "600px", width: "100%" }}>
-            <button
-              onClick={() => setSizeChartOpen(false)}
-              style={{
-                position: "absolute", top: "-40px", right: "0", background: "none", border: "none",
-                color: "#f0ede6", cursor: "pointer", fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase",
-              }}
-            >
-              Close ✕
-            </button>
-            <img
-              src={optimizeCloudinaryUrl(SIZE_CHART_IMAGE, 700)}
-              alt="Size Chart"
-              style={{ width: "100%", height: "auto", display: "block", border: "1px solid rgba(240,237,230,0.1)" }}
-            />
-          </div>
-        </div>
+      {sizeGuideTab && (
+        <SizeRecommendationModal
+          open={!!sizeGuideTab}
+          onClose={() => setSizeGuideTab(null)}
+          initialTab={sizeGuideTab}
+        />
       )}
-
-      <SizeRecommendationModal open={sizeFinderOpen} onClose={() => setSizeFinderOpen(false)} />
     </div>
   )
 }
