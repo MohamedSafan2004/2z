@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import { db } from "@/lib/db"
 import { RevealSection } from "@/components/RevealSection"
 import { SkeletonBlock } from "@/components/Skeleton"
+import { ReviewsGallery } from "@/components/ReviewsGallery"
 
 export const dynamic = "force-dynamic"
 const colorImages: Record<string, string> = {
@@ -288,6 +289,35 @@ export default function Home() {
         .newin-section { padding: 56px 20px 40px; max-width: 100%; }
         @media (min-width: 640px) { .newin-section { padding: 64px 24px 40px; } }
 
+        /* ── MARQUEE ── */
+        @keyframes marqueeScroll {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+        .marquee-wrap {
+          overflow: hidden;
+          background: #0d0d0d;
+          border-top: 1px solid rgba(240,237,230,0.08);
+          border-bottom: 1px solid rgba(240,237,230,0.08);
+          padding: 12px 0;
+          width: 100%;
+        }
+        .marquee-track {
+          display: flex;
+          gap: 48px;
+          width: max-content;
+          animation: marqueeScroll 22s linear infinite;
+        }
+        .marquee-item {
+          font-family: 'Space Mono', monospace;
+          font-size: 9px;
+          letter-spacing: 0.3em;
+          text-transform: uppercase;
+          color: rgba(240,237,230,0.65);
+          white-space: nowrap;
+        }
+        .marquee-dot { color: rgba(240,237,230,0.15); margin-left: 48px; }
+
         /* ── SHIPPING BANNER (home) ── */
         .home-shipping-banner {
           display: flex;
@@ -458,6 +488,22 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── MARQUEE ── */}
+      <div className="marquee-wrap">
+        <div className="marquee-track">
+          {[...Array(2)].map((_, repeatIdx) => (
+            <span key={repeatIdx} style={{ display: "contents" }}>
+              <span className="marquee-item">2Z Store</span>
+              <span className="marquee-item">Egypt SS26</span>
+              <span className="marquee-item">Minimal Streetwear</span>
+              <span className="marquee-item">Oversized Fit</span>
+              <span className="marquee-item">Less Noise. More Presence.</span>
+              <span className="marquee-item">Black · White · Grey · Beige</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* ── NEW IN ── */}
       <section className="newin-section">
         <RevealSection>
@@ -472,6 +518,9 @@ export default function Home() {
           </Suspense>
         </div>
       </section>
+
+      {/* ── REVIEWS ── */}
+      <ReviewsGallery />
 
       {/* ── STATEMENT ── */}
       <section className="statement-section">
