@@ -21,7 +21,10 @@ type PaymentMethod = "cod" | "instapay"
 
 const paymentMethods = [
   { id: "cod" as PaymentMethod,      label: "Cash on delivery", sub: "Pay when you receive" },
-  { id: "instapay" as PaymentMethod, label: "InstaPay",          sub: "Transfer and confirm instantly" },
+  // InstaPay مخفي مؤقتًا من الـ UI بطلب محمد — الفلو التقني لسه موجود بالكامل
+  // (payment logic, /api/orders, /instapay-payment/[orderId]) عشان أوردر قديم معمولة بية متكسرش.
+  // لإرجاع InstaPay للعملاء الجدد: شيل الكومنت اللي تحت دي وبس.
+  // { id: "instapay" as PaymentMethod, label: "InstaPay",          sub: "Transfer and confirm instantly" },
 ]
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

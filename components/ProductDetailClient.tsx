@@ -305,7 +305,7 @@ export default function ProductDetailClient({
 
         .suggested-card { text-decoration: none; display: block; }
         .suggested-img { transition: transform 0.6s ease, opacity 0.4s ease; }
-        .suggested-card:hover .suggested-img { transform: scale(1.04); opacity: 0.75 !important; }
+        .suggested-card:hover .suggested-img { transform: scale(1.04); opacity: 0.95 !important; }
 
         /* ── Sale badge on suggested product cards ── */
         @keyframes cardSaleShine {
@@ -595,7 +595,7 @@ export default function ProductDetailClient({
               src={optimizeCloudinaryUrl(img, 900)}
               alt={product.name}
               fetchPriority="high"
-              style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.9, display: "block" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 1, display: "block" }}
             />
             <div style={{ position: "absolute", top: "16px", left: "16px", background: "rgba(8,8,8,0.7)", backdropFilter: "blur(8px)", padding: "6px 12px" }}>
               <span style={{ fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>{product.category?.name}</span>
@@ -636,12 +636,12 @@ export default function ProductDetailClient({
               </h1>
               <div style={{ display: "flex", alignItems: "baseline", gap: "10px", flexWrap: "wrap" }}>
                 {hasDiscount && (
-                  <span style={{ fontSize: "16px", color: "rgba(240,237,230,0.3)", textDecoration: "line-through", fontFamily: "Cormorant Garamond, serif" }}>
+                  <span style={{ fontSize: "16px", color: "rgba(240,237,230,0.5)", textDecoration: "line-through", fontFamily: "Cormorant Garamond, serif" }}>
                     {Number(product.originalPrice)}
                   </span>
                 )}
                 <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "32px", fontWeight: 300, color: "#f0ede6" }}>{Number(product.price)}</span>
-                <span style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,237,230,0.4)" }}>EGP</span>
+                <span style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,237,230,0.6)" }}>EGP</span>
                 {hasDiscount && (
                   <span className="sale-badge">
                     Sale
@@ -653,7 +653,7 @@ export default function ProductDetailClient({
             <div style={{ height: "1px", background: "rgba(240,237,230,0.06)", marginBottom: "28px" }} />
 
             {product.description && (
-              <p style={{ fontSize: "11px", lineHeight: 2, color: "rgba(240,237,230,0.5)", marginBottom: "28px", letterSpacing: "0.05em" }}>
+              <p style={{ fontSize: "11px", lineHeight: 2, color: "rgba(240,237,230,0.65)", marginBottom: "28px", letterSpacing: "0.05em" }}>
                 {product.description}
               </p>
             )}
@@ -662,7 +662,7 @@ export default function ProductDetailClient({
 
             <div style={{ marginBottom: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", margin: 0 }}>Size</p>
+                <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.7)", margin: 0 }}>Size</p>
                 <div className="size-tools-row">
                   <button
                     onClick={() => setSizeGuideTab("FINDER")}
@@ -722,7 +722,7 @@ export default function ProductDetailClient({
             )}
 
             <div style={{ marginBottom: "28px" }}>
-              <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", marginBottom: "12px" }}>Quantity</p>
+              <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.7)", marginBottom: "12px" }}>Quantity</p>
               <div style={{ display: "flex", alignItems: "center", gap: "16px", opacity: quantityDisabled ? 0.3 : 1 }}>
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -748,12 +748,14 @@ export default function ProductDetailClient({
               style={{
                 width: "100%", padding: "16px", fontSize: "10px", letterSpacing: "0.25em", textTransform: "uppercase",
                 fontFamily: "Space Mono, monospace", cursor: quantityDisabled ? "not-allowed" : "pointer",
-                background: added ? "rgba(100,200,150,0.9)" : quantityDisabled ? "rgba(240,237,230,0.1)" : "#f0ede6",
-                color: added ? "#080808" : quantityDisabled ? "rgba(240,237,230,0.3)" : "#080808",
-                border: "none", transition: "all 0.3s", marginBottom: "10px",
+                background: added ? "rgba(100,200,150,0.9)" : isSoldOut ? "rgba(240,237,230,0.08)" : "#f0ede6",
+                color: added ? "#080808" : isSoldOut ? "rgba(240,237,230,0.35)" : "#080808",
+                border: !selectedSize && !isSoldOut ? "1px solid rgba(240,237,230,0.4)" : "none",
+                opacity: !selectedSize && !isSoldOut ? 0.55 : 1,
+                transition: "all 0.3s", marginBottom: "10px",
               }}
             >
-              {added ? "✓ Added to Cart" : isSoldOut ? "Sold Out" : !selectedSize ? "Select a Size" : "Add to Cart"}
+              {added ? "✓ Added to Cart" : isSoldOut ? "Sold Out" : !selectedSize ? "Select a Size to Continue" : "Add to Cart"}
             </button>
 
             <button
@@ -763,8 +765,9 @@ export default function ProductDetailClient({
                 width: "100%", padding: "16px", fontSize: "10px", letterSpacing: "0.25em", textTransform: "uppercase",
                 fontFamily: "Space Mono, monospace", cursor: (quantityDisabled || buying) ? "not-allowed" : "pointer",
                 background: "transparent",
-                color: (quantityDisabled || buying) ? "rgba(240,237,230,0.2)" : "#f0ede6",
-                border: `1px solid ${(quantityDisabled || buying) ? "rgba(240,237,230,0.1)" : "rgba(240,237,230,0.4)"}`,
+                color: isSoldOut ? "rgba(240,237,230,0.35)" : "#f0ede6",
+                border: `1px solid ${isSoldOut ? "rgba(240,237,230,0.15)" : "rgba(240,237,230,0.5)"}`,
+                opacity: (!selectedSize && !isSoldOut) ? 0.55 : 1,
                 transition: "all 0.3s",
                 marginBottom: "16px",
               }}
@@ -779,7 +782,7 @@ export default function ProductDetailClient({
         {suggestedProducts.length > 0 && (
           <div style={{ marginTop: "96px" }}>
             <div style={{ marginBottom: "28px", borderBottom: "1px solid rgba(240,237,230,0.06)", paddingBottom: "20px" }}>
-              <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "10px" }}>
+              <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "10px" }}>
                 You Might Also Like
               </p>
               <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "clamp(24px, 4vw, 34px)", fontWeight: 300, color: "#f0ede6", margin: 0 }}>
@@ -802,25 +805,25 @@ export default function ProductDetailClient({
                         alt={`Oversize T-Shirt — ${colorLabel}`}
                         loading="lazy"
                         className="suggested-img"
-                        style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
                       />
-                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, transparent 55%)" }} />
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, rgba(8,8,8,0.5) 20%, transparent 45%)" }} />
                       <div style={{ position: "absolute", bottom: "14px", left: "14px", right: "14px" }}>
                         <p className="suggested-name" style={{ fontFamily: "Cormorant Garamond, serif", fontWeight: 300, color: "#f0ede6", margin: "0 0 5px", lineHeight: 1.15 }}>
                           Oversize T-Shirt<br />
-                          <span style={{ color: "rgba(240,237,230,0.5)" }}>— {colorLabel}</span>
+                          <span style={{ color: "rgba(240,237,230,0.75)" }}>— {colorLabel}</span>
                         </p>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ fontSize: "7px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>
+                          <span style={{ fontSize: "7px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>
                             {colorLabel}
                           </span>
                           {hasDisc ? (
                             <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                              <span className="suggested-orig" style={{ color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>{p.originalPrice}</span>
-                              <span className="suggested-price" style={{ color: "rgba(240,237,230,0.7)" }}>{p.price} EGP</span>
+                              <span className="suggested-orig" style={{ color: "rgba(240,237,230,0.45)", textDecoration: "line-through" }}>{p.originalPrice}</span>
+                              <span className="suggested-price" style={{ color: "#f0ede6" }}>{p.price} EGP</span>
                             </span>
                           ) : (
-                            <span className="suggested-price" style={{ color: "rgba(240,237,230,0.5)" }}>{p.price} EGP</span>
+                            <span className="suggested-price" style={{ color: "#f0ede6" }}>{p.price} EGP</span>
                           )}
                         </div>
                       </div>

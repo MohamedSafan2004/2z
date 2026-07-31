@@ -63,13 +63,13 @@ async function NewInSection() {
                   aria-hidden="true"
                   loading="lazy"
                   className="card-img"
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
                 />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, transparent 60%)" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, rgba(8,8,8,0.55) 22%, transparent 48%)" }} />
                 <div style={{ position: "absolute", bottom: "12px", left: "12px", right: "12px" }}>
                   <p className="newin-name">
                     Oversize T-Shirt<br />
-                    <span style={{ color: "rgba(240,237,230,0.5)" }}>— {colorLabel}</span>
+                    <span style={{ color: "rgba(240,237,230,0.75)" }}>— {colorLabel}</span>
                   </p>
                   <div className="newin-meta-row">
                     <span className="newin-cat">T-Shirts</span>
@@ -80,7 +80,7 @@ async function NewInSection() {
                         <span className="newin-price">{p.price} EGP</span>
                       </span>
                     ) : (
-                      <span className="newin-price" style={{ color: "rgba(240,237,230,0.5)" }}>{p.price} EGP</span>
+                      <span className="newin-price" style={{ color: "#f0ede6" }}>{p.price} EGP</span>
                     )}
                   </div>
                 </div>
@@ -250,7 +250,7 @@ export default function Home() {
           font-size: 9px;
           letter-spacing: 0.16em;
           text-transform: uppercase;
-          color: rgba(240,237,230,0.45);
+          color: rgba(240,237,230,0.7);
           line-height: 1.9;
           margin: 0;
         }
@@ -342,13 +342,13 @@ export default function Home() {
 
         .newin-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; flex-wrap: wrap; gap: 10px; }
         .newin-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: #f0ede6; }
-        .newin-viewall { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.3); text-decoration: none; border-bottom: 1px solid rgba(240,237,230,0.2); padding-bottom: 1px; }
+        .newin-viewall { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.55); text-decoration: none; border-bottom: 1px solid rgba(240,237,230,0.3); padding-bottom: 1px; }
 
         .newin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(240,237,230,0.06); max-width: 100%; }
         @media (min-width: 640px) { .newin-grid { grid-template-columns: repeat(4, 1fr); } }
 
         .card-img { transition: transform 0.8s ease, opacity 0.6s ease; }
-        .product-card:hover .card-img { transform: scale(1.05); opacity: 0.7; }
+        .product-card:hover .card-img { transform: scale(1.05); opacity: 0.95; }
 
         /* ── Sale badge on cards ── */
         @keyframes cardSaleShine {
@@ -382,9 +382,9 @@ export default function Home() {
         }
 
         .newin-name  { font-family: 'Cormorant Garamond', serif; font-weight: 300; color: #f0ede6; margin: 0 0 4px; line-height: 1.15; font-size: 15px; }
-        .newin-cat   { font-family: 'Space Mono', monospace; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.4); font-size: 7px; white-space: nowrap; }
-        .newin-price { font-family: 'Space Mono', monospace; color: rgba(240,237,230,0.7); font-size: 13px; white-space: nowrap; }
-        .newin-orig  { font-family: 'Space Mono', monospace; color: rgba(240,237,230,0.3); text-decoration: line-through; font-size: 10.5px; white-space: nowrap; }
+        .newin-cat   { font-family: 'Space Mono', monospace; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.6); font-size: 7px; white-space: nowrap; }
+        .newin-price { font-family: 'Space Mono', monospace; color: #f0ede6; font-size: 13px; white-space: nowrap; }
+        .newin-orig  { font-family: 'Space Mono', monospace; color: rgba(240,237,230,0.45); text-decoration: line-through; font-size: 10.5px; white-space: nowrap; }
         .newin-meta-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
 
         @media (min-width: 480px) {
@@ -403,7 +403,7 @@ export default function Home() {
         @media (min-width: 640px) { .statement-section { padding: 80px 24px; } }
         .statement-row { display: flex; align-items: center; gap: 16px; max-width: 600px; margin: 0 auto; }
         .statement-line { flex: 1; height: 1px; background: rgba(240,237,230,0.08); min-width: 12px; }
-        .statement-label { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(240,237,230,0.28); margin-bottom: 16px; }
+        .statement-label { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(240,237,230,0.55); margin-bottom: 16px; }
         .statement-heading { font-family: 'Cormorant Garamond', serif; font-weight: 300; line-height: 1.25; color: #f0ede6; margin: 0; font-size: 22px; }
         @media (min-width: 480px) { .statement-heading { font-size: 28px; } .statement-label { font-size: 9px; } }
         @media (min-width: 640px) { .statement-heading { font-size: 38px; } }
@@ -452,11 +452,11 @@ export default function Home() {
         <div className="hero-topbar">
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{ width: "20px", height: "1px", background: "rgba(240,237,230,0.3)" }} />
-            <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>
+            <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>
               Egypt · SS26
             </span>
           </div>
-          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>
+          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>
             2Z
           </span>
         </div>
@@ -544,13 +544,13 @@ export default function Home() {
           <div className="comingsoon-box">
             <div style={{ flex: 1, padding: "28px 20px", display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                <div className="comingsoon-dot" style={{ width: "5px", height: "5px" }} />
-                <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)" }}>Next Drop</span>
+              <div className="comingsoon-dot" style={{ width: "5px", height: "5px" }} />
+              <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>Next Drop</span>
               </div>
               <h2 className="shimmer-text">Sweatpants.</h2>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid rgba(240,237,230,0.12)", padding: "9px 16px", width: "fit-content" }}>
-                <div className="comingsoon-dot" style={{ width: "4px", height: "4px" }} />
-                <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)" }}>Coming Soon</span>
+              <div className="comingsoon-dot" style={{ width: "4px", height: "4px" }} />
+              <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.65)" }}>Coming Soon</span>
               </div>
             </div>
             <div style={{ width: "clamp(80px, 26%, 160px)", position: "relative", overflow: "hidden", borderLeft: "1px solid rgba(240,237,230,0.08)", flexShrink: 0 }}>
@@ -574,10 +574,10 @@ export default function Home() {
           <RevealSection key={cat.slug} delay={i * 150}>
             {cat.available ? (
               <Link href={`/products?category=${cat.slug}`} className="cat-link" style={{ position: "relative", height: "180px", overflow: "hidden", display: "block" }}>
-                <img src={cat.img} alt={cat.name} loading="lazy" className="cat-img" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.32 }} />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,8,8,0.85) 0%, transparent 65%)" }} />
+                <img src={cat.img} alt={cat.name} loading="lazy" className="cat-img" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.75 }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,8,8,0.9) 0%, transparent 55%)" }} />
                 <div style={{ position: "absolute", bottom: "16px", left: "16px" }}>
-                  <p style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.45)", marginBottom: "4px" }}>Collection</p>
+                  <p style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)", marginBottom: "4px" }}>Collection</p>
                   <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "22px", fontWeight: 300, color: "#f0ede6", margin: 0 }}>{cat.name}</p>
                 </div>
               </Link>
@@ -585,8 +585,8 @@ export default function Home() {
               <div style={{ position: "relative", height: "180px", overflow: "hidden" }}>
                 <img src={cat.img} alt={cat.name} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.1, filter: "grayscale(100%)" }} />
                 <div style={{ position: "absolute", bottom: "16px", left: "16px" }}>
-                  <p style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.22)", marginBottom: "4px" }}>Coming Soon</p>
-                  <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "22px", fontWeight: 300, color: "rgba(240,237,230,0.28)", margin: 0 }}>{cat.name}</p>
+                  <p style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "4px" }}>Coming Soon</p>
+                  <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "22px", fontWeight: 300, color: "rgba(240,237,230,0.4)", margin: 0 }}>{cat.name}</p>
                 </div>
               </div>
             )}
@@ -597,8 +597,8 @@ export default function Home() {
       {/* ── FOOTER STRIP ── */}
       <RevealSection>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 20px", borderTop: "1px solid rgba(240,237,230,0.06)", marginTop: "2px", flexWrap: "wrap", gap: "8px" }}>
-          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.25)" }}>2Z — Egypt</span>
-          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.25)" }}>Oversized T-Shirts</span>
+          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>2Z — Egypt</span>
+          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>Oversized T-Shirts</span>
         </div>
       </RevealSection>
 
