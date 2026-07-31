@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useCart } from "@/lib/store/cart"
 import { trackViewContent, trackAddToCart } from "@/lib/meta-pixel"
 import ActiveOfferBanner from "@/components/ActiveOfferBanner"
+import SizeRecommendationModal from "@/components/Sizerecommendationmodal"
 
 
 const colorImages: Record<string, string[]> = {
@@ -112,6 +113,7 @@ export default function ProductDetailClient({
   const [added, setAdded] = useState(false)
   const [imgIndex, setImgIndex] = useState(0)
   const [sizeChartOpen, setSizeChartOpen] = useState(false)
+  const [sizeFinderOpen, setSizeFinderOpen] = useState(false)
   const [buying, setBuying] = useState(false)
   const { addItem, items, gifts, setGift, clearGifts, paidQuantity } = useCart()
   const router = useRouter()
@@ -198,6 +200,26 @@ export default function ProductDetailClient({
   const goToImage = (index: number) => setImgIndex(index)
   const nextImage = () => goToImage((imgIndex + 1) % images.length)
   const prevImage = () => goToImage((imgIndex - 1 + images.length) % images.length)
+
+  // ─── Swipe support (mobile) ────────────────────────────────────────────
+  const touchStartX = React.useRef(0)
+  const touchStartY = React.useRef(0)
+  const SWIPE_THRESHOLD = 40 // أقل مسافة أفقية (بالبكسل) عشان يتحسب swipe
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+    touchStartY.current = e.touches[0].clientY
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current
+
+    // لو الحركة رأسية أكتر من الأفقية، معناها اليوزر بيعمل scroll عمودي مش بيقلّب صور
+    if (Math.abs(deltaY) > Math.abs(deltaX)) return
+    if (deltaX > SWIPE_THRESHOLD) prevImage()
+    else if (deltaX < -SWIPE_THRESHOLD) nextImage()
+  }
 
   const buildCartItem = () => {
     const variant = variants.find((v) => v.size === selectedSize)
@@ -532,6 +554,29 @@ export default function ProductDetailClient({
           letter-spacing: 0.02em;
           animation: slideDown 0.3s ease both;
         }
+
+        /* ── Size chart / size recommendation link row ── */
+        .size-tools-row {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+        .size-tool-link {
+          display: flex; align-items: center; gap: 6px;
+          font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+          color: #f0ede6; background: none;
+          border: 1px solid rgba(240,237,230,0.3);
+          padding: 6px 10px; cursor: pointer;
+          font-family: 'Space Mono', monospace;
+          transition: border-color 0.2s ease, color 0.2s ease;
+        }
+        .size-tool-link.accent {
+          border-color: rgba(200,240,79,0.4);
+          color: ${ACCENT};
+        }
+        .size-tool-link.accent:hover {
+          border-color: ${ACCENT};
+        }
       `}</style>
 
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "70px 20px 80px" }}>
@@ -544,7 +589,11 @@ export default function ProductDetailClient({
         <ActiveOfferBanner /> 
         <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", marginTop: "24px" }}>
 
-          <div style={{ position: "relative", aspectRatio: "4/5", overflow: "hidden", background: "#0d0d0d" }}>
+          <div
+            style={{ position: "relative", aspectRatio: "4/5", overflow: "hidden", background: "#0d0d0d", touchAction: "pan-y" }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
             <img
               src={optimizeCloudinaryUrl(img, 900)}
               alt={product.name}
@@ -617,22 +666,27 @@ export default function ProductDetailClient({
             <div style={{ marginBottom: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
                 <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)", margin: 0 }}>Size</p>
-                <button
-                  onClick={() => setSizeChartOpen(true)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "6px",
-                    fontSize: "9px", letterSpacing: "0.12em", textTransform: "uppercase",
-                    color: "#f0ede6", background: "none",
-                    border: "1px solid rgba(240,237,230,0.3)",
-                    padding: "6px 10px", cursor: "pointer",
-                  }}
-                >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <rect x="2" y="7" width="20" height="10" rx="1"/>
-                    <path d="M6 7v3M10 7v5M14 7v3M18 7v5"/>
-                  </svg>
-                  Size Chart
-                </button>
+                <div className="size-tools-row">
+                  <button
+                    onClick={() => setSizeFinderOpen(true)}
+                    className="size-tool-link accent"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    Size Recommendation
+                  </button>
+                  <button
+                    onClick={() => setSizeChartOpen(true)}
+                    className="size-tool-link"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <rect x="2" y="7" width="20" height="10" rx="1"/>
+                      <path d="M6 7v3M10 7v5M14 7v3M18 7v5"/>
+                    </svg>
+                    Size Chart
+                  </button>
+                </div>
               </div>
               <div style={{ display: "flex", gap: "8px" }}>
                 {sizes.map((size) => {
@@ -808,6 +862,8 @@ export default function ProductDetailClient({
           </div>
         </div>
       )}
+
+      <SizeRecommendationModal open={sizeFinderOpen} onClose={() => setSizeFinderOpen(false)} />
     </div>
   )
 }
