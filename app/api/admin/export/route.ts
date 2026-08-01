@@ -262,7 +262,7 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch (error) {
-    console.error(error)
+    console.error(error instanceof Error ? error.message : error)
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

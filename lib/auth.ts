@@ -16,12 +16,14 @@ export async function comparePassword(password: string, hash: string): Promise<b
 }
 
 export function generateToken(userId: string, role: string, tokenVersion: number): string {
-  return jwt.sign({ userId, role, tokenVersion }, JWT_SECRET, { expiresIn: "30d" })
+  return jwt.sign({ userId, role, tokenVersion }, JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" })
 }
 
 export function verifyToken(token: string): { userId: string; role: string; tokenVersion: number } | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET)
+    // تحديد algorithm صراحة بيمنع algorithm confusion attack — التوكن مش مقبول
+    // لو اتوقّع بأي algorithm تاني غير HS256، حتى لو التوقيع نفسه صح
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] })
     if (typeof decoded === "object" && decoded !== null && "userId" in decoded && "role" in decoded) {
       return {
         userId: decoded.userId as string,

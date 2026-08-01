@@ -135,3 +135,7 @@ dist
 
 # Google Service Account
 prisma/google-service-account.json
+
+# Database backups (contain customer PII + password hashes — never commit)
+backup-*.json
+backups/*.json

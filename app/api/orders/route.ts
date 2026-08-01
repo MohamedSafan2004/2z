@@ -287,7 +287,7 @@ export async function POST(req: NextRequest) {
             discountAmount: (discountAmount + promotionDiscount) > 0 ? (discountAmount + promotionDiscount) : undefined,
           })
         } catch (error) {
-          console.error("Customer email failed:", error)
+          console.error("Customer email failed:", error instanceof Error ? error.message : error)
         }
       }
 
@@ -311,7 +311,7 @@ export async function POST(req: NextRequest) {
           discountAmount: (discountAmount + promotionDiscount) > 0 ? (discountAmount + promotionDiscount) : undefined,
         })
       } catch (error) {
-        console.error("Admin notification failed:", error)
+        console.error("Admin notification failed:", error instanceof Error ? error.message : error)
       }
 
       // ─── Meta CAPI: Purchase ────────────────────────────────────────────
@@ -332,13 +332,13 @@ export async function POST(req: NextRequest) {
           orderId: order.id,
         })
       } catch (error) {
-        console.error("Meta CAPI Purchase failed:", error)
+        console.error("Meta CAPI Purchase failed:", error instanceof Error ? error.message : error)
       }
     }
 
     return NextResponse.json({ ...order, verifyToken }, { status: 201 })
   } catch (error) {
-    console.error("Order creation error:", error)
+    console.error("Order creation error:", error instanceof Error ? error.message : error)
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }
@@ -356,7 +356,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(orders)
   } catch (error) {
-    console.error("Get orders error:", error)
+    console.error("Get orders error:", error instanceof Error ? error.message : error)
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }
