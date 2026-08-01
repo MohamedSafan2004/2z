@@ -41,6 +41,32 @@ async function getFeaturedProducts() {
     }))
 }
 
+// Best Sellers — التيشيرت الأسود والأبيض تحديدًا (أكتر 2 لون مبيعًا)
+async function getBestSellers() {
+  const products = await db.product.findMany({
+    where: { isActive: true },
+    include: {
+      category: { select: { id: true, name: true, slug: true } },
+      variants: {
+        select: { id: true, color: true, size: true, stockQuantity: true },
+      },
+    },
+  })
+
+  const flat = products
+    .filter((p) => p.category?.slug !== "sweatpants")
+    .map((p) => ({
+      ...p,
+      price: Number(p.price),
+      originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+    }))
+
+  const black = flat.find((p) => p.variants?.some((v) => v.color === "BLACK"))
+  const white = flat.find((p) => p.variants?.some((v) => v.color === "WHITE"))
+
+  return [black, white].filter((p): p is NonNullable<typeof p> => Boolean(p))
+}
+
 // جزء الداتابيز لوحده، بيسمح لباقي الصفحة إنها متستناش
 async function NewInSection() {
   const products = await getFeaturedProducts()
@@ -97,6 +123,68 @@ function NewInSkeleton() {
   return (
     <>
       {[1, 2, 3, 4].map((i) => (
+        <div key={i} style={{ aspectRatio: "3/4", width: "100%" }}>
+          <SkeletonBlock height="100%" />
+        </div>
+      ))}
+    </>
+  )
+}
+
+// نفس شكل كارت الـ New In بالظبط، بس مع badge "Best Seller" بدل "Sale"
+async function BestSellersSection() {
+  const products = await getBestSellers()
+
+  return (
+    <>
+      {products.map((p, i) => {
+        const color = p.variants?.[0]?.color || ""
+        const colorLabel = color ? color.charAt(0) + color.slice(1).toLowerCase() : ""
+        return (
+          <RevealSection key={p.id} delay={i * 100}>
+            <Link href={`/products/${p.id}`} className="product-card" style={{ display: "block", textDecoration: "none" }}>
+              <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
+                <span className="card-bestseller-badge">Best Seller</span>
+                <img
+                  src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  className="card-img"
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
+                />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, rgba(8,8,8,0.55) 22%, transparent 48%)" }} />
+                <div style={{ position: "absolute", bottom: "12px", left: "12px", right: "12px" }}>
+                  <p className="newin-name">
+                    Oversize T-Shirt<br />
+                    <span style={{ color: "rgba(240,237,230,0.75)" }}>— {colorLabel}</span>
+                  </p>
+                  <div className="newin-meta-row">
+                    <span className="newin-cat">T-Shirts</span>
+                    <span aria-hidden="true"> </span>
+                    {p.originalPrice && p.originalPrice > p.price ? (
+                      <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <span className="newin-orig">{p.originalPrice}</span>
+                        <span className="newin-price">{p.price} EGP</span>
+                      </span>
+                    ) : (
+                      <span className="newin-price" style={{ color: "#f0ede6" }}>{p.price} EGP</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </RevealSection>
+        )
+      })}
+    </>
+  )
+}
+
+function BestSellersSkeleton() {
+  return (
+    <>
+      {[1, 2].map((i) => (
         <div key={i} style={{ aspectRatio: "3/4", width: "100%" }}>
           <SkeletonBlock height="100%" />
         </div>
@@ -381,6 +469,33 @@ export default function Home() {
           animation: cardSaleShine 2.6s ease-in-out infinite;
         }
 
+        .card-bestseller-badge {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          z-index: 2;
+          display: inline-flex;
+          align-items: center;
+          font-family: 'Space Mono', monospace;
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #f0ede6;
+          background: rgba(8,8,8,0.75);
+          border: 1px solid rgba(240,237,230,0.35);
+          padding: 4px 8px;
+          backdrop-filter: blur(4px);
+        }
+
+        /* ── BEST SELLERS ── */
+        .bestsellers-section { padding: 56px 20px 40px; max-width: 100%; }
+        @media (min-width: 640px) { .bestsellers-section { padding: 64px 24px 40px; } }
+        .bestsellers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(240,237,230,0.06); max-width: 100%; }
+        @media (min-width: 900px) {
+          .bestsellers-grid { max-width: 640px; margin: 0 auto; }
+        }
+
         .newin-name  { font-family: 'Cormorant Garamond', serif; font-weight: 300; color: #f0ede6; margin: 0 0 4px; line-height: 1.15; font-size: 15px; }
         .newin-cat   { font-family: 'Space Mono', monospace; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.6); font-size: 7px; white-space: nowrap; }
         .newin-price { font-family: 'Space Mono', monospace; color: #f0ede6; font-size: 13px; white-space: nowrap; }
@@ -503,6 +618,20 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* ── BEST SELLERS ── */}
+      <section className="bestsellers-section">
+        <RevealSection>
+          <div className="newin-header">
+            <span className="newin-label">Best Sellers</span>
+          </div>
+        </RevealSection>
+        <div className="bestsellers-grid">
+          <Suspense fallback={<BestSellersSkeleton />}>
+            <BestSellersSection />
+          </Suspense>
+        </div>
+      </section>
 
       {/* ── NEW IN ── */}
       <section className="newin-section">
