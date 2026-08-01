@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { requireAdmin } from "@/lib/middleware"
 import { syncToSheets } from "@/lib/sheets-sync"
+import { syncOrderToBosta } from "@/lib/bosta-sync"
 import { sendPurchaseCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 
 const VALID_STATUSES = ["PENDING_PAYMENT", "PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]
@@ -41,6 +42,12 @@ export async function PATCH(
 
       if (!current.sheetSynced) {
         await syncToSheets(updated)
+      }
+
+      try {
+        await syncOrderToBosta(updated)
+      } catch (error) {
+        console.error("Bosta sync (InstaPay confirm) failed:", error)
       }
 
       // ─── Meta CAPI: Purchase ────────────────────────────────────────────
@@ -122,6 +129,14 @@ export async function PATCH(
 
     if (isNewPaidOrDelivered) {
       await syncToSheets(order)
+    }
+
+    if (isCodAutoConfirm) {
+      try {
+        await syncOrderToBosta(order)
+      } catch (error) {
+        console.error("Bosta sync (COD auto-confirm) failed:", error)
+      }
     }
 
     return NextResponse.json(order)

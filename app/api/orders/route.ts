@@ -5,6 +5,7 @@ import { orderRatelimit } from "@/lib/ratelimit"
 import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 import { sanitize } from "@/lib/validation"
 import { getFinalShippingCost, type ShippingZone } from "@/lib/shipping"
+import { isValidBostaCity } from "@/lib/cities"
 import { calculatePromotion, type GiftSelection } from "@/lib/promotions"
 import { sendPurchaseCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 import { normalizeEgyptianPhone } from "@/lib/phone"
@@ -28,10 +29,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null)
     if (!body) return NextResponse.json({ error: "Invalid request" }, { status: 400 })
 
-    const { items, address, phone, email, name, clientOrderId, promoCode, paymentMethod, shippingZone, giftSelections, eventId } = body
+    const { items, address, city, phone, email, name, clientOrderId, promoCode, paymentMethod, shippingZone, giftSelections, eventId } = body
 
     if (!items || items.length === 0) return NextResponse.json({ error: "No items in order" }, { status: 400 })
     if (!email || !phone || !address) return NextResponse.json({ error: "Email, phone, and address are required" }, { status: 400 })
+    if (!isValidBostaCity(city)) return NextResponse.json({ error: "Please select a valid city" }, { status: 400 })
 
     const trimmedName = typeof name === "string" ? name.trim() : ""
     if (!trimmedName) return NextResponse.json({ error: "Name is required" }, { status: 400 })
@@ -232,6 +234,7 @@ export async function POST(req: NextRequest) {
           guestEmail: email || null,
           guestName: !auth.userId ? sanitize(trimmedName) : null,
           address: sanitize(address),
+          city,
           phone: sanitize(phone),
           clientOrderId: clientOrderId || null,
           verifyToken,

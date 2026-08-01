@@ -61,6 +61,7 @@ export type OrderMinAggregateOutputType = {
   guestEmail: string | null
   guestName: string | null
   address: string | null
+  city: string | null
   phone: string | null
   clientOrderId: string | null
   verifyToken: string | null
@@ -95,6 +96,7 @@ export type OrderMaxAggregateOutputType = {
   guestEmail: string | null
   guestName: string | null
   address: string | null
+  city: string | null
   phone: string | null
   clientOrderId: string | null
   verifyToken: string | null
@@ -129,6 +131,7 @@ export type OrderCountAggregateOutputType = {
   guestEmail: number
   guestName: number
   address: number
+  city: number
   phone: number
   clientOrderId: number
   verifyToken: number
@@ -181,6 +184,7 @@ export type OrderMinAggregateInputType = {
   guestEmail?: true
   guestName?: true
   address?: true
+  city?: true
   phone?: true
   clientOrderId?: true
   verifyToken?: true
@@ -215,6 +219,7 @@ export type OrderMaxAggregateInputType = {
   guestEmail?: true
   guestName?: true
   address?: true
+  city?: true
   phone?: true
   clientOrderId?: true
   verifyToken?: true
@@ -249,6 +254,7 @@ export type OrderCountAggregateInputType = {
   guestEmail?: true
   guestName?: true
   address?: true
+  city?: true
   phone?: true
   clientOrderId?: true
   verifyToken?: true
@@ -370,6 +376,7 @@ export type OrderGroupByOutputType = {
   guestEmail: string | null
   guestName: string | null
   address: string | null
+  city: string | null
   phone: string | null
   clientOrderId: string | null
   verifyToken: string | null
@@ -427,6 +434,7 @@ export type OrderWhereInput = {
   guestEmail?: Prisma.StringNullableFilter<"Order"> | string | null
   guestName?: Prisma.StringNullableFilter<"Order"> | string | null
   address?: Prisma.StringNullableFilter<"Order"> | string | null
+  city?: Prisma.StringNullableFilter<"Order"> | string | null
   phone?: Prisma.StringNullableFilter<"Order"> | string | null
   clientOrderId?: Prisma.StringNullableFilter<"Order"> | string | null
   verifyToken?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -463,6 +471,7 @@ export type OrderOrderByWithRelationInput = {
   guestEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   guestName?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   clientOrderId?: Prisma.SortOrderInput | Prisma.SortOrder
   verifyToken?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -505,6 +514,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   guestEmail?: Prisma.StringNullableFilter<"Order"> | string | null
   guestName?: Prisma.StringNullableFilter<"Order"> | string | null
   address?: Prisma.StringNullableFilter<"Order"> | string | null
+  city?: Prisma.StringNullableFilter<"Order"> | string | null
   phone?: Prisma.StringNullableFilter<"Order"> | string | null
   lastPaymentCheckAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   paymobTransactionId?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -538,6 +548,7 @@ export type OrderOrderByWithAggregationInput = {
   guestEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   guestName?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   clientOrderId?: Prisma.SortOrderInput | Prisma.SortOrder
   verifyToken?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -580,6 +591,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   guestEmail?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   guestName?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   address?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  city?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   clientOrderId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   verifyToken?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
@@ -613,6 +625,7 @@ export type OrderCreateInput = {
   guestEmail?: string | null
   guestName?: string | null
   address?: string | null
+  city?: string | null
   phone?: string | null
   clientOrderId?: string | null
   verifyToken?: string | null
@@ -649,6 +662,7 @@ export type OrderUncheckedCreateInput = {
   guestEmail?: string | null
   guestName?: string | null
   address?: string | null
+  city?: string | null
   phone?: string | null
   clientOrderId?: string | null
   verifyToken?: string | null
@@ -683,6 +697,7 @@ export type OrderUpdateInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   guestName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -719,6 +734,7 @@ export type OrderUncheckedUpdateInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   guestName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -754,6 +770,7 @@ export type OrderCreateManyInput = {
   guestEmail?: string | null
   guestName?: string | null
   address?: string | null
+  city?: string | null
   phone?: string | null
   clientOrderId?: string | null
   verifyToken?: string | null
@@ -787,6 +804,7 @@ export type OrderUpdateManyMutationInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   guestName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -821,6 +839,7 @@ export type OrderUncheckedUpdateManyInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   guestName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -865,6 +884,7 @@ export type OrderCountOrderByAggregateInput = {
   guestEmail?: Prisma.SortOrder
   guestName?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   clientOrderId?: Prisma.SortOrder
   verifyToken?: Prisma.SortOrder
@@ -907,6 +927,7 @@ export type OrderMaxOrderByAggregateInput = {
   guestEmail?: Prisma.SortOrder
   guestName?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   clientOrderId?: Prisma.SortOrder
   verifyToken?: Prisma.SortOrder
@@ -941,6 +962,7 @@ export type OrderMinOrderByAggregateInput = {
   guestEmail?: Prisma.SortOrder
   guestName?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   clientOrderId?: Prisma.SortOrder
   verifyToken?: Prisma.SortOrder
@@ -1063,6 +1085,7 @@ export type OrderCreateWithoutUserInput = {
   guestEmail?: string | null
   guestName?: string | null
   address?: string | null
+  city?: string | null
   phone?: string | null
   clientOrderId?: string | null
   verifyToken?: string | null
@@ -1097,6 +1120,7 @@ export type OrderUncheckedCreateWithoutUserInput = {
   guestEmail?: string | null
   guestName?: string | null
   address?: string | null
+  city?: string | null
   phone?: string | null
   clientOrderId?: string | null
   verifyToken?: string | null
@@ -1161,6 +1185,7 @@ export type OrderScalarWhereInput = {
   guestEmail?: Prisma.StringNullableFilter<"Order"> | string | null
   guestName?: Prisma.StringNullableFilter<"Order"> | string | null
   address?: Prisma.StringNullableFilter<"Order"> | string | null
+  city?: Prisma.StringNullableFilter<"Order"> | string | null
   phone?: Prisma.StringNullableFilter<"Order"> | string | null
   clientOrderId?: Prisma.StringNullableFilter<"Order"> | string | null
   verifyToken?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -1194,6 +1219,7 @@ export type OrderCreateWithoutItemsInput = {
   guestEmail?: string | null
   guestName?: string | null
   address?: string | null
+  city?: string | null
   phone?: string | null
   clientOrderId?: string | null
   verifyToken?: string | null
@@ -1229,6 +1255,7 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   guestEmail?: string | null
   guestName?: string | null
   address?: string | null
+  city?: string | null
   phone?: string | null
   clientOrderId?: string | null
   verifyToken?: string | null
@@ -1278,6 +1305,7 @@ export type OrderUpdateWithoutItemsInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   guestName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1313,6 +1341,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   guestName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1346,6 +1375,7 @@ export type OrderCreateManyUserInput = {
   guestEmail?: string | null
   guestName?: string | null
   address?: string | null
+  city?: string | null
   phone?: string | null
   clientOrderId?: string | null
   verifyToken?: string | null
@@ -1379,6 +1409,7 @@ export type OrderUpdateWithoutUserInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   guestName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1413,6 +1444,7 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   guestName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1447,6 +1479,7 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   guestEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   guestName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1512,6 +1545,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   guestEmail?: boolean
   guestName?: boolean
   address?: boolean
+  city?: boolean
   phone?: boolean
   clientOrderId?: boolean
   verifyToken?: boolean
@@ -1549,6 +1583,7 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   guestEmail?: boolean
   guestName?: boolean
   address?: boolean
+  city?: boolean
   phone?: boolean
   clientOrderId?: boolean
   verifyToken?: boolean
@@ -1584,6 +1619,7 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   guestEmail?: boolean
   guestName?: boolean
   address?: boolean
+  city?: boolean
   phone?: boolean
   clientOrderId?: boolean
   verifyToken?: boolean
@@ -1619,6 +1655,7 @@ export type OrderSelectScalar = {
   guestEmail?: boolean
   guestName?: boolean
   address?: boolean
+  city?: boolean
   phone?: boolean
   clientOrderId?: boolean
   verifyToken?: boolean
@@ -1634,7 +1671,7 @@ export type OrderSelectScalar = {
   bostaLastSyncAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceNumber" | "userId" | "totalAmount" | "discountAmount" | "promotionDiscount" | "shippingCost" | "shippingZone" | "promoCode" | "status" | "paymentMethod" | "paymentId" | "paymentStatus" | "instapayRef" | "createdAt" | "guestEmail" | "guestName" | "address" | "phone" | "clientOrderId" | "verifyToken" | "lastPaymentCheckAt" | "paymobTransactionId" | "confirmationEmailSent" | "adminEmailSent" | "sheetSynced" | "bostaDeliveryId" | "bostaTrackingNumber" | "bostaState" | "bostaCreatedAt" | "bostaLastSyncAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceNumber" | "userId" | "totalAmount" | "discountAmount" | "promotionDiscount" | "shippingCost" | "shippingZone" | "promoCode" | "status" | "paymentMethod" | "paymentId" | "paymentStatus" | "instapayRef" | "createdAt" | "guestEmail" | "guestName" | "address" | "city" | "phone" | "clientOrderId" | "verifyToken" | "lastPaymentCheckAt" | "paymobTransactionId" | "confirmationEmailSent" | "adminEmailSent" | "sheetSynced" | "bostaDeliveryId" | "bostaTrackingNumber" | "bostaState" | "bostaCreatedAt" | "bostaLastSyncAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
@@ -1672,6 +1709,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     guestEmail: string | null
     guestName: string | null
     address: string | null
+    city: string | null
     phone: string | null
     clientOrderId: string | null
     verifyToken: string | null
@@ -2128,6 +2166,7 @@ export interface OrderFieldRefs {
   readonly guestEmail: Prisma.FieldRef<"Order", 'String'>
   readonly guestName: Prisma.FieldRef<"Order", 'String'>
   readonly address: Prisma.FieldRef<"Order", 'String'>
+  readonly city: Prisma.FieldRef<"Order", 'String'>
   readonly phone: Prisma.FieldRef<"Order", 'String'>
   readonly clientOrderId: Prisma.FieldRef<"Order", 'String'>
   readonly verifyToken: Prisma.FieldRef<"Order", 'String'>

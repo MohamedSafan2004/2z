@@ -37,6 +37,8 @@ type Order = {
   guestEmail?: string | null
   invoiceNumber?: number | null
   instapayRef?: string | null
+  bostaTrackingNumber?: string | null
+  bostaState?: string | null
   items: OrderItem[]
   user?: OrderUser
 }
@@ -489,6 +491,12 @@ export default function AdminPage() {
                     {order.paymentMethod === "INSTAPAY" && order.instapayRef && (
                       <span style={{ fontSize: "8px", color: "rgba(240,237,230,0.35)", letterSpacing: "0.08em", fontFamily: "Space Mono, monospace" }}>
                         Ref: {order.instapayRef}
+                      </span>
+                    )}
+
+                    {order.bostaTrackingNumber && (
+                      <span style={{ fontSize: "8px", color: "rgba(120,180,255,0.85)", letterSpacing: "0.08em", fontFamily: "Space Mono, monospace", border: "1px solid rgba(120,180,255,0.25)", padding: "3px 8px" }}>
+                        📦 {order.bostaTrackingNumber}{order.bostaState ? ` · ${order.bostaState}` : ""}
                       </span>
                     )}
 

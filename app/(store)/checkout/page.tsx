@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { SHIPPING_RATES, SHIPPING_LABELS, getFinalShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping"
+import { BOSTA_CITIES } from "@/lib/cities"
 import { saveGuestOrderToken } from "@/lib/store/orderTracking"
 import { trackInitiateCheckout, trackPurchase, generateEventId } from "@/lib/meta-pixel"
 
@@ -38,6 +39,7 @@ export default function CheckoutPage() {
   const [email, setEmail]         = useState("")
   const [phone, setPhone]         = useState("")
   const [address, setAddress]     = useState("")
+  const [city, setCity]           = useState("")
   // منطقة التوصيل ثابتة دلوقتي (شحن موحّد لمصر كله) — مفيش اختيار للعميل
   const zone = "egypt" as const
   const [payment, setPayment]     = useState<PaymentMethod>("cod")
@@ -175,6 +177,10 @@ export default function CheckoutPage() {
       setError("Please fill in all required fields")
       return
     }
+    if (!city) {
+      setError("Please select your city")
+      return
+    }
     if (!emailRegex.test(trimmedEmail)) {
       setError("Please enter a valid email address")
       return
@@ -202,6 +208,7 @@ export default function CheckoutPage() {
           items: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
           giftSelections: validGifts.map((g) => ({ variantId: g.variantId })),
           address: trimmedAddress,
+          city,
           phone: trimmedPhone,
           email: trimmedEmail,
           name: trimmedName,
@@ -309,7 +316,18 @@ export default function CheckoutPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
               <InputField label="Full name" value={name} onChange={setName} />
               <InputField label="Phone" type="tel" value={phone} onChange={setPhone} placeholder="01XXXXXXXXX" />
-              <InputField label="Delivery address" value={address} onChange={setAddress} multiline rows={3} placeholder="Street, area, city, governorate" />
+              <div>
+                <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.7)", marginBottom: "8px", display: "block" }}>City *</label>
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  style={{ width: "100%", padding: "13px 14px", background: "#0d0d0d", border: "1px solid rgba(240,237,230,0.2)", color: city ? "#f0ede6" : "rgba(240,237,230,0.4)", fontFamily: "Space Mono, monospace", fontSize: "12px", outline: "none", boxSizing: "border-box", appearance: "none" }}
+                >
+                  <option value="" disabled>Select your city</option>
+                  {BOSTA_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <InputField label="Delivery address" value={address} onChange={setAddress} multiline rows={3} placeholder="Street, area, building, floor" />
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: "14px", border: "1.5px solid rgba(240,237,230,0.14)", background: "rgba(255,255,255,0.015)" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                   <span style={{ fontSize: "14.5px", letterSpacing: "0.01em" }}>Standard Delivery</span>
@@ -427,8 +445,20 @@ export default function CheckoutPage() {
                 </div>
 
                 <div style={{ marginBottom: "18px" }}>
+                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "8px", display: "block" }}>City *</label>
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    style={{ width: "100%", padding: "13px 14px", background: "#0d0d0d", border: "1px solid rgba(240,237,230,0.18)", color: city ? "#f0ede6" : "rgba(240,237,230,0.4)", fontFamily: "Space Mono, monospace", fontSize: "12px", outline: "none", boxSizing: "border-box", appearance: "none" }}
+                  >
+                    <option value="" disabled>Select your city</option>
+                    {BOSTA_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: "18px" }}>
                   <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "8px", display: "block" }}>Delivery address *</label>
-                  <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} placeholder="Street, Area, City, Governorate" style={{ width: "100%", padding: "13px 14px", background: "transparent", border: "1px solid rgba(240,237,230,0.18)", color: "#f0ede6", fontFamily: "Space Mono, monospace", fontSize: "12px", outline: "none", boxSizing: "border-box", resize: "none" }} />
+                  <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} placeholder="Street, Area, Building, Floor" style={{ width: "100%", padding: "13px 14px", background: "transparent", border: "1px solid rgba(240,237,230,0.18)", color: "#f0ede6", fontFamily: "Space Mono, monospace", fontSize: "12px", outline: "none", boxSizing: "border-box", resize: "none" }} />
                 </div>
 
                 <div>

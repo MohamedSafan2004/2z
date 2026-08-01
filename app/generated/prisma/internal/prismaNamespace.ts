@@ -1344,6 +1344,7 @@ export const OrderScalarFieldEnum = {
   guestEmail: 'guestEmail',
   guestName: 'guestName',
   address: 'address',
+  city: 'city',
   phone: 'phone',
   clientOrderId: 'clientOrderId',
   verifyToken: 'verifyToken',
