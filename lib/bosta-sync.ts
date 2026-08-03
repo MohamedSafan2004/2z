@@ -25,13 +25,22 @@ type OrderForBosta = {
   user: { name: string | null; email: string | null; phone: string | null } | null
 }
 
-export async function syncOrderToBosta(order: OrderForBosta): Promise<void> {
-  if (!isBostaConfigured()) return
-  if (order.bostaDeliveryId) return // اتربط قبل كده، متكررش
+export type BostaSyncResult =
+  | { ok: true; trackingNumber: string; state: string | null }
+  | { ok: false; reason: "not_configured" | "already_synced" | "missing_fields" | "api_failed"; message: string }
+
+export async function syncOrderToBosta(order: OrderForBosta): Promise<BostaSyncResult> {
+  if (!isBostaConfigured()) {
+    return { ok: false, reason: "not_configured", message: "BOSTA_API_KEY isn't set on the server" }
+  }
+  if (order.bostaDeliveryId) {
+    return { ok: false, reason: "already_synced", message: "This order was already sent to Bosta" }
+  }
 
   if (!order.address || !order.city || !order.phone) {
-    console.error(`Bosta sync skipped for order ${order.id}: missing address/city/phone`)
-    return
+    const missing = [!order.address && "address", !order.city && "city", !order.phone && "phone"].filter(Boolean).join(", ")
+    console.error(`Bosta sync skipped for order ${order.id}: missing ${missing}`)
+    return { ok: false, reason: "missing_fields", message: `Missing ${missing} on this order — edit it before sending` }
   }
 
   const normalizedPhone = normalizeEgyptianPhone(order.phone) ?? order.phone
@@ -56,8 +65,9 @@ export async function syncOrderToBosta(order: OrderForBosta): Promise<void> {
   })
 
   if (!result.ok) {
-    console.error(`Bosta delivery creation failed for order ${order.id}:`, result.reason === "request_failed" ? result.message : result.reason)
-    return
+    const message = result.reason === "request_failed" ? result.message : result.reason
+    console.error(`Bosta delivery creation failed for order ${order.id}:`, message)
+    return { ok: false, reason: "api_failed", message: String(message) }
   }
 
   await db.order.update({
@@ -70,4 +80,6 @@ export async function syncOrderToBosta(order: OrderForBosta): Promise<void> {
       bostaLastSyncAt: new Date(),
     },
   })
+
+  return { ok: true, trackingNumber: result.data.trackingNumber, state: result.data.state }
 }

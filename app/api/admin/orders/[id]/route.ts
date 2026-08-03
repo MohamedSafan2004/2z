@@ -28,21 +28,14 @@ export async function PATCH(
         },
       })
       if (!current) return NextResponse.json({ error: "Order not found" }, { status: 404 })
-      if (current.paymentStatus !== "PAID") return NextResponse.json({ error: "Order isn't paid yet" }, { status: 400 })
       if (current.bostaDeliveryId) return NextResponse.json({ error: "Already sent to Bosta" }, { status: 400 })
 
-      try {
-        await syncOrderToBosta(current)
-      } catch (error) {
-        console.error("Bosta sync (manual) failed:", error)
-        return NextResponse.json({ error: "Bosta request failed — check the order's address/city" }, { status: 502 })
+      const result = await syncOrderToBosta(current)
+      if (!result.ok) {
+        return NextResponse.json({ error: result.message }, { status: 502 })
       }
 
       const refreshed = await db.order.findUnique({ where: { id } })
-      if (!refreshed?.bostaDeliveryId) {
-        return NextResponse.json({ error: "Bosta didn't confirm the delivery — check BOSTA_API_KEY and try again" }, { status: 502 })
-      }
-
       return NextResponse.json(refreshed)
     }
 
@@ -72,7 +65,8 @@ export async function PATCH(
       }
 
       try {
-        await syncOrderToBosta(updated)
+        const result = await syncOrderToBosta(updated)
+        if (!result.ok) console.error("Bosta sync (InstaPay confirm):", result.message)
       } catch (error) {
         console.error("Bosta sync (InstaPay confirm) failed:", error)
       }
@@ -160,7 +154,8 @@ export async function PATCH(
 
     if (isCodAutoConfirm) {
       try {
-        await syncOrderToBosta(order)
+        const result = await syncOrderToBosta(order)
+        if (!result.ok) console.error("Bosta sync (COD auto-confirm):", result.message)
       } catch (error) {
         console.error("Bosta sync (COD auto-confirm) failed:", error)
       }

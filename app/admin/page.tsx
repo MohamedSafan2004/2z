@@ -158,6 +158,7 @@ export default function AdminPage() {
   const [confirmError, setConfirmError] = useState<{ orderId: string; message: string } | null>(null)
   const [bostaSendingId, setBostaSendingId] = useState<string | null>(null)
   const [bostaError, setBostaError] = useState<{ orderId: string; message: string } | null>(null)
+  const [bostaSuccessId, setBostaSuccessId] = useState<string | null>(null)
 
   useEffect(() => {
     queueMicrotask(() => setHydrated(true))
@@ -226,8 +227,12 @@ export default function AdminPage() {
   }
 
   const sendToBosta = async (orderId: string) => {
+    const confirmed = window.confirm("هتبعت الأوردر ده لـ Bosta دلوقتي — Bosta هتأكد مع العميل وتشحن. متأكد؟")
+    if (!confirmed) return
+
     setBostaSendingId(orderId)
     setBostaError(null)
+    setBostaSuccessId(null)
     try {
       const res = await fetch(`/api/admin/orders/${orderId}`, {
         method: "PATCH",
@@ -246,6 +251,8 @@ export default function AdminPage() {
       setOrders(orders.map((o) =>
         o.id === orderId ? { ...o, bostaTrackingNumber: data.bostaTrackingNumber, bostaState: data.bostaState } : o
       ))
+      setBostaSuccessId(orderId)
+      setTimeout(() => setBostaSuccessId((cur) => (cur === orderId ? null : cur)), 4000)
     } catch {
       setBostaError({ orderId, message: "Network error — check your connection" })
     } finally {
@@ -524,18 +531,23 @@ export default function AdminPage() {
                       </span>
                     )}
 
-                    {order.paymentStatus === "PAID" && !order.bostaTrackingNumber && (
+                    {!order.bostaTrackingNumber && (
                       <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-start" }}>
                         <button
                           onClick={() => sendToBosta(order.id)}
                           disabled={bostaSendingId === order.id}
                           style={{ padding: "8px 14px", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", cursor: bostaSendingId === order.id ? "not-allowed" : "pointer", background: "rgba(120,180,255,0.1)", color: bostaSendingId === order.id ? "rgba(120,180,255,0.4)" : "rgba(120,180,255,0.9)", border: "1px solid rgba(120,180,255,0.3)" }}
                         >
-                          {bostaSendingId === order.id ? "..." : "📦 Send to Bosta"}
+                          {bostaSendingId === order.id ? "Sending..." : "📦 Send to Bosta"}
                         </button>
                         {bostaError?.orderId === order.id && (
-                          <span style={{ fontSize: "8px", color: "rgba(220,100,100,0.9)", letterSpacing: "0.05em", maxWidth: "200px" }}>
-                            {bostaError.message}
+                          <span style={{ fontSize: "8px", color: "rgba(220,100,100,0.9)", letterSpacing: "0.05em", maxWidth: "220px" }}>
+                            ✗ {bostaError.message}
+                          </span>
+                        )}
+                        {bostaSuccessId === order.id && (
+                          <span style={{ fontSize: "8px", color: "rgba(100,200,150,0.9)", letterSpacing: "0.05em" }}>
+                            ✓ اتبعتت لـ Bosta بنجاح
                           </span>
                         )}
                       </div>
