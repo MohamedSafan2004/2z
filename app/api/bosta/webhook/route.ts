@@ -12,9 +12,10 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import type { OrderStatus } from "@/app/generated/prisma/client"
 
 // حالات Bosta "النهائية" اللي بتغيّر order.status عندنا فعليًا
-const BOSTA_STATE_TO_ORDER_STATUS: Record<string, string> = {
+const BOSTA_STATE_TO_ORDER_STATUS: Record<string, OrderStatus> = {
   "Delivered": "DELIVERED",
   "delivered": "DELIVERED",
   "Terminated": "CANCELLED",
@@ -61,16 +62,16 @@ export async function POST(req: NextRequest) {
 
     const mappedStatus = BOSTA_STATE_TO_ORDER_STATUS[state]
     const isInTransit = BOSTA_IN_TRANSIT_STATES.has(state)
-    const terminalStates = ["DELIVERED", "CANCELLED"]
-    const alreadyTerminal = terminalStates.includes(order.status)
+    const terminalStates: OrderStatus[] = ["DELIVERED", "CANCELLED"]
+    const alreadyTerminal = terminalStates.includes(order.status as OrderStatus)
 
-    const nextStatus = alreadyTerminal
-      ? order.status
+    const nextStatus: OrderStatus = alreadyTerminal
+      ? order.status as OrderStatus
       : mappedStatus
         ? mappedStatus
         : isInTransit && (order.status === "PAID" || order.status === "CONFIRMED")
           ? "SHIPPED"
-          : order.status
+          : order.status as OrderStatus
 
     await db.order.update({
       where: { id: order.id },
