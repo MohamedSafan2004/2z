@@ -19,6 +19,33 @@ export async function PATCH(
     const body = await req.json()
     const { status, action } = body
 
+    if (action === "send_to_bosta") {
+      const current = await db.order.findUnique({
+        where: { id },
+        include: {
+          user: { select: { id: true, name: true, email: true, phone: true } },
+          items: true,
+        },
+      })
+      if (!current) return NextResponse.json({ error: "Order not found" }, { status: 404 })
+      if (current.paymentStatus !== "PAID") return NextResponse.json({ error: "Order isn't paid yet" }, { status: 400 })
+      if (current.bostaDeliveryId) return NextResponse.json({ error: "Already sent to Bosta" }, { status: 400 })
+
+      try {
+        await syncOrderToBosta(current)
+      } catch (error) {
+        console.error("Bosta sync (manual) failed:", error)
+        return NextResponse.json({ error: "Bosta request failed — check the order's address/city" }, { status: 502 })
+      }
+
+      const refreshed = await db.order.findUnique({ where: { id } })
+      if (!refreshed?.bostaDeliveryId) {
+        return NextResponse.json({ error: "Bosta didn't confirm the delivery — check BOSTA_API_KEY and try again" }, { status: 502 })
+      }
+
+      return NextResponse.json(refreshed)
+    }
+
     if (action === "confirm_instapay") {
       const current = await db.order.findUnique({ where: { id }, include: { items: true } })
       if (!current) return NextResponse.json({ error: "Order not found" }, { status: 404 })
