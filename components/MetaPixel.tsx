@@ -6,21 +6,34 @@ import Script from "next/script"
 
 const PIXEL_ID = "1053292133816022"
 
+// 1. تعريف واجهة (Interface) لبيانات العميل اللي هنبعتها لفيسبوك
+export interface AdvancedMatching {
+  em?: string; // Email
+  ph?: string; // Phone number (يفضل مع كود الدولة)
+  fn?: string; // First Name
+  ln?: string; // Last Name
+}
+
 function PageViewTracker() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.fbq !== "function") return
-    // PageView على كل تنقل بين الصفحات (الـ base code بيبعت واحدة أول تحميل،
-    // ده بيغطي الـ client-side navigation بتاع Next.js بعد كده)
+    // PageView على كل تنقل بين الصفحات
     window.fbq("track", "PageView")
   }, [pathname, searchParams])
 
   return null
 }
 
-export default function MetaPixel() {
+// 2. استقبال بيانات العميل كـ Props
+export default function MetaPixel({ userData }: { userData?: AdvancedMatching }) {
+  // 3. تحويل البيانات لنص JSON عشان تتركب جوه كود الـ Script (أو كائن فارغ لو مفيش بيانات)
+  const advancedMatchingString = userData && Object.keys(userData).length > 0 
+    ? JSON.stringify(userData) 
+    : "{}"
+
   return (
     <>
       <Script
@@ -36,7 +49,9 @@ export default function MetaPixel() {
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${PIXEL_ID}');
+            
+            // 4. التعديل هنا: تمرير البيانات كمعامل ثالث لحل مشكلة التحذير
+            fbq('init', '${PIXEL_ID}', ${advancedMatchingString});
             fbq('track', 'PageView');
           `,
         }}
