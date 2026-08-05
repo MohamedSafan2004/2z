@@ -157,7 +157,7 @@ export function ReviewsGallery() {
         <div className="reviews-header">
           <span className="reviews-label">From Our Customers</span>
           <h2 className="reviews-heading">
-            Customer Reviews ⭐⭐
+            Customer Reviews ⭐⭐⭐⭐⭐
           </h2>
         </div>
       </RevealSection>
