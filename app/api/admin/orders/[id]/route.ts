@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { requireAdmin } from "@/lib/middleware"
 import { syncToSheets } from "@/lib/sheets-sync"
+import { syncOrderToBosta } from "@/lib/bosta-sync"
 import { sendPurchaseCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 
 const VALID_STATUSES = ["PENDING_PAYMENT", "PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]
