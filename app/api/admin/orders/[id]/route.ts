@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { requireAdmin } from "@/lib/middleware"
 import { syncToSheets } from "@/lib/sheets-sync"
-import { syncOrderToBosta } from "@/lib/bosta-sync"
 import { sendPurchaseCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 
 const VALID_STATUSES = ["PENDING_PAYMENT", "PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]
@@ -64,12 +63,8 @@ export async function PATCH(
         await syncToSheets(updated)
       }
 
-      try {
-        const result = await syncOrderToBosta(updated)
-        if (!result.ok) console.error("Bosta sync (InstaPay confirm):", result.message)
-      } catch (error) {
-        console.error("Bosta sync (InstaPay confirm) failed:", error)
-      }
+      // Bosta مبتبعتش أوتوماتيكي هنا بقرار من محمد — الإرسال بيتم بس عن طريق
+      // زرار "Send to Bosta" اليدوي في الداشبورد بعد ما محمد يقرر.
 
       // ─── Meta CAPI: Purchase ────────────────────────────────────────────
       // دي أول لحظة حقيقية يتأكد فيها الدفع بالنسبة لأوردرات InstaPay —
@@ -152,14 +147,8 @@ export async function PATCH(
       await syncToSheets(order)
     }
 
-    if (isCodAutoConfirm) {
-      try {
-        const result = await syncOrderToBosta(order)
-        if (!result.ok) console.error("Bosta sync (COD auto-confirm):", result.message)
-      } catch (error) {
-        console.error("Bosta sync (COD auto-confirm) failed:", error)
-      }
-    }
+    // Bosta مبتبعتش أوتوماتيكي هنا بقرار من محمد — الإرسال بيتم بس عن طريق
+    // زرار "Send to Bosta" اليدوي في الداشبورد بعد ما محمد يقرر.
 
     return NextResponse.json(order)
   } catch (error) {
