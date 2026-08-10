@@ -41,6 +41,7 @@ type BostaReceiver = {
 export type BostaCreateDeliveryInput = {
   orderRef: string          // بنبعت order.id بتاعنا كـ reference — يرجعلنا في الـ webhook
   cod: number                // المبلغ المطلوب تحصيله (0 لو InstaPay/مدفوع مقدمًا)
+  itemsCount?: number         // إجمالي عدد القطع في الشحنة (شامل الهدايا) — افتراضي 1 لو مش متبعت
   dropOffAddress: BostaAddress
   receiver: BostaReceiver
   notes?: string
@@ -93,12 +94,21 @@ async function bostaFetch<T>(path: string, options: RequestInit = {}): Promise<B
 
 // ─── إنشاء شحنة جديدة عند Bosta ─────────────────────────────────────────────
 // بيتنادى بعد ما الأوردر يتأكد (COD مباشرة، أو InstaPay بعد ما الأدمن يعمل Confirm).
+//
+// ⚠️ TODO مهم (لسه مش متأكد من اسم الـ field الرسمي): لما بتضيف شحنة يدوي من
+// داشبورد Bosta، بيدّيك اختيار صريح "مين بيدفع رسوم الفحص/المعاينة عند نقطة
+// الاستلام" (التاجر أو العميل). الـ payload هنا تحت مفيهوش أي field بيحدد
+// الاختيار ده — الـ public SDKs (node/python/php) بتاعة Bosta مش موثقة فيها
+// حقل زي ده صراحة. لحد ما يتأكد اسم الـ field الصح (عن طريق دعم Bosta أو
+// Swagger runner على docs.bosta.co/api بمفتاحك)، الشحنات اللي بتتبعت أوتوماتيك
+// من هنا (COD auto-confirm / InstaPay confirm) هتاخد الـ default بتاع Bosta
+// نفسها بدل ما تتفرض "التاجر بيدفع" زي ما بيحصل لما بتضيفها يدوي.
 export async function createBostaDelivery(input: BostaCreateDeliveryInput): Promise<BostaResult<BostaDelivery>> {
   return bostaFetch<BostaDelivery>("/deliveries", {
     method: "POST",
     body: JSON.stringify({
       type: 10, // Bosta: "Send" delivery type
-      specs: { packageDetails: { itemsCount: 1, description: input.notes || "2Z Store order" } },
+      specs: { packageDetails: { itemsCount: input.itemsCount ?? 1, description: input.notes || "2Z Store order" } },
       cod: input.cod,
       dropOffAddress: input.dropOffAddress,
       receiver: input.receiver,

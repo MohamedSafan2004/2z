@@ -15,6 +15,7 @@ import { normalizeEgyptianPhone } from "@/lib/phone"
 
 type OrderForBosta = {
   id: string
+  invoiceNumber: number | null
   bostaDeliveryId: string | null
   totalAmount: number | { toString(): string } // Prisma Decimal
   paymentMethod: string
@@ -23,6 +24,13 @@ type OrderForBosta = {
   phone: string | null
   guestName: string | null
   user: { name: string | null; email: string | null; phone: string | null } | null
+  items: {
+    productNameSnapshot: string
+    colorSnapshot: string
+    sizeSnapshot: string
+    quantity: number
+    isGift: boolean
+  }[]
 }
 
 export type BostaSyncResult =
@@ -48,9 +56,32 @@ export async function syncOrderToBosta(order: OrderForBosta): Promise<BostaSyncR
   const [firstName, ...rest] = fullName.split(" ")
   const lastName = rest.join(" ") || firstName
 
+  // رقم الفاتورة (INV-XXXX) لو مولد لحد دلوقتي — وإلا fallback للـ order.id الداخلي
+  // (Prisma CUID) عشان الـ sync ميتعطلش لو لسبب ما invoiceNumber لسه متولدش.
+  const displayRef = order.invoiceNumber ? `INV-${String(order.invoiceNumber).padStart(4, "0")}` : order.id
+
+  // وصف المنتجات (لون + مقاس + كمية) — ده بيظهر للعميل حرفيًا في رسالة Bosta
+  // الأوتوماتيكية على الواتساب ("تفاصيل طلبك")، فلازم يقوله هو طلب إيه
+  // بالظبط عشان يقدر يأكد الاستلام بمعرفة حقيقية مش بس رقم فاتورة.
+  // مثال: "Oversize T-Shirt — Black (M) x1" أو "... x2, White (L) x1 [Gift]"
+  const itemsDescription = order.items
+    .map((item) => {
+      const color = item.colorSnapshot.charAt(0) + item.colorSnapshot.slice(1).toLowerCase()
+      const giftLabel = item.isGift ? " [Gift]" : ""
+      return `${item.productNameSnapshot} — ${color} (${item.sizeSnapshot}) x${item.quantity}${giftLabel}`
+    })
+    .join(", ")
+
+  const orderDescription = itemsDescription
+    ? `${displayRef}: ${itemsDescription}`
+    : `2Z Store order ${displayRef}` // fallback نادر لو الأوردر مالوش items لأي سبب
+
+  const totalItemsCount = order.items.reduce((sum, item) => sum + item.quantity, 0) || 1
+
   const result = await createBostaDelivery({
     orderRef: order.id,
     cod: order.paymentMethod === "COD" ? Number(order.totalAmount) : 0,
+    itemsCount: totalItemsCount,
     dropOffAddress: {
       city: order.city,
       firstLine: order.address,
@@ -61,7 +92,7 @@ export async function syncOrderToBosta(order: OrderForBosta): Promise<BostaSyncR
       phone: normalizedPhone,
       email: order.user?.email || undefined,
     },
-    notes: `2Z Store order ${order.id}`,
+    notes: orderDescription,
   })
 
   if (!result.ok) {

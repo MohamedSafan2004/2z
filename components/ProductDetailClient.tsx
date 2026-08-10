@@ -106,7 +106,10 @@ export default function ProductDetailClient({
   suggestedProducts?: SuggestedProduct[]
 }) {
   const variants = product.variants
-  const [selectedSize, setSelectedSize] = useState("")
+  // Default على M لو متوفر بالمخزون — بيخلي زراير الشراء وواجهة الاختيار ظاهرة وواضحة
+  // فورًا من غير ما اليوزر يحس إن الصفحة "معطلة" لحد ما يختار مقاس بنفسه
+  const defaultSize = variants.find((v) => v.size === "M" && v.stockQuantity > 0) ? "M" : ""
+  const [selectedSize, setSelectedSize] = useState(defaultSize)
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
   const [imgIndex, setImgIndex] = useState(0)
@@ -515,6 +518,62 @@ export default function ProductDetailClient({
         }
         .shipping-info-text strong { color: #f0ede6; font-weight: 700; }
 
+        /* ── Other colors banner (product page) ── */
+        .other-colors-banner {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          flex-wrap: wrap;
+          border: 1px solid rgba(240,237,230,0.1);
+          background: rgba(240,237,230,0.02);
+          margin-bottom: 20px;
+          padding: 14px 16px;
+        }
+        .other-colors-label {
+          font-family: 'Space Mono', monospace;
+          font-size: 9px;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: rgba(240,237,230,0.45);
+          white-space: nowrap;
+        }
+        .other-colors-swatches {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          flex-wrap: wrap;
+        }
+        .other-colors-swatch-link {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          text-decoration: none;
+          cursor: pointer;
+        }
+        .other-colors-swatch {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          display: inline-block;
+          flex-shrink: 0;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .other-colors-swatch-link:hover .other-colors-swatch {
+          transform: scale(1.15);
+          box-shadow: 0 0 0 3px rgba(240,237,230,0.1);
+        }
+        .other-colors-swatch-name {
+          font-family: 'Space Mono', monospace;
+          font-size: 9px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(240,237,230,0.55);
+          transition: color 0.15s ease;
+        }
+        .other-colors-swatch-link:hover .other-colors-swatch-name {
+          color: #f0ede6;
+        }
+
         /* ── Product info accordion ── */
         .info-accordion {
           margin-bottom: 28px;
@@ -584,6 +643,7 @@ export default function ProductDetailClient({
 
         <ShippingInfoBanner />
         <ActiveOfferBanner /> 
+        <OtherColorsBanner currentColor={productColor} suggestedProducts={suggestedProducts} />
         <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "40px", marginTop: "24px" }}>
 
           <div
@@ -1065,6 +1125,65 @@ function PromoBanner() {
         <span className="promo-row-title">Buy 3, get 2 free</span>
       </div>
       <span className="promo-row-sub">Mix any colors & sizes · applied automatically at checkout</span>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Other colors banner — كل لون منتج منفصل في الداتابيز (مش variant واحد).
+// الـ banner ده بيوضح للعميل إن اللون تاني = منتج تاني، ويدّيله طريقة سريعة
+// يوصل بيها لصفحة اللون اللي عايزه من غير ما يدور تحت في "You Might Also Like".
+// ─────────────────────────────────────────────────────────────────────────
+
+const SWATCH_COLOR_HEX: Record<string, string> = {
+  BLACK: "#1a1a1a",
+  WHITE: "#f0ede6",
+  GREY:  "#8a8a85",
+  BEIGE: "#d8c8a8",
+}
+
+function OtherColorsBanner({
+  currentColor,
+  suggestedProducts,
+}: {
+  currentColor: string
+  suggestedProducts: SuggestedProduct[]
+}) {
+  // نفس المنتج (Oversize T-Shirt) بألوان تانية بس — suggestedProducts أصلاً مفلترة من السيرفر (mysweatpants
+  // مستبعدة في getSuggestedProducts)، فاللي تاني بس هو استبعاد نفس اللون الحالي
+  const otherColorProducts = suggestedProducts.filter(
+    (p) => (p.variants?.[0]?.color || "BLACK") !== currentColor
+  )
+
+  if (otherColorProducts.length === 0) return null
+
+  return (
+    <div className="other-colors-banner">
+      <span className="other-colors-label">Also available in</span>
+      <div className="other-colors-swatches">
+        {otherColorProducts.map((p) => {
+          const color = p.variants?.[0]?.color || "BLACK"
+          const colorLabel = color.charAt(0) + color.slice(1).toLowerCase()
+          return (
+            <Link
+              href={`/products/${p.id}`}
+              key={p.id}
+              className="other-colors-swatch-link"
+              aria-label={`View ${colorLabel} colorway`}
+              title={colorLabel}
+            >
+              <span
+                className="other-colors-swatch"
+                style={{
+                  background: SWATCH_COLOR_HEX[color],
+                  border: color === "WHITE" ? "1px solid rgba(240,237,230,0.3)" : "1px solid rgba(240,237,230,0.15)",
+                }}
+              />
+              <span className="other-colors-swatch-name">{colorLabel}</span>
+            </Link>
+          )
+        })}
+      </div>
     </div>
   )
 }

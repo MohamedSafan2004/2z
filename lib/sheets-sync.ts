@@ -150,7 +150,7 @@ export async function appendToSalesSheet(order: SyncOrder) {
       sizeCell,
       totalPaidQuantity,
       paidItems.length > 0 ? (productsSubtotal / totalPaidQuantity).toFixed(2) : 0, // متوسط سعر الوحدة
-      discount.toFixed(1),
+      (discount / 100).toFixed(3), // fraction مش percentage — الخلية متنسقة % format في الشيت نفسه، فلو بعتنا 10 هيقرأها 1000%
       totalFinalPrice.toFixed(2),
       revenue.toFixed(2),
       invoiceNum,
