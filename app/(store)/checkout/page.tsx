@@ -57,6 +57,10 @@ export default function CheckoutPage() {
   const [promoLoading, setPromoLoading]   = useState(false)
   const [promoError, setPromoError]       = useState("")
   const [promoSuccess, setPromoSuccess]   = useState("")
+  // قفل فوري متزامن (mush معتمد على re-render) ضد ضغط المستخدم المتكرر
+  // على زرار Apply قبل ما الطلب الأول يخلص — promoLoading (state) ممكن تفضل نافذة
+  // صغيرة جدير تتسرب فيها ضغطة تانية قبل ما الـ re-render يحصل
+  const promoRequestInFlight = useRef(false)
 
   // Sync form fields from logged-in user (derived state during render, no effect)
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null)
@@ -79,6 +83,26 @@ export default function CheckoutPage() {
     }
   }
 
+  // للحالة البصرية بتاعة نسخة الديسكتوب من الـ promo card (spinner وقت التحميل، checkmark
+  // لحظة القبول، shake لحظة الرفض) — نفس المنطق المستخدم في Promocard.tsx بتاع
+  // الموبايل
+  const [promoJustApplied, setPromoJustApplied] = useState(false)
+  const [promoShake, setPromoShake] = useState(false)
+  useEffect(() => {
+    if (promoApplied) {
+      setPromoJustApplied(true)
+      const t = setTimeout(() => setPromoJustApplied(false), 700)
+      return () => clearTimeout(t)
+    }
+  }, [promoApplied])
+  useEffect(() => {
+    if (promoError) {
+      setPromoShake(true)
+      const t = setTimeout(() => setPromoShake(false), 500)
+      return () => clearTimeout(t)
+    }
+  }, [promoError])
+
   // الهدايا خلاص اتختارت في صفحة المنتج — هنا بس عرض
   const validGifts = useMemo(() => gifts.filter((g) => g && g.variantId), [gifts])
 
@@ -95,11 +119,13 @@ export default function CheckoutPage() {
   const finalTotal      = subtotal - discountValue + shippingCost
 
   const handleApplyPromo = async () => {
-    if (promoLoading) return
+    // قفل فوري — لو فيه طلب ماشي دلوقتي، منقبلش نعمل تاني مهما اليوزر داس كتير
+    if (promoRequestInFlight.current) return
     const code = promoInput.trim().toUpperCase()
     if (!code) { setPromoError("Enter a promo code"); return }
     if (!phone.trim()) { setPromoError("Enter your phone number first"); return }
 
+    promoRequestInFlight.current = true
     setPromoLoading(true)
     setPromoError("")
     setPromoSuccess("")
@@ -115,7 +141,11 @@ export default function CheckoutPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setPromoError(data.error || "Invalid promo code")
+        // رسالة الـ rate limit (429) مش مفروض العميل يشوفها في الاستخدام الطبيعي —
+        // بما إن الـ debounce فوق بيمنع الضغط المتكرر من الأساس، لو الحالة دي طلعت
+        // فعليًا معناها اليوزر فعلاً بيحاول يلف الموقع (multiple tabs، refresh، إلخ)، فبنعرض
+        // له رسالة محايدة مش رسالة تقنية عن محاولات
+        setPromoError(res.status === 429 ? "Please wait a moment and try again" : (data.error || "Invalid promo code"))
         setPromoApplied("")
         setPromoDiscount(0)
         return
@@ -126,6 +156,7 @@ export default function CheckoutPage() {
     } catch {
       setPromoError("Something went wrong")
     } finally {
+      promoRequestInFlight.current = false
       setPromoLoading(false)
     }
   }
@@ -266,6 +297,21 @@ export default function CheckoutPage() {
           .checkout-mobile-view { display: none !important; }
           .checkout-desktop-view { display: block !important; }
         }
+        @keyframes promo-spin { to { transform: rotate(360deg); } }
+        @keyframes promo-check-in {
+          0% { transform: scale(0); opacity: 0; }
+          60% { transform: scale(1.15); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes promo-shake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-6px); }
+          40% { transform: translateX(5px); }
+          60% { transform: translateX(-3px); }
+          80% { transform: translateX(2px); }
+        }
+        .promo-checkmark-desktop { animation: promo-check-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .promo-shake-desktop { animation: promo-shake 0.45s ease; }
       `}</style>
 
       {/* ============================= MOBILE (< 860px) ============================= */}
@@ -536,35 +582,68 @@ export default function CheckoutPage() {
                 <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "8px", display: "block" }}>Promo code</label>
 
                 {!promoApplied ? (
-                  <div style={{ display: "flex", gap: "8px" }}>
+                  <div
+                    className={promoShake ? "promo-shake-desktop" : undefined}
+                    style={{ display: "flex", gap: "8px" }}
+                  >
                     <input
                       type="text"
                       value={promoInput}
                       onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError("") }}
                       onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
                       placeholder="...."
-                      style={{ flex: 1, padding: "12px 14px", background: "transparent", border: "1px solid rgba(240,237,230,0.18)", color: "#f0ede6", fontFamily: "Space Mono, monospace", fontSize: "11px", outline: "none", letterSpacing: "0.1em" }}
+                      disabled={promoLoading}
+                      style={{
+                        flex: 1, padding: "12px 14px", background: "transparent",
+                        border: `1px solid ${promoError ? "rgba(255,107,107,0.5)" : "rgba(240,237,230,0.18)"}`,
+                        color: "#f0ede6", fontFamily: "Space Mono, monospace", fontSize: "11px",
+                        outline: "none", letterSpacing: "0.1em", transition: "border-color 0.25s ease",
+                      }}
                     />
                     <button
                       onClick={handleApplyPromo}
                       disabled={promoLoading}
-                      style={{ padding: "0 18px", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", fontFamily: "Space Mono, monospace", background: "transparent", color: promoLoading ? "rgba(240,237,230,0.3)" : "rgba(240,237,230,0.75)", border: "1px solid rgba(240,237,230,0.25)", cursor: promoLoading ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
+                      style={{
+                        width: "64px", padding: "0", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase",
+                        fontFamily: "Space Mono, monospace", background: "transparent", color: "rgba(240,237,230,0.75)",
+                        border: "1px solid rgba(240,237,230,0.25)", cursor: promoLoading ? "not-allowed" : "pointer",
+                        whiteSpace: "nowrap", display: "flex", alignItems: "center", justifyContent: "center",
+                        opacity: promoLoading ? 0.6 : 1, transition: "opacity 0.2s ease",
+                      }}
                     >
-                      {promoLoading ? "..." : "Apply"}
+                      {promoLoading ? (
+                        <span style={{ display: "inline-block", width: "12px", height: "12px", border: "1.5px solid rgba(240,237,230,0.25)", borderTopColor: "#f0ede6", borderRadius: "50%", animation: "promo-spin 0.6s linear infinite" }} />
+                      ) : "Apply"}
                     </button>
                   </div>
                 ) : (
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", border: "1px solid rgba(240,237,230,0.3)", background: "rgba(240,237,230,0.05)" }}>
-                    <div>
-                      <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.9)", letterSpacing: "0.15em", fontFamily: "Space Mono, monospace" }}>{promoApplied}</p>
-                      <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", marginTop: "2px", letterSpacing: "0.05em" }}>{promoDiscount}% off</p>
+                  <div
+                    style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px",
+                      border: `1px solid ${promoJustApplied ? "rgba(200,240,79,0.5)" : "rgba(240,237,230,0.3)"}`,
+                      background: promoJustApplied ? "rgba(200,240,79,0.08)" : "rgba(240,237,230,0.05)",
+                      transition: "background 0.4s ease, border-color 0.4s ease",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <span
+                        className={promoJustApplied ? "promo-checkmark-desktop" : undefined}
+                        style={{ width: "18px", height: "18px", borderRadius: "50%", flexShrink: 0, background: "#c8f04f", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" width="10" height="10">
+                          <path d="M5 13l4 4L19 7" stroke="#080808" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                      <div>
+                        <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.9)", letterSpacing: "0.15em", fontFamily: "Space Mono, monospace" }}>{promoApplied}</p>
+                        <p style={{ fontSize: "9px", color: "rgba(200,240,79,0.75)", marginTop: "2px", letterSpacing: "0.05em" }}>{promoDiscount}% off applied</p>
+                      </div>
                     </div>
                     <button onClick={handleRemovePromo} style={{ fontSize: "9px", color: "rgba(240,237,230,0.4)", background: "transparent", border: "none", cursor: "pointer", fontFamily: "Space Mono, monospace", letterSpacing: "0.1em" }}>Remove</button>
                   </div>
                 )}
 
-                {promoError   && <p style={{ fontSize: "9px", color: "#ff6b6b", marginTop: "8px", letterSpacing: "0.05em" }}>{promoError}</p>}
-                {promoSuccess && !promoError && <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.7)", marginTop: "8px", letterSpacing: "0.05em" }}>{promoSuccess}</p>}
+                {promoError && <p style={{ fontSize: "9px", color: "#ff6b6b", marginTop: "8px", letterSpacing: "0.05em" }}>{promoError}</p>}
               </div>
 
               <div style={{ borderTop: "1px solid rgba(240,237,230,0.1)", paddingTop: "18px" }}>

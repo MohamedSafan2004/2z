@@ -3,16 +3,30 @@
 // (Picked Up, In Transit, Out for Delivery, Delivered, Returned, Cancelled...).
 //
 // إعداد مطلوب من جانب محمد: يروح Bosta Dashboard → Settings → Webhooks،
-// ويحط الرابط: https://www.2zstore.com/api/bosta/webhook
+// ويحط الرابط كامل بالـ secret:
+// https://www.2zstore.com/api/bosta/webhook?secret=<BOSTA_WEBHOOK_SECRET من .env>
 //
-// أمان: بنتحقق إن الأوردر موجود عندنا فعليًا (عن طريق businessReference =
-// order.id بتاعنا اللي بعتناه وقت الإنشاء، أو bostaDeliveryId كـ fallback).
-// لو الأوردر مش موجود، بنتجاهل الطلب بهدوء من غير error.
+// أمان: بنرفض أي طلب مش حامل نفس الـ secret ده في query param (بوسطة نفسها
+// مبتوفرش HMAC signature موثّقة للـ webhooks، فالـ secret في الـ URL هو البديل
+// العملي). بعد كده بنتحقق إن الأوردر موجود عندنا فعليًا (عن طريق
+// businessReference = order.id بتاعنا اللي بعتناه وقت الإنشاء، أو
+// bostaDeliveryId كـ fallback). لو الأوردر مش موجود، بنتجاهل الطلب بهدوء
+// من غير error.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import type { OrderStatus } from "@/app/generated/prisma/client"
+import { timingSafeEqual } from "crypto"
+
+// مقارنة آمنة ضد هجمات timing — مش أساسي هنا بس نفس المبدأ المستخدم في HMAC verification
+// القديم بتاع Paymob في المشروع
+ function safeCompare(a: string, b: string): boolean {
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+  if (bufA.length !== bufB.length) return false
+  return timingSafeEqual(bufA, bufB)
+}
 
 // حالات Bosta "النهائية" اللي بتغيّر order.status عندنا فعليًا
 const BOSTA_STATE_TO_ORDER_STATUS: Record<string, OrderStatus> = {
@@ -37,6 +51,21 @@ const BOSTA_IN_TRANSIT_STATES = new Set([
 
 export async function POST(req: NextRequest) {
   try {
+    // التحقق من الـ secret قبل أي حاجة تانية — لو مش مطابق أو مش متبعت، نرفض فورًا
+    const expectedSecret = process.env.BOSTA_WEBHOOK_SECRET
+    const providedSecret = req.nextUrl.searchParams.get("secret")
+
+    if (!expectedSecret) {
+      // الـ secret مش مضبوط في الـ .env/Vercel — مش مفروض نسيب الـ endpoint مفتوح،
+      // نسجل error واضح في الـ logs بدل ما نقبل أي request بصمت
+      console.error("Bosta webhook: BOSTA_WEBHOOK_SECRET is not configured")
+      return NextResponse.json({ error: "Webhook not configured" }, { status: 500 })
+    }
+
+    if (!providedSecret || !safeCompare(providedSecret, expectedSecret)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const body = await req.json()
     const delivery = body.delivery || body
 
