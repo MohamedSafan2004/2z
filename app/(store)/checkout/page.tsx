@@ -8,7 +8,7 @@ import Link from "next/link"
 import { SHIPPING_RATES, SHIPPING_LABELS, getFinalShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping"
 import { BOSTA_CITIES } from "@/lib/cities"
 import { saveGuestOrderToken } from "@/lib/store/orderTracking"
-import { trackInitiateCheckout, trackPurchase, generateEventId } from "@/lib/meta-pixel"
+import { trackInitiateCheckout, trackPurchase, tagClarityOrder, generateEventId } from "@/lib/meta-pixel"
 
 import CheckoutCard from "./components/Checkoutcard "
 import InputField from "./components/Inputfield"
@@ -270,6 +270,13 @@ export default function CheckoutPage() {
           value: finalTotal,
           num_items: numItems,
           eventId: purchaseEventId,
+        })
+        // ربط الـ Clarity session الحالية برقم الأوردر/الفاتورة — نفس اللحظة اللي بيتبعت
+        // فيها الـ Purchase لـ Meta، عشان تقدر تدور في Clarity برقم الأوردر وتلاقي
+        // الـ session بتاعت العميل ده بالظبط
+        tagClarityOrder({
+          orderRef: data.id,
+          invoiceNumber: data.invoiceNumber ? `INV-${String(data.invoiceNumber).padStart(4, "0")}` : undefined,
         })
         if (user) {
           router.push("/orders")

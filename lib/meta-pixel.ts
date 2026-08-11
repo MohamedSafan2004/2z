@@ -10,6 +10,7 @@ declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void
     _fbq?: unknown
+    clarity?: (...args: unknown[]) => void
   }
 }
 
@@ -102,6 +103,30 @@ export function trackPurchase(params: {
     },
     params.eventId
   )
+}
+
+/**
+ * بتربط الـ Clarity session الحالية برقم الأوردر/الفاتورة بتاعنا، عن طريق custom tag.
+ * الهدف: تقدر تدور في Clarity dashboard بـ Order ID أو رقم الفاتورة وتلاقي
+ * الـ session بتاعت العميل ده بالظبط (رحلته من أول ما دخل لحد ما اشترى)،
+ * بدل ما يفضل Clarity وMeta Ads مصدرين منفصلين مش مرتبطين ببعض.
+ *
+ * بتتنادى في نفس اللحظة اللي بتتنادى فيها trackPurchase — بعد ما الأوردر
+ * يتسجل فعليًا في الداتابيز، مش وقت الضغط على الزرار بس.
+ *
+ * ملاحظة: window.clarity ممكن يتأخر شوية في التحميل (Script استراتيجية
+ * afterInteractive) — التحقق من typeof بيضمن إننا منكسرش الصفحة لو النداء
+ * حصل قبل ما الـ script يخلص تحميل.
+ */
+export function tagClarityOrder(params: { orderRef: string; invoiceNumber?: string }) {
+  if (typeof window === "undefined" || typeof window.clarity !== "function") return
+  window.clarity("set", "order_id", params.orderRef)
+  if (params.invoiceNumber) {
+    window.clarity("set", "invoice_number", params.invoiceNumber)
+  }
+  // Smart event صريح كمان — بيظهر على الـ timeline بتاع التسجيل نفسه في Clarity
+  // (مش بس كـ filter tag)، فيسهل تلاقي لحظة الشراء بالظبط وانت بتتفرج على الـ session
+  window.clarity("event", "order_placed")
 }
 
 /**

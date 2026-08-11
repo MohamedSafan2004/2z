@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
-import { trackPurchase, generateEventId } from "@/lib/meta-pixel"
+import { trackPurchase, tagClarityOrder, generateEventId } from "@/lib/meta-pixel"
 
 const WHATSAPP_NUMBER = "201114833377" // 011 1483 3377 بصيغة دولية بدون +
 
@@ -81,6 +81,12 @@ export default function InstapayPaymentPage() {
             value: amount,
             num_items: 1,
             eventId,
+          })
+          tagClarityOrder({
+            orderRef: orderId,
+            invoiceNumber: order?.invoiceNumber
+              ? `INV-${String(order.invoiceNumber).padStart(4, "0")}`
+              : undefined,
           })
         }
       }
