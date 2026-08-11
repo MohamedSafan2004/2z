@@ -578,8 +578,8 @@ export default function Home() {
 
         <div className="hero-content">
           <h1 className="hero-title">
-            Wear Nothing<br />
-            Extra
+            2Z Next <br />
+            Level
           </h1>
 
           <div className="hero-divider" />
