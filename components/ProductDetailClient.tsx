@@ -7,6 +7,7 @@ import { useCart } from "@/lib/store/cart"
 import { trackViewContent, trackAddToCart } from "@/lib/meta-pixel"
 import ActiveOfferBanner from "@/components/ActiveOfferBanner"
 import SizeRecommendationModal from "@/components/Sizerecommendationmodal"
+import { getAllTiers, getTierDiscountPercent } from "@/lib/pricing"
 
 
 const colorImages: Record<string, string[]> = {
@@ -128,7 +129,6 @@ export default function ProductDetailClient({
 
   const productColor = variants[0]?.color || "BLACK"
   const images = colorImages[productColor] || colorImages.BLACK
-  const img = images[imgIndex] || images[0]
 
   // ─── Bundle progress ────────────────────────────────────────────────────
   // بيحسب على إجمالي قطع الكارت الحالي + القطعة اللي هيضيفها دلوقتي (لو مختار size)
@@ -198,27 +198,55 @@ export default function ProductDetailClient({
   }, [product.id])
 
   const goToImage = (index: number) => setImgIndex(index)
-  const nextImage = () => goToImage((imgIndex + 1) % images.length)
-  const prevImage = () => goToImage((imgIndex - 1 + images.length) % images.length)
 
-  // ─── Swipe support (mobile) ────────────────────────────────────────────
+  // ─── Swipe support (mobile, redesigned) ───────────────────────────
   const touchStartX = React.useRef(0)
   const touchStartY = React.useRef(0)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isSwiping, setIsSwiping] = useState(false)
+  const containerWidthRef = React.useRef(1)
   const SWIPE_THRESHOLD = 40 // أقل مسافة أفقية (بالبكسل) عشان يتحسب swipe
+  const DIRECTION_LOCK_THRESHOLD = 8
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX
     touchStartY.current = e.touches[0].clientY
+    containerWidthRef.current = e.currentTarget.clientWidth || 1
+    setIsDragging(true)
+    setIsSwiping(false)
+    setDragOffset(0)
   }
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const deltaX = e.changedTouches[0].clientX - touchStartX.current
-    const deltaY = e.changedTouches[0].clientY - touchStartY.current
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return
+    const deltaX = e.touches[0].clientX - touchStartX.current
+    const deltaY = e.touches[0].clientY - touchStartY.current
 
-    // لو الحركة رأسية أكتر من الأفقية، معناها اليوزر بيعمل scroll عمودي مش بيقلّب صور
-    if (Math.abs(deltaY) > Math.abs(deltaX)) return
-    if (deltaX > SWIPE_THRESHOLD) prevImage()
-    else if (deltaX < -SWIPE_THRESHOLD) nextImage()
+    if (!isSwiping) {
+      if (Math.abs(deltaX) < DIRECTION_LOCK_THRESHOLD && Math.abs(deltaY) < DIRECTION_LOCK_THRESHOLD) return
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        setIsDragging(false)
+        return
+      }
+      setIsSwiping(true)
+    }
+
+    const atStart = imgIndex === 0 && deltaX > 0
+    const atEnd = imgIndex === images.length - 1 && deltaX < 0
+    const eased = (atStart || atEnd) ? deltaX * 0.35 : deltaX
+    setDragOffset(eased)
+  }
+
+  const handleTouchEnd = () => {
+    if (isSwiping) {
+      const effectiveThreshold = Math.min(containerWidthRef.current * 0.18, containerWidthRef.current * 0.4) || SWIPE_THRESHOLD
+      if (dragOffset < -effectiveThreshold && dragOffset < -SWIPE_THRESHOLD) nextImage()
+      else if (dragOffset > effectiveThreshold && dragOffset > SWIPE_THRESHOLD) prevImage()
+    }
+    setIsDragging(false)
+    setIsSwiping(false)
+    setDragOffset(0)
   }
 
   const buildCartItem = () => {
@@ -427,6 +455,35 @@ export default function ProductDetailClient({
           font-size: 8px;
           font-weight: 700;
           color: #080808;
+        }
+
+        /* ── Quantity discount bar (product page, above Add to Cart) ── */
+        .qty-discount-box {
+          border: 1px solid rgba(240,237,230,0.12);
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          transition: border-color 0.3s ease;
+        }
+        .qty-discount-box.active {
+          border-color: rgba(200,240,79,0.4);
+        }
+        .qty-discount-labels {
+          position: relative;
+          height: 16px;
+          margin-top: 4px;
+        }
+        .qty-discount-label {
+          position: absolute;
+          transform: translateX(-50%);
+          font-family: 'Space Mono', monospace;
+          font-size: 8.5px;
+          letter-spacing: 0.04em;
+          color: rgba(240,237,230,0.3);
+          transition: color 0.3s ease;
+          white-space: nowrap;
+        }
+        .qty-discount-label.reached {
+          color: ${ACCENT};
         }
 
         /* ── Gift picker ── */
@@ -649,14 +706,30 @@ export default function ProductDetailClient({
           <div
             style={{ position: "relative", aspectRatio: "4/5", overflow: "hidden", background: "#0d0d0d", touchAction: "pan-y" }}
             onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            <img
-              src={optimizeCloudinaryUrl(img, 900)}
-              alt={product.name}
-              fetchPriority="high"
-              style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 1, display: "block" }}
-            />
+            <div
+              style={{
+                display: "flex",
+                width: `${images.length * 100}%`,
+                height: "100%",
+                transform: `translateX(calc(${-imgIndex * (100 / images.length)}% + ${dragOffset}px))`,
+                transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
+              }}
+            >
+              {images.map((src, i) => (
+                <div key={src} style={{ width: `${100 / images.length}%`, height: "100%", flexShrink: 0 }}>
+                  <img
+                    src={optimizeCloudinaryUrl(src, 900)}
+                    alt={product.name}
+                    fetchPriority={i === 0 ? "high" : undefined}
+                    draggable={false}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", userSelect: "none" }}
+                  />
+                </div>
+              ))}
+            </div>
             <div style={{ position: "absolute", top: "16px", left: "16px", background: "rgba(8,8,8,0.7)", backdropFilter: "blur(8px)", padding: "6px 12px" }}>
               <span style={{ fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>{product.category?.name}</span>
             </div>
@@ -802,6 +875,8 @@ export default function ProductDetailClient({
               </div>
             </div>
 
+            <QuantityDiscountBar projectedQuantity={projectedQuantity} />
+
             <button
               onClick={handleAdd}
               disabled={quantityDisabled}
@@ -910,6 +985,63 @@ export default function ProductDetailClient({
 // ─────────────────────────────────────────────────────────────────────────
 // Bundle progress bar + inline gift picker (lives right under Buy It Now)
 // ─────────────────────────────────────────────────────────────────────────
+
+function QuantityDiscountBar({ projectedQuantity }: { projectedQuantity: number }) {
+  const tiers = getAllTiers()
+  const maxTier = tiers[tiers.length - 1]
+  const currentPercent = getTierDiscountPercent(projectedQuantity)
+  const clampedQty = Math.min(projectedQuantity, maxTier.minQty)
+  const fillPercent = Math.min(100, (clampedQty / maxTier.minQty) * 100)
+
+  const nextTier = tiers.find((t) => t.percent > currentPercent) ?? null
+  const remaining = nextTier ? nextTier.minQty - projectedQuantity : 0
+
+  return (
+    <div className={`qty-discount-box ${currentPercent > 0 ? "active" : ""}`}>
+      {currentPercent === 0 ? (
+        <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
+          Add this piece to unlock <span style={{ color: ACCENT }}>10% off</span>
+        </p>
+      ) : nextTier ? (
+        <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
+          <span style={{ color: ACCENT }}>{currentPercent}% off</span> applied — add {remaining} more for {nextTier.percent}%
+        </p>
+      ) : (
+        <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: ACCENT, margin: 0 }}>
+          Max discount unlocked — <span style={{ color: ACCENT }}>{currentPercent}% off</span>
+        </p>
+      )}
+
+      <div className="tier-progress">
+        <div className="tier-progress-track">
+          <div className="tier-progress-fill" style={{ width: `${fillPercent}%` }} />
+          {tiers.map((t) => {
+            const reached = projectedQuantity >= t.minQty
+            const leftPct = (t.minQty / maxTier.minQty) * 100
+            return (
+              <div
+                key={t.minQty}
+                className={`tier-progress-marker ${reached ? "reached" : ""}`}
+                style={{ left: `${leftPct}%` }}
+              />
+            )
+          })}
+        </div>
+        <div className="qty-discount-labels">
+          {tiers.map((t) => (
+            <span
+              key={t.minQty}
+              className={`qty-discount-label ${projectedQuantity >= t.minQty ? "reached" : ""}`}
+              style={{ left: `${(t.minQty / maxTier.minQty) * 100}%` }}
+            >
+              {t.percent}%
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const SWATCH_COLORS: Record<string, string> = {
   BLACK: "#1a1a1a",

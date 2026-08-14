@@ -144,6 +144,7 @@ export const OrderScalarFieldEnum = {
   userId: 'userId',
   totalAmount: 'totalAmount',
   discountAmount: 'discountAmount',
+  tierDiscountPercent: 'tierDiscountPercent',
   promotionDiscount: 'promotionDiscount',
   shippingCost: 'shippingCost',
   shippingZone: 'shippingZone',

@@ -66,6 +66,7 @@ model Order {
   userId                String?
   totalAmount           Decimal
   discountAmount        Decimal       @default(0)
+  tierDiscountPercent   Int           @default(0) // خصم الكمية المتدرج الفعلي المطبق (0/10/20/30/40) — لو البرومو كود أعلى منه، discountAmount بيعكس قيمة البرومو والحقل ده بيفضل 0
   promotionDiscount     Decimal       @default(0)
   shippingCost          Decimal       @default(0)
   shippingZone          String?

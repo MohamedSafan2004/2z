@@ -7,6 +7,7 @@ import { sanitize } from "@/lib/validation"
 import { getFinalShippingCost, type ShippingZone } from "@/lib/shipping"
 import { isValidBostaCity } from "@/lib/cities"
 import { calculatePromotion, type GiftSelection } from "@/lib/promotions"
+import { getTierDiscountPercent } from "@/lib/pricing"
 import { sendPurchaseCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 import { normalizeEgyptianPhone } from "@/lib/phone"
 import crypto from "crypto"
@@ -101,7 +102,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ─── Promo Code ───────────────────────────────────────────────────────────
-    let discountAmount = 0
+    let promoDiscountAmount = 0
     let validatedPromoCode: string | null = null
     let promoId: string | null = null
 
@@ -141,11 +142,34 @@ export async function POST(req: NextRequest) {
         if (!usedByPhone && !usedByUser) {
           // الكود بيتحسب على السعر بعد خصم الـ bundle (تسلسلي مش على الأصلي)
           const afterPromotion = subtotal - promotionDiscount
-          discountAmount = Math.round((afterPromotion * promo.discount) / 100)
+          promoDiscountAmount = Math.round((afterPromotion * promo.discount) / 100)
           validatedPromoCode = promo.code
           promoId = promo.id
         }
       }
+    }
+
+    // ─── Tiered quantity discount ────────────────────────────────────────────
+    // بيتحسب على إجمالي عدد القطع المدفوعة في الأوردر (مش شامل هدايا الـ bundle)
+    // — 1 قطعة = 10%، 2 = 20%، 3 = 30%، 4+ = 40%. مش تراكمي مع البرومو كود؛
+    // لو الاتنين ينطبقوا، ناخد الأعلى بس (حماية من خصومات مضاعفة فوق الـ margin).
+    const paidQuantity = items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0)
+    const tierPercent = getTierDiscountPercent(paidQuantity)
+    const afterPromotionForTier = subtotal - promotionDiscount
+    const tierDiscountAmount = Math.round((afterPromotionForTier * tierPercent) / 100)
+
+    let discountAmount: number
+    let appliedTierPercent = 0
+    if (tierDiscountAmount > promoDiscountAmount) {
+      // خصم الكمية أعلى — نطبقه هو ونلغي البرومو كود من الأوردر (مينفعش يترصد
+      // كاستخدام فعلي وهو أصلاً معملوش تأثير على السعر)
+      discountAmount = tierDiscountAmount
+      appliedTierPercent = tierPercent
+      validatedPromoCode = null
+      promoId = null
+    } else {
+      // البرومو كود أعلى أو متساوي — يفضل هو الفعّال، ومفيش تسجيل لخصم الكمية
+      discountAmount = promoDiscountAmount
     }
 
     // الفري شيبينج بيتحسب على المبلغ الفعلي اللي العميل هيدفعه في المنتجات (بعد خصم الـ bundle + promo code)
@@ -227,6 +251,7 @@ export async function POST(req: NextRequest) {
           invoiceNumber: counter.lastNum,
           totalAmount,
           discountAmount,
+          tierDiscountPercent: appliedTierPercent,
           promotionDiscount,
           shippingCost,
           shippingZone,
