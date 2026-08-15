@@ -198,6 +198,8 @@ export default function ProductDetailClient({
   }, [product.id])
 
   const goToImage = (index: number) => setImgIndex(index)
+  const nextImage = () => goToImage((imgIndex + 1) % images.length)
+  const prevImage = () => goToImage((imgIndex - 1 + images.length) % images.length)
 
   // ─── Swipe support (mobile, redesigned) ───────────────────────────
   const touchStartX = React.useRef(0)
@@ -460,30 +462,97 @@ export default function ProductDetailClient({
         /* ── Quantity discount bar (product page, above Add to Cart) ── */
         .qty-discount-box {
           border: 1px solid rgba(240,237,230,0.12);
-          padding: 14px 16px;
+          padding: 16px 18px;
           margin-bottom: 16px;
-          transition: border-color 0.3s ease;
+          transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
         }
         .qty-discount-box.active {
-          border-color: rgba(200,240,79,0.4);
+          border-color: rgba(200,240,79,0.3);
+          background: rgba(200,240,79,0.02);
         }
-        .qty-discount-labels {
-          position: relative;
-          height: 16px;
-          margin-top: 4px;
+        .qty-discount-box.maxed {
+          border: 1.5px solid ${ACCENT};
+          background: rgba(200,240,79,0.06);
+          box-shadow: 0 0 0 3px rgba(200,240,79,0.08);
+          animation: qtyMaxPulse 2.2s ease infinite;
         }
-        .qty-discount-label {
-          position: absolute;
-          transform: translateX(-50%);
+        @keyframes qtyMaxPulse {
+          0%, 100% { box-shadow: 0 0 0 3px rgba(200,240,79,0.08); }
+          50% { box-shadow: 0 0 0 5px rgba(200,240,79,0.03); }
+        }
+
+        .qty-discount-segments {
+          display: flex;
+          gap: 3px;
+          margin-bottom: 10px;
+        }
+        .qty-discount-segment {
+          height: 6px;
+          border-radius: 3px;
+          background: rgba(240,237,230,0.1);
+          transition: background 0.4s ease;
+        }
+        .qty-discount-segment.reached {
+          background: ${ACCENT};
+        }
+
+        .qty-discount-labels-row {
+          display: flex;
+          gap: 3px;
+          margin-bottom: 14px;
+        }
+        .qty-discount-label-col {
+          text-align: center;
+        }
+        .qty-discount-qty {
           font-family: 'Space Mono', monospace;
-          font-size: 8.5px;
-          letter-spacing: 0.04em;
-          color: rgba(240,237,230,0.3);
+          font-size: 8px;
+          letter-spacing: 0.03em;
+          color: rgba(240,237,230,0.35);
+          margin: 0;
           transition: color 0.3s ease;
-          white-space: nowrap;
         }
-        .qty-discount-label.reached {
+        .qty-discount-qty.reached {
+          color: rgba(240,237,230,0.55);
+        }
+        .qty-discount-pct {
+          font-family: 'Space Mono', monospace;
+          font-weight: 700;
+          color: rgba(240,237,230,0.3);
+          margin: 2px 0 0;
+          transition: color 0.3s ease;
+        }
+        .qty-discount-pct.reached {
           color: ${ACCENT};
+        }
+
+        .qty-discount-footer {
+          border-top: 1px solid rgba(240,237,230,0.08);
+          padding-top: 10px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .qty-discount-box.maxed .qty-discount-footer {
+          border-top-color: rgba(200,240,79,0.15);
+        }
+        .qty-discount-dot {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: ${ACCENT};
+          flex-shrink: 0;
+        }
+        .qty-discount-footer-text {
+          font-family: 'Space Mono', monospace;
+          font-size: 9.5px;
+          letter-spacing: 0.02em;
+          color: rgba(240,237,230,0.7);
+          margin: 0;
+        }
+        .qty-discount-footer-text.maxed {
+          color: ${ACCENT};
+          font-weight: 700;
         }
 
         /* ── Gift picker ── */
@@ -875,7 +944,7 @@ export default function ProductDetailClient({
               </div>
             </div>
 
-            <QuantityDiscountBar projectedQuantity={projectedQuantity} />
+            <QuantityDiscountBar projectedQuantity={projectedQuantity} unitPrice={Number(product.price)} />
 
             <button
               onClick={handleAdd}
@@ -986,58 +1055,80 @@ export default function ProductDetailClient({
 // Bundle progress bar + inline gift picker (lives right under Buy It Now)
 // ─────────────────────────────────────────────────────────────────────────
 
-function QuantityDiscountBar({ projectedQuantity }: { projectedQuantity: number }) {
-  const tiers = getAllTiers()
+function QuantityDiscountBar({ projectedQuantity, unitPrice }: { projectedQuantity: number; unitPrice: number }) {
+  const tiers: { minQty: number; percent: number }[] = getAllTiers()
   const maxTier = tiers[tiers.length - 1]
   const currentPercent = getTierDiscountPercent(projectedQuantity)
-  const clampedQty = Math.min(projectedQuantity, maxTier.minQty)
-  const fillPercent = Math.min(100, (clampedQty / maxTier.minQty) * 100)
+  const isMaxTier = currentPercent === maxTier.percent
 
   const nextTier = tiers.find((t) => t.percent > currentPercent) ?? null
   const remaining = nextTier ? nextTier.minQty - projectedQuantity : 0
 
-  return (
-    <div className={`qty-discount-box ${currentPercent > 0 ? "active" : ""}`}>
-      {currentPercent === 0 ? (
-        <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
-          Add this piece to unlock <span style={{ color: ACCENT }}>10% off</span>
-        </p>
-      ) : nextTier ? (
-        <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
-          <span style={{ color: ACCENT }}>{currentPercent}% off</span> applied — add {remaining} more for {nextTier.percent}%
-        </p>
-      ) : (
-        <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: ACCENT, margin: 0 }}>
-          Max discount unlocked — <span style={{ color: ACCENT }}>{currentPercent}% off</span>
-        </p>
-      )}
+  // قيمة التوفير بالجنيه — مبنية على إجمالي قيمة القطع الحالية في الصفحة (unitPrice * projectedQuantity)،
+  // محتاجة تقريبية لأن الخصم الفعلي في الأوردر بيتحسب على subtotal الكارت كامل في السيرفر
+  const projectedValue = unitPrice * projectedQuantity
+  const currentSaving = Math.round((projectedValue * currentPercent) / 100)
+  const nextSaving = nextTier ? Math.round((unitPrice * nextTier.minQty * nextTier.percent) / 100) : 0
 
-      <div className="tier-progress">
-        <div className="tier-progress-track">
-          <div className="tier-progress-fill" style={{ width: `${fillPercent}%` }} />
-          {tiers.map((t) => {
-            const reached = projectedQuantity >= t.minQty
-            const leftPct = (t.minQty / maxTier.minQty) * 100
-            return (
-              <div
-                key={t.minQty}
-                className={`tier-progress-marker ${reached ? "reached" : ""}`}
-                style={{ left: `${leftPct}%` }}
-              />
-            )
-          })}
-        </div>
-        <div className="qty-discount-labels">
-          {tiers.map((t) => (
-            <span
+  return (
+    <div className={`qty-discount-box ${currentPercent > 0 ? "active" : ""} ${isMaxTier ? "maxed" : ""}`}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "12px", gap: "8px", flexWrap: "wrap" }}>
+        {currentPercent === 0 ? (
+          <p style={{ fontSize: "11px", letterSpacing: "0.03em", color: "rgba(240,237,230,0.7)", margin: 0 }}>
+            Add this piece to unlock <span style={{ color: ACCENT, fontWeight: 700 }}>10% off</span>
+          </p>
+        ) : isMaxTier ? (
+          <p style={{ fontSize: "11px", letterSpacing: "0.03em", color: "#f0ede6", margin: 0 }}>
+            Max discount unlocked — <span style={{ color: ACCENT, fontSize: "15px", fontWeight: 700 }}>{currentPercent}% off</span>
+          </p>
+        ) : (
+          <p style={{ fontSize: "11px", letterSpacing: "0.03em", color: "#f0ede6", margin: 0 }}>
+            <span style={{ color: ACCENT, fontSize: "15px", fontWeight: 700 }}>{currentPercent}% off</span> unlocked
+          </p>
+        )}
+        {currentSaving > 0 && !isMaxTier && (
+          <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", margin: 0, whiteSpace: "nowrap" }}>
+            saving <span style={{ color: ACCENT }}>{currentSaving} EGP</span>
+          </p>
+        )}
+      </div>
+
+      {/* بار مقسّم لحد قطع متدرجة العرض — كل قطعة flex أكبر من اللي قبلها عشان تدي إحساس بالتصعيد */}
+      <div className="qty-discount-segments">
+        {tiers.map((t, i) => {
+          const reached = projectedQuantity >= t.minQty
+          return (
+            <div
               key={t.minQty}
-              className={`qty-discount-label ${projectedQuantity >= t.minQty ? "reached" : ""}`}
-              style={{ left: `${(t.minQty / maxTier.minQty) * 100}%` }}
-            >
-              {t.percent}%
-            </span>
-          ))}
-        </div>
+              className={`qty-discount-segment ${reached ? "reached" : ""}`}
+              style={{ flex: 1 + i * 0.12 }}
+            />
+          )
+        })}
+      </div>
+
+      <div className="qty-discount-labels-row">
+        {tiers.map((t, i) => {
+          const reached = projectedQuantity >= t.minQty
+          return (
+            <div key={t.minQty} className="qty-discount-label-col" style={{ flex: 1 + i * 0.12 }}>
+              <p className={`qty-discount-qty ${reached ? "reached" : ""}`}>{t.minQty}pc</p>
+              <p className={`qty-discount-pct ${reached ? "reached" : ""}`} style={{ fontSize: `${9 + i * 0.6}px` }}>{t.percent}%</p>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="qty-discount-footer">
+        <span className="qty-discount-dot" />
+        {isMaxTier ? (
+          <p className="qty-discount-footer-text maxed">You&apos;ve hit the top tier — biggest discount applied</p>
+        ) : nextTier ? (
+          <p className="qty-discount-footer-text">
+            {remaining} more piece{remaining > 1 ? "s" : ""} unlocks <span style={{ color: ACCENT, fontWeight: 700 }}>{nextTier.percent}% off</span>
+            {nextSaving > 0 && ` — ${nextSaving} EGP saved`}
+          </p>
+        ) : null}
       </div>
     </div>
   )

@@ -1,5 +1,7 @@
 "use client"
 
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/shipping"
+
 // شريط إعلاني ثابت فوق كل حاجة (فوق الـ Navbar) — زي Zara / H&M / Nike.
 // مبيتحركش أبدًا حتى وانت بتسكرول. ظاهر في كل صفحات المتجر.
 export default function AnnouncementBar() {
@@ -33,7 +35,7 @@ export default function AnnouncementBar() {
           textOverflow: "ellipsis",
         }}
       >
-        Free Shipping <span style={{ fontWeight: 400, letterSpacing: "0.08em", opacity: 0.65 }}>on orders over</span> 1000 EGP
+        Free Shipping <span style={{ fontWeight: 400, letterSpacing: "0.08em", opacity: 0.65 }}>on orders over</span> {FREE_SHIPPING_THRESHOLD} EGP
       </span>
     </div>
   )

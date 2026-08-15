@@ -442,6 +442,8 @@ export default function CheckoutPage() {
             giftDisplayValue={giftDisplayValue}
             subtotal={subtotal}
             discountValue={discountValue}
+            discountPercent={activeDiscountPercent}
+            discountLabel={discountSourceLabel}
             shippingCost={shippingCost}
             shippingLabel={SHIPPING_LABELS[zone]}
             isFreeShipping={isFreeShipping}
