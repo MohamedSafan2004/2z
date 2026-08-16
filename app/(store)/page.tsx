@@ -131,7 +131,7 @@ function NewInSkeleton() {
   )
 }
 
-// نفس شكل كارت الـ New In بالظبط، بس مع badge "Best Seller" بدل "Sale"
+// كارت مختلف عن New In عمدًا — صف أفقي "ranked showcase" برقم ترتيب بصري (01/02)
 async function BestSellersSection() {
   const products = await getBestSellers()
 
@@ -142,35 +142,34 @@ async function BestSellersSection() {
         const colorLabel = color ? color.charAt(0) + color.slice(1).toLowerCase() : ""
         return (
           <RevealSection key={p.id} delay={i * 100}>
-            <Link href={`/products/${p.id}`} className="product-card" style={{ display: "block", textDecoration: "none" }}>
-              <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
-                <span className="card-bestseller-badge">Best Seller</span>
+            <Link href={`/products/${p.id}`} className="bs-card">
+              <div className="bs-imgwrap">
                 <img
-                  src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
+                  src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 400)}
                   alt=""
                   aria-hidden="true"
                   loading="lazy"
-                  className="card-img"
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
+                  className="bs-img"
                 />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, rgba(8,8,8,0.55) 22%, transparent 48%)" }} />
-                <div style={{ position: "absolute", bottom: "12px", left: "12px", right: "12px" }}>
-                  <p className="newin-name">
-                    Oversize T-Shirt<br />
-                    <span style={{ color: "rgba(240,237,230,0.75)" }}>— {colorLabel}</span>
-                  </p>
-                  <div className="newin-meta-row">
-                    <span className="newin-cat">T-Shirts</span>
-                    <span aria-hidden="true"> </span>
-                    {p.originalPrice && p.originalPrice > p.price ? (
-                      <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                        <span className="newin-orig">{p.originalPrice}</span>
-                        <span className="newin-price">{p.price} EGP</span>
-                      </span>
-                    ) : (
-                      <span className="newin-price" style={{ color: "#f0ede6" }}>{p.price} EGP</span>
-                    )}
-                  </div>
+              </div>
+              <div className="bs-body">
+                <span className="bs-toplabel">
+                  <span className="bs-toplabel-bar" />
+                  Best Seller
+                </span>
+                <p className="bs-name">
+                  Oversize Tee <span>— {colorLabel}</span>
+                </p>
+                <div className="bs-meta">
+                  <span className="bs-cat">T-Shirts</span>
+                  {p.originalPrice && p.originalPrice > p.price ? (
+                    <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                      <span className="newin-orig">{p.originalPrice}</span>
+                      <span className="bs-price">{p.price} EGP</span>
+                    </span>
+                  ) : (
+                    <span className="bs-price">{p.price} EGP</span>
+                  )}
                 </div>
               </div>
             </Link>
@@ -185,7 +184,7 @@ function BestSellersSkeleton() {
   return (
     <>
       {[1, 2].map((i) => (
-        <div key={i} style={{ aspectRatio: "3/4", width: "100%" }}>
+        <div key={i} style={{ height: "140px", width: "100%" }}>
           <SkeletonBlock height="100%" />
         </div>
       ))}
@@ -251,18 +250,20 @@ export default function Home() {
           max-width: 100%;
           object-fit: cover;
           object-position: 78% center;
-          opacity: 0.55;
-          filter: grayscale(20%);
+          opacity: 0.85;
+          filter: grayscale(0%);
           animation: fadeIn 1.5s ease 0s both;
         }
         @media (min-width: 768px) {
-          .hero-img { object-position: center 30%; opacity: 0.38; }
+          .hero-img { object-position: center 30%; opacity: 0.72; }
         }
 
         .hero-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(to bottom, rgba(8,8,8,0.15) 0%, transparent 30%, rgba(8,8,8,0.9) 82%, #080808 100%);
+          background:
+            linear-gradient(to bottom, rgba(8,8,8,0.05) 0%, transparent 22%, rgba(8,8,8,0.6) 64%, rgba(8,8,8,0.96) 88%, #080808 100%),
+            linear-gradient(to right, rgba(8,8,8,0.3) 0%, transparent 45%);
         }
 
         .hero-topbar {
@@ -300,6 +301,7 @@ export default function Home() {
           color: #f0ede6;
           margin: 0 0 36px;
           font-size: 44px;
+          text-shadow: 0 4px 24px rgba(0,0,0,0.55);
           animation: fadeUp 1.0s ease 0.5s both;
         }
         @media (min-width: 480px) { .hero-title { font-size: 60px; } }
@@ -308,8 +310,9 @@ export default function Home() {
         @media (min-width: 1200px) { .hero-title { font-size: 120px; } }
 
         .hero-divider {
-          height: 1px;
-          background: rgba(240,237,230,0.12);
+          height: 2px;
+          width: 64px;
+          background: linear-gradient(90deg, #c8f04f, rgba(240,237,230,0.12));
           margin-bottom: 32px;
           animation: fadeUp 0.8s ease 0.8s both;
         }
@@ -362,15 +365,16 @@ export default function Home() {
 
         .scroll-indicator {
           position: absolute;
-          bottom: 20px;
+          bottom: 16px;
           left: 50%;
           transform: translateX(-50%);
-          display: none;
+          display: block;
         }
         @media (min-width: 768px) {
-          .scroll-indicator { display: block; }
+          .scroll-indicator { bottom: 20px; }
         }
-        .scroll-track { width: 1px; height: 44px; background: rgba(240,237,230,0.1); overflow: hidden; }
+        .scroll-track { width: 1px; height: 34px; background: rgba(240,237,230,0.1); overflow: hidden; }
+        @media (min-width: 768px) { .scroll-track { height: 44px; } }
         .scroll-line { width: 100%; height: 100%; background: rgba(240,237,230,0.45); animation: scrollLine 2s ease 1.5s infinite; }
 
         /* ── NEW IN ── */
@@ -469,32 +473,70 @@ export default function Home() {
           animation: cardSaleShine 2.6s ease-in-out infinite;
         }
 
-        .card-bestseller-badge {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          z-index: 2;
-          display: inline-flex;
-          align-items: center;
-          font-family: 'Space Mono', monospace;
-          font-size: 8px;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: #f0ede6;
-          background: rgba(8,8,8,0.75);
-          border: 1px solid rgba(240,237,230,0.35);
-          padding: 4px 8px;
-          backdrop-filter: blur(4px);
-        }
-
-        /* ── BEST SELLERS ── */
+        /* ── BEST SELLERS (ranked showcase, distinct from New In) ── */
         .bestsellers-section { padding: 56px 20px 40px; max-width: 100%; }
         @media (min-width: 640px) { .bestsellers-section { padding: 64px 24px 40px; } }
-        .bestsellers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(240,237,230,0.06); max-width: 100%; }
-        @media (min-width: 900px) {
-          .bestsellers-grid { max-width: 640px; margin: 0 auto; }
+
+        .bs-list { display: flex; flex-direction: column; gap: 10px; max-width: 100%; }
+        @media (min-width: 900px) { .bs-list { max-width: 640px; margin: 0 auto; } }
+
+        .bs-card {
+          display: flex;
+          align-items: stretch;
+          text-decoration: none;
+          border: 1px solid rgba(240,237,230,0.1);
+          background: rgba(240,237,230,0.015);
+          position: relative;
+          overflow: hidden;
+          transition: border-color 0.3s ease;
         }
+        .bs-card:hover { border-color: rgba(240,237,230,0.25); }
+
+        .bs-imgwrap {
+          width: 110px;
+          flex-shrink: 0;
+          position: relative;
+          overflow: hidden;
+          aspect-ratio: 3/4;
+        }
+        @media (min-width: 480px) { .bs-imgwrap { width: 130px; } }
+        @media (min-width: 640px) { .bs-imgwrap { width: 150px; } }
+
+        .bs-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.9; transition: transform 0.8s ease, opacity 0.6s ease; }
+        .bs-card:hover .bs-img { transform: scale(1.05); opacity: 1; }
+
+        .bs-body {
+          flex: 1;
+          padding: 14px 14px 14px 16px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          min-width: 0;
+        }
+        @media (min-width: 640px) { .bs-body { padding: 16px 20px; } }
+
+        .bs-toplabel {
+          font-family: 'Space Mono', monospace;
+          font-size: 7.5px;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: #c8f04f;
+          margin-bottom: 8px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .bs-toplabel-bar { width: 12px; height: 1px; background: #c8f04f; }
+
+        .bs-name { font-family: 'Cormorant Garamond', serif; font-weight: 300; color: #f0ede6; font-size: 19px; line-height: 1.1; margin: 0 0 6px; }
+        .bs-name span { color: rgba(240,237,230,0.5); font-size: 14px; }
+        @media (min-width: 480px) { .bs-name { font-size: 21px; } .bs-name span { font-size: 15px; } }
+        @media (min-width: 640px) { .bs-name { font-size: 24px; } .bs-name span { font-size: 17px; } }
+
+        .bs-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .bs-cat { font-family: 'Space Mono', monospace; font-size: 7.5px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.45); white-space: nowrap; }
+        .bs-price { font-family: 'Space Mono', monospace; font-size: 13px; color: #f0ede6; white-space: nowrap; }
+        @media (min-width: 640px) { .bs-price { font-size: 15px; } }
 
         .newin-name  { font-family: 'Cormorant Garamond', serif; font-weight: 300; color: #f0ede6; margin: 0 0 4px; line-height: 1.15; font-size: 15px; }
         .newin-cat   { font-family: 'Space Mono', monospace; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.6); font-size: 7px; white-space: nowrap; }
@@ -512,6 +554,9 @@ export default function Home() {
           .newin-price { font-size: 15px; }
           .newin-orig  { font-size: 12px; }
         }
+
+        /* ── REVIEWS CTA ── */
+        .reviews-cta-section { padding: 0 20px 24px; text-align: center; max-width: 100%; }
 
         /* ── STATEMENT ── */
         .statement-section { padding: 64px 20px; text-align: center; max-width: 100%; overflow: hidden; }
@@ -566,12 +611,12 @@ export default function Home() {
 
         <div className="hero-topbar">
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "20px", height: "1px", background: "rgba(240,237,230,0.3)" }} />
+            <div style={{ width: "20px", height: "1px", background: "rgba(200,240,79,0.5)" }} />
             <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>
               Egypt · SS26
             </span>
           </div>
-          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>
+          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400, fontSize: "22px", letterSpacing: "0.02em", color: "#f0ede6" }}>
             2Z
           </span>
         </div>
@@ -612,7 +657,7 @@ export default function Home() {
               <span className="marquee-item">Egypt SS26</span>
               <span className="marquee-item">Minimal Streetwear</span>
               <span className="marquee-item">Oversized Fit</span>
-              <span className="marquee-item">Less Noise. More Presence.</span>
+              <span className="marquee-item">Made For Egypt</span>
               <span className="marquee-item">Black · White · Grey · Beige</span>
             </span>
           ))}
@@ -624,9 +669,10 @@ export default function Home() {
         <RevealSection>
           <div className="newin-header">
             <span className="newin-label">Best Sellers</span>
+            <Link href="/products" className="newin-viewall">View All</Link>
           </div>
         </RevealSection>
-        <div className="bestsellers-grid">
+        <div className="bs-list">
           <Suspense fallback={<BestSellersSkeleton />}>
             <BestSellersSection />
           </Suspense>
@@ -650,6 +696,13 @@ export default function Home() {
 
       {/* ── REVIEWS ── */}
       <ReviewsGallery />
+
+      {/* ── REVIEWS CTA ── */}
+      <section className="reviews-cta-section">
+        <RevealSection>
+          <Link href="/products" className="shop-btn">Shop Now</Link>
+        </RevealSection>
+      </section>
 
       {/* ── STATEMENT ── */}
       <section className="statement-section">
@@ -725,7 +778,8 @@ export default function Home() {
 
       {/* ── FOOTER STRIP ── */}
       <RevealSection>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 20px", borderTop: "1px solid rgba(240,237,230,0.06)", marginTop: "2px", flexWrap: "wrap", gap: "8px" }}>
+        <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(200,240,79,0.35), transparent)" }} />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 20px", flexWrap: "wrap", gap: "8px" }}>
           <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>2Z — Egypt</span>
           <span style={{ fontFamily: "Space Mono, monospace", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.5)" }}>Oversized T-Shirts</span>
         </div>

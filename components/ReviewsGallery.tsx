@@ -147,7 +147,7 @@ export function ReviewsGallery() {
           font-size: 8px;
           letter-spacing: 0.2em;
           text-transform: uppercase;
-          color: rgba(240,237,230,0.25);
+          color: #f0ede6;
           margin-top: 4px;
         }
         @media (min-width: 900px) { .reviews-hint { display: none; } }
@@ -157,7 +157,7 @@ export function ReviewsGallery() {
         <div className="reviews-header">
           <span className="reviews-label">From Our Customers</span>
           <h2 className="reviews-heading">
-            Customer Reviews ⭐⭐⭐⭐⭐
+            Customer Reviews
           </h2>
         </div>
       </RevealSection>
