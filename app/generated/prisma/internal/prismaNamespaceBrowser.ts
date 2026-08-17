@@ -167,6 +167,7 @@ export const OrderScalarFieldEnum = {
   confirmationEmailSent: 'confirmationEmailSent',
   adminEmailSent: 'adminEmailSent',
   sheetSynced: 'sheetSynced',
+  abandonedCartEmailSentAt: 'abandonedCartEmailSentAt',
   bostaDeliveryId: 'bostaDeliveryId',
   bostaTrackingNumber: 'bostaTrackingNumber',
   bostaState: 'bostaState',

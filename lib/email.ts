@@ -199,6 +199,66 @@ export async function sendPasswordResetEmail({ to, code }: { to: string; code: s
   })
 }
 
+// ─── Abandoned Cart Reminder (InstaPay متروك بدون دفع) ───────────────────────
+
+export async function sendAbandonedCartReminder({
+  to,
+  invoiceNumber,
+  items,
+  total,
+  paymentUrl,
+}: {
+  to: string
+  invoiceNumber: string
+  items: { name: string; color: string; size: string; quantity: number }[]
+  total: number
+  paymentUrl: string
+}) {
+  const itemsRows = items.map((item) => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #e5e5e5;font-size:14px" class="divider">
+        ${item.name} — ${item.color} / ${item.size} × ${item.quantity}
+      </td>
+    </tr>
+  `).join("")
+
+  const content = `
+    <h1 style="font-size:22px;font-weight:600;margin:0 0 8px">Your Order Is Waiting</h1>
+    <p class="muted" style="font-size:14px;color:#888888;margin:0 0 28px">
+      We saved your order ${invoiceNumber} — just complete the InstaPay transfer to confirm it.
+    </p>
+
+    ${card(`
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${itemsRows}
+        <tr>
+          <td style="padding:14px 0 0;font-size:14px;font-weight:600">Total</td>
+        </tr>
+        <tr>
+          <td style="padding:2px 0 0;font-size:18px;font-weight:700">${total.toLocaleString()} EGP</td>
+        </tr>
+      </table>
+    `)}
+
+    <div style="text-align:center;margin:28px 0 8px">
+      <a href="${paymentUrl}" style="display:inline-block;background:#111111;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:4px">
+        Complete Payment
+      </a>
+    </div>
+
+    <p class="muted" style="font-size:12px;color:#888888;margin:24px 0 0;text-align:center">
+      Your items are reserved, but stock isn't guaranteed forever.
+    </p>
+  `
+
+  await resend.emails.send({
+    from: "2Z Store <orders@2zstore.com>",
+    to,
+    subject: `Complete your order ${invoiceNumber} — 2Z`,
+    html: base(content),
+  })
+}
+
 // ─── Admin Notification ───────────────────────────────────────────────────────
 
 export async function sendAdminNotification({

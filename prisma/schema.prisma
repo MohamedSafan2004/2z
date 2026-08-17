@@ -91,6 +91,7 @@ model Order {
   confirmationEmailSent Boolean       @default(false)
   adminEmailSent        Boolean       @default(false)
   sheetSynced           Boolean       @default(false)
+  abandonedCartEmailSentAt DateTime?  // وقت إرسال ريمايندر الـ InstaPay المتروك بدون دفع — null لحد ما يتبعت
 
   // ─── Bosta — متفعّلة بالكامل (lib/bosta.ts + lib/bosta-sync.ts + زرار "Send to Bosta" في الأدمن) ───
   bostaDeliveryId       String?       @unique // معرف الشحنة عند Bosta
@@ -103,6 +104,7 @@ model Order {
   @@index([createdAt])
   @@index([userId])
   @@index([paymobTransactionId])
+  @@index([status])
 }
 
 model OrderItem {
