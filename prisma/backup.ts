@@ -9,9 +9,9 @@ dotenv.config()
 const TABLES = ["User", "Category", "Product", "ProductVariant", "Order", "OrderItem"]
 
 async function backup() {
-  const connectionString = process.env.DIRECT_DATABASE_URL
+  const connectionString = process.env.DIRECT_URL || process.env.DIRECT_DATABASE_URL
   if (!connectionString) {
-    throw new Error("DIRECT_DATABASE_URL is not set")
+    throw new Error("DIRECT_URL (or DIRECT_DATABASE_URL) is not set")
   }
 
   const pool = new Pool({ connectionString })

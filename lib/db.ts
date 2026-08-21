@@ -7,15 +7,26 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient(): PrismaClient {
-  const connectionString = process.env.DIRECT_DATABASE_URL
+  // مهم جداً: لازم DATABASE_URL (transaction pooler — بورت 6543) مش DIRECT_URL
+  // (session pooler — بورت 5432). في serverless (Vercel)، كل function instance
+  // بتفتح Pool خاص بيها، والـ session pooler بتاع Supabase محدود بـ 15 client
+  // بس على مستوى المشروع كله — بيتاكل بسرعة مع أي زيارتين/تلاتة متزامنة
+  // ويطلع (EMAXCONNSESSION). الـ transaction pooler مصمم بالظبط للحالة دي.
+  // DIRECT_URL يفضل للاستخدام بس في سكريبتات prisma/*.ts اللي بتشتغل مرة واحدة
+  // من التيرمينال (seed, backup, إلخ) مش في التطبيق اللايف.
+  const connectionString =
+    process.env.DATABASE_URL || process.env.DIRECT_URL || process.env.DIRECT_DATABASE_URL
 
   if (!connectionString) {
-    throw new Error("DIRECT_DATABASE_URL is not set")
+    throw new Error("DATABASE_URL is not set")
   }
 
   const pool = new Pool({
     connectionString,
-    max: 10,              // max connections في الـ pool
+    // max صغير عمدياً: في serverless كل function instance بتفتح Pool منفصلة،
+    // فلو max كبير (10) والموقع بياخد زيارة معاملة، حتى transaction pooler
+    // ممكن يتضغط. 3 كفاية للأداء وأمان أكتر بكتير.
+    max: 3,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
   })

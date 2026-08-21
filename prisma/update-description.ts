@@ -10,7 +10,7 @@ import { Pool } from "pg"
 const NEW_DESCRIPTION = "100% premium interlock cotton, relaxed oversized boxy fit. Designed & made in Cairo, Egypt."
 
 async function main() {
-  const pool = new Pool({ connectionString: process.env.DIRECT_DATABASE_URL })
+  const pool = new Pool({ connectionString: process.env.DIRECT_URL || process.env.DIRECT_DATABASE_URL })
   const adapter = new PrismaPg(pool)
   const prisma = new PrismaClient({ adapter })
 
