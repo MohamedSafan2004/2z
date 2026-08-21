@@ -6,7 +6,13 @@ import { RevealSection } from "@/components/RevealSection"
 import { SkeletonBlock } from "@/components/Skeleton"
 import { ReviewsGallery } from "@/components/ReviewsGallery"
 
-export const dynamic = "force-dynamic"
+// بيتخزن لمدة 60 ثانية وبعدين بيتجدد تلقائياً — بدل force-dynamic اللي كانت بتعمل استعلام جديد
+// للداتابيز في *كل* زيارة (مفيش كاشينج خالص) ودة كانت سبب رئيسي في ضرب
+// الـ monthly query limit بتاع الداتابيز. 60 ثانية فرق محسوسش عملياً للزائر
+// (الستوك/السعر بيتحدث خلال دقيقة بالكتير لو الأدمن عدل حاجة)، بس بيوفر
+// آلاف الاستعلامات على الصفحة الأكتر زيارة في الموقع.
+export const revalidate = 60
+
 const colorImages: Record<string, string> = {
   BLACK: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-black.jpg",
   WHITE: "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-white.jpg",

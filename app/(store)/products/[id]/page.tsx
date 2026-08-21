@@ -2,7 +2,10 @@ import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import ProductDetailClient from "@/components/ProductDetailClient"
 
-export const dynamic = "force-dynamic"
+// بيتخزن لمدة 60 ثانية بدل force-dynamic — نفس السبب اللي في Home وProducts. الصفحة دي بتتفتح
+// لكل منتج، وكانت بتعمل findUnique + findMany كاملين في *كل* زيارة بدون أي كاشينج.
+export const revalidate = 60
+
 async function getProduct(id: string) {
   const product = await db.product.findUnique({
     where: { id },
