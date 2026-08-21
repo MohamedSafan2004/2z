@@ -22,9 +22,9 @@ interface OrderSummaryBodyProps {
   gifts: GiftItemLike[]
   giftDisplayValue: number
   subtotal: number
-  discountValue: number
-  discountPercent: number
-  discountLabel: string
+  tierDiscountAmount: number
+  tierDiscountPercent: number
+  promoDiscountAmount: number
   shippingCost: number
   shippingLabel: string
   isFreeShipping?: boolean
@@ -41,7 +41,7 @@ interface OrderSummaryBodyProps {
 }
 
 export default function OrderSummaryBody({
-  items, gifts, giftDisplayValue, subtotal, discountValue, discountPercent, discountLabel, shippingCost, shippingLabel, isFreeShipping, finalTotal,
+  items, gifts, giftDisplayValue, subtotal, tierDiscountAmount, tierDiscountPercent, promoDiscountAmount, shippingCost, shippingLabel, isFreeShipping, finalTotal,
   promoInput, onPromoInputChange, promoApplied, promoDiscount, promoLoading, promoError, promoSuccess,
   onApplyPromo, onRemovePromo,
 }: OrderSummaryBodyProps) {
@@ -98,10 +98,17 @@ export default function OrderSummaryBody({
           </div>
         )}
 
-        {discountValue > 0 && (
+        {tierDiscountAmount > 0 && (
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-            <span style={{ fontSize: "12.5px", color: "rgba(240,237,230,0.6)" }}>{discountLabel} ({discountPercent}%)</span>
-            <span style={{ fontSize: "12.5px", color: "rgba(240,237,230,0.8)" }}>− {discountValue} EGP</span>
+            <span style={{ fontSize: "12.5px", color: "rgba(240,237,230,0.6)" }}>Quantity discount ({tierDiscountPercent}%)</span>
+            <span style={{ fontSize: "12.5px", color: "rgba(240,237,230,0.8)" }}>− {tierDiscountAmount} EGP</span>
+          </div>
+        )}
+
+        {promoDiscountAmount > 0 && (
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+            <span style={{ fontSize: "12.5px", color: "rgba(240,237,230,0.6)" }}>Promo{promoApplied ? ` ${promoApplied}` : ""} ({promoDiscount}%)</span>
+            <span style={{ fontSize: "12.5px", color: "rgba(240,237,230,0.8)" }}>− {promoDiscountAmount} EGP</span>
           </div>
         )}
 

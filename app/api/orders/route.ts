@@ -101,7 +101,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "You are not eligible for a free gift with this order" }, { status: 400 })
     }
 
+    // ─── Tiered quantity discount ────────────────────────────────────────────
+    // بيتحسب على إجمالي عدد القطع المدفوعة في الأوردر (مش شامل هدايا الـ bundle)
+    // — 1 قطعة = 10%، 2 = 15%، 3 = 20%، 4+ = 25%. بيتحسب الأول قبل أي حاجة
+    // تانية، على السعر بعد خصم الـ bundle مباشرة.
+    const paidQuantity = items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0)
+    const tierPercent = getTierDiscountPercent(paidQuantity)
+    const afterPromotion = subtotal - promotionDiscount
+    const tierDiscountAmount = Math.round((afterPromotion * tierPercent) / 100)
+
     // ─── Promo Code ───────────────────────────────────────────────────────────
+    // تراكمي فوق خصم الكمية — مش الأعلى بس. البرومو كود بيتحسب على القيمة
+    // الباقية بعد ما خصم الكمية اتطرح بالفعل (مش على subtotal الأصلي)، فمثلاً
+    // خصم كمية 15% + كود 10% مبيبقوش 25% مجمّعين على نفس السعر الأصلي، لكن
+    // 10% من الرقم الأصغر اللي فضل بعد الـ 15%.
     let promoDiscountAmount = 0
     let validatedPromoCode: string | null = null
     let promoId: string | null = null
@@ -140,37 +153,19 @@ export async function POST(req: NextRequest) {
           : null
 
         if (!usedByPhone && !usedByUser) {
-          // الكود بيتحسب على السعر بعد خصم الـ bundle (تسلسلي مش على الأصلي)
-          const afterPromotion = subtotal - promotionDiscount
-          promoDiscountAmount = Math.round((afterPromotion * promo.discount) / 100)
+          // الكود بيتحسب على السعر بعد خصم الـ bundle *و* خصم الكمية مع بعض
+          const afterTierDiscount = afterPromotion - tierDiscountAmount
+          promoDiscountAmount = Math.round((afterTierDiscount * promo.discount) / 100)
           validatedPromoCode = promo.code
           promoId = promo.id
         }
       }
     }
 
-    // ─── Tiered quantity discount ────────────────────────────────────────────
-    // بيتحسب على إجمالي عدد القطع المدفوعة في الأوردر (مش شامل هدايا الـ bundle)
-    // — 1 قطعة = 10%، 2 = 20%، 3 = 30%، 4+ = 40%. مش تراكمي مع البرومو كود؛
-    // لو الاتنين ينطبقوا، ناخد الأعلى بس (حماية من خصومات مضاعفة فوق الـ margin).
-    const paidQuantity = items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0)
-    const tierPercent = getTierDiscountPercent(paidQuantity)
-    const afterPromotionForTier = subtotal - promotionDiscount
-    const tierDiscountAmount = Math.round((afterPromotionForTier * tierPercent) / 100)
-
-    let discountAmount: number
-    let appliedTierPercent = 0
-    if (tierDiscountAmount > promoDiscountAmount) {
-      // خصم الكمية أعلى — نطبقه هو ونلغي البرومو كود من الأوردر (مينفعش يترصد
-      // كاستخدام فعلي وهو أصلاً معملوش تأثير على السعر)
-      discountAmount = tierDiscountAmount
-      appliedTierPercent = tierPercent
-      validatedPromoCode = null
-      promoId = null
-    } else {
-      // البرومو كود أعلى أو متساوي — يفضل هو الفعّال، ومفيش تسجيل لخصم الكمية
-      discountAmount = promoDiscountAmount
-    }
+    // الاتنين تراكميين — خصم الكمية بيتسجل دايمًا (طالما paidQuantity >= 1)،
+    // والبرومو كود بيتضاف فوقه لو العميل استخدم كود صالح
+    const appliedTierPercent = tierPercent
+    const discountAmount = tierDiscountAmount + promoDiscountAmount
 
     // الفري شيبينج بيتحسب على المبلغ الفعلي اللي العميل هيدفعه في المنتجات (بعد خصم الـ bundle + promo code)
     const amountAfterDiscounts = subtotal - promotionDiscount - discountAmount

@@ -115,19 +115,13 @@ export default function CheckoutPage() {
   }, 0)
 
   // ─── Tiered quantity discount (preview) ────────────────────────────────────
-  // نفس المنطق بالظبط الموجود في app/api/orders/route.ts — لو الاتنين (tier وpromo) ينطبقوا،
-  // ناخد الأعلى بس (مش تراكمي). القيمة النهائية بتتحدد فعليًا في السيرفر، ده preview بسة
-  // للعميل قبل ما يدفع.
+  // خصم الكمية يتحسب الأول، والبرومو كود بيتحسب بعدين على القيمة الباقية (تراكمي بترتيب، مش الأعلى بس)؛ نفس منطق app/api/orders/route.ts بالظبط.
   const paidQuantity = items.reduce((sum, i) => sum + i.quantity, 0)
   const tierPercent = getTierDiscountPercent(paidQuantity)
   const tierDiscountAmount = Math.round((subtotal * tierPercent) / 100)
-  const promoDiscountAmount = promoApplied ? Math.round((subtotal * promoDiscount) / 100) : 0
-
-  // الخصم المطبق فعليًا هو الأعلى بين الاتنين
-  const tierIsWinning = tierDiscountAmount > promoDiscountAmount
-  const activeDiscountPercent = tierIsWinning ? tierPercent : promoDiscount
-  const discountValue = tierIsWinning ? tierDiscountAmount : promoDiscountAmount
-  const discountSourceLabel = tierIsWinning ? "Quantity discount" : "Discount"
+  const afterTierDiscount = subtotal - tierDiscountAmount
+  const promoDiscountAmount = promoApplied ? Math.round((afterTierDiscount * promoDiscount) / 100) : 0
+  const discountValue = tierDiscountAmount + promoDiscountAmount
 
   const amountAfterDiscounts = subtotal - discountValue
   const shippingCost   = getFinalShippingCost(zone, amountAfterDiscounts)
@@ -363,7 +357,7 @@ export default function CheckoutPage() {
               <div style={{ fontSize: "10.5px", color: "rgba(240,237,230,0.45)", letterSpacing: "0.02em" }}>
                 {itemCount} item{itemCount !== 1 ? "s" : ""}
                 {` · Shipping ${isFreeShipping ? "Free" : `${shippingCost} EGP`}`}
-                {discountValue > 0 && ` · ${activeDiscountPercent}% off`}
+                {discountValue > 0 && ` · ${discountValue} EGP off`}
               </div>
             </div>
             <button
@@ -441,9 +435,9 @@ export default function CheckoutPage() {
             gifts={validGifts}
             giftDisplayValue={giftDisplayValue}
             subtotal={subtotal}
-            discountValue={discountValue}
-            discountPercent={activeDiscountPercent}
-            discountLabel={discountSourceLabel}
+            tierDiscountAmount={tierDiscountAmount}
+            tierDiscountPercent={tierPercent}
+            promoDiscountAmount={promoDiscountAmount}
             shippingCost={shippingCost}
             shippingLabel={SHIPPING_LABELS[zone]}
             isFreeShipping={isFreeShipping}
@@ -684,10 +678,16 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {discountValue > 0 && (
+                {tierDiscountAmount > 0 && (
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "9px" }}>
-                    <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>{discountSourceLabel} ({activeDiscountPercent}%)</span>
-                    <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.8)" }}>− {discountValue} EGP</span>
+                    <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>Quantity discount ({tierPercent}%)</span>
+                    <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.8)" }}>− {tierDiscountAmount} EGP</span>
+                  </div>
+                )}
+                {promoDiscountAmount > 0 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "9px" }}>
+                    <span style={{ fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>Promo{promoApplied ? ` ${promoApplied}` : ""} ({promoDiscount}%)</span>
+                    <span style={{ fontSize: "11px", color: "rgba(240,237,230,0.8)" }}>− {promoDiscountAmount} EGP</span>
                   </div>
                 )}
 
