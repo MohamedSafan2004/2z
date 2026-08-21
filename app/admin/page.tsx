@@ -353,7 +353,7 @@ export default function AdminPage() {
         <div style={{ marginBottom: "48px", paddingBottom: "40px", borderBottom: "1px solid rgba(240,237,230,0.06)" }}>
           <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgb(179 149 26)", marginBottom: "12px" }}>Admin Dashboard</p>
           <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "clamp(42px, 7vw, 72px)", fontWeight: 300, lineHeight: 1, margin: 0, color: "#f0ede6" }}>
-            Welcome <em style={{ fontStyle: "italic", color: "rgba(240,237,230,0.35)" }}>Mr.7dido</em>
+            Welcome <em style={{ fontStyle: "italic", color: "rgba(9, 159, 56, 0.35)" }}>Mr.7dido</em>
           </h1>
         </div>
 
