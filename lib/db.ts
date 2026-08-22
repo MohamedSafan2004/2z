@@ -28,7 +28,13 @@ function createPrismaClient(): PrismaClient {
     // ممكن يتضغط. 3 كفاية للأداء وأمان أكتر بكتير.
     max: 3,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    // 5 ثواني كانت قصيرة جداً وقت الـ build (npm run build) — بتعمل عدة
+    // اتصالات متتالية بالـ Supabase pooler لكل صفحة بتحتاج بيانات، ولو فيه أي
+    // بطء لحظي في الشبكة أو في الـ pooler نفسه بيفشل الاتصال بسرعة
+    // ("Connection terminated due to connection timeout"). 15 ثانية كافية
+    // كمساحة أمان من غير ما تأثر على السرعة الفعلية وقت التشغيل العادي
+    // (لو الاتصال سليم بيتم في أجزاء من الثانية زي ما هو).
+    connectionTimeoutMillis: 15000,
   })
 
   const adapter = new PrismaPg(pool)

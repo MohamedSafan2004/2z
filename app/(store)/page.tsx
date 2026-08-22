@@ -412,7 +412,7 @@ export default function Home() {
           font-size: 9px;
           letter-spacing: 0.3em;
           text-transform: uppercase;
-          color: rgba(240,237,230,0.65);
+          color: rgb(240, 237, 230);
           white-space: nowrap;
         }
         .marquee-dot { color: rgba(240,237,230,0.15); margin-left: 48px; }
@@ -441,7 +441,7 @@ export default function Home() {
 
         .newin-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; flex-wrap: wrap; gap: 10px; }
         .newin-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: #f0ede6; }
-        .newin-viewall { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.55); text-decoration: none; border-bottom: 1px solid rgba(240,237,230,0.3); padding-bottom: 1px; }
+        .newin-viewall { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: rgb(240, 237, 230); text-decoration: none; border-bottom: 1px solid rgba(255, 254, 253, 0.66); padding-bottom: 1px; }
 
         .newin-grid {
           display: flex;
@@ -587,7 +587,7 @@ export default function Home() {
         @media (min-width: 640px) { .bs-name { font-size: 24px; } .bs-name span { font-size: 17px; } }
 
         .bs-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-        .bs-cat { font-family: 'Space Mono', monospace; font-size: 7.5px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.45); white-space: nowrap; }
+        .bs-cat { font-family: 'Space Mono', monospace; font-size: 7.5px; letter-spacing: 0.15em; text-transform: uppercase; color: rgb(254, 254, 254); white-space: nowrap; }
         .bs-price { font-family: 'Space Mono', monospace; font-size: 13px; color: #f0ede6; white-space: nowrap; }
         @media (min-width: 640px) { .bs-price { font-size: 15px; } }
 

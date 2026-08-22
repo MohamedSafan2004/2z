@@ -126,9 +126,18 @@ export async function appendToSalesSheet(order: SyncOrder) {
     const productNameCell = productNames.join(", ")
 
     // كل الـ SKUs مجمعة في خلية واحدة — الهدايا متعلّم عليها "(هدية)" عشان تتفرق
+    // بنجيب كل الـ variants اللازمة في query واحد (مش findUnique لكل item لوحده) — لو الأوردر فيه 5 items،
+    // ده query واحد بدل 5 منفصلين
+    const variantIds = Array.from(new Set(order.items.map((it) => it.variantId)))
+    const variants = await db.productVariant.findMany({
+      where: { id: { in: variantIds } },
+      select: { id: true, sku: true },
+    })
+    const variantById = new Map(variants.map((v) => [v.id, v]))
+
     const skuParts: string[] = []
     for (const item of order.items) {
-      const variant = await db.productVariant.findUnique({ where: { id: item.variantId } })
+      const variant = variantById.get(item.variantId)
       const sku = variant?.sku || item.variantId.slice(0, 8).toUpperCase()
       skuParts.push(item.isGift ? `${sku} (هدية)` : sku)
     }

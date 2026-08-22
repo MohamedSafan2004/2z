@@ -660,7 +660,7 @@ export default function ProductDetailClient({
           font-size: 9px;
           letter-spacing: 0.15em;
           text-transform: uppercase;
-          color: rgba(240,237,230,0.45);
+          color: rgb(249, 248, 245);
           white-space: nowrap;
         }
         .other-colors-swatches {
