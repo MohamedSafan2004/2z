@@ -53,8 +53,29 @@ export default async function ProductsPage() {
         }
         .p-card { animation: fadeUp 0.5s ease both; text-decoration: none; display: block; }
         .p-img  { transition: transform 0.7s ease, opacity 0.5s ease; }
-        .p-card:hover .p-img { transform: scale(1.04); opacity: 0.75 !important; }
+        .p-card:hover .p-img { transform: scale(1.04); opacity: 0.92 !important; }
         .p-card:hover .p-name { color: rgba(240,237,230,0.7) !important; }
+
+        /* ── Sold out badge on product cards ── */
+        .card-soldout-badge {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          z-index: 2;
+          display: inline-flex;
+          align-items: center;
+          font-family: 'Space Mono', monospace;
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: rgba(240,237,230,0.75);
+          background: rgba(8,8,8,0.75);
+          backdrop-filter: blur(6px);
+          border: 1px solid rgba(240,237,230,0.2);
+          padding: 4px 8px;
+        }
+        .p-card.soldout .p-img { filter: grayscale(60%); }
 
         /* ── Sale badge on cards ── */
         @keyframes cardSaleShine {
@@ -236,27 +257,30 @@ export default async function ProductsPage() {
           {products.map((p, i) => {
             const color = p.variants?.[0]?.color || "BLACK"
             const colorLabel = color ? color.charAt(0) + color.slice(1).toLowerCase() : ""
+            const isSoldOut = p.variants?.length > 0 && p.variants.every((v) => v.stockQuantity === 0)
             return (
             <Link
               href={`/products/${p.id}`}
               key={p.id}
-              className="p-card"
+              className={`p-card ${isSoldOut ? "soldout" : ""}`}
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "#111", position: "relative" }}>
-                {p.originalPrice && p.originalPrice > p.price && (
+                {isSoldOut ? (
+                  <span className="card-soldout-badge">Sold Out</span>
+                ) : p.originalPrice && p.originalPrice > p.price ? (
                   <span className="card-sale-badge">Sale</span>
-                )}
+                ) : null}
                 <img
                   src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
                   alt={`Oversize T-Shirt — ${colorLabel}`}
                   loading="lazy"
                   className="p-img"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.65 }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", opacity: isSoldOut ? 0.45 : 0.88 }}
                 />
                 <div style={{
                   position: "absolute", inset: 0,
-                  background: "linear-gradient(to top, #080808 0%, transparent 55%)",
+                  background: "linear-gradient(to top, #080808 0%, rgba(8,8,8,0.75) 12%, transparent 42%)",
                 }} />
 
                 <div style={{ position: "absolute", bottom: "16px", left: "16px", right: "16px" }}>

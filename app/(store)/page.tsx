@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Suspense } from "react"
 import { db } from "@/lib/db"
 import { RevealSection } from "@/components/RevealSection"
+import { NewInScrollProgress } from "@/components/NewInScrollProgress"
 import { SkeletonBlock } from "@/components/Skeleton"
 import { ReviewsGallery } from "@/components/ReviewsGallery"
 
@@ -83,9 +84,9 @@ async function NewInSection() {
         const color = p.variants?.[0]?.color || ""
         const colorLabel = color ? color.charAt(0) + color.slice(1).toLowerCase() : ""
         return (
-          <RevealSection key={p.id} delay={i * 100}>
-            <Link href={`/products/${p.id}`} className="product-card" style={{ display: "block", textDecoration: "none" }}>
-              <div style={{ aspectRatio: "3/4", position: "relative", overflow: "hidden", background: "#111" }}>
+          <RevealSection key={p.id} delay={i * 100} className="newin-reveal-item">
+            <Link href={`/products/${p.id}`} className="product-card newin-card" style={{ display: "block", textDecoration: "none", width: "100%" }}>
+              <div style={{ aspectRatio: "3/4", width: "100%", position: "relative", overflow: "hidden", background: "#111" }}>
                 {p.originalPrice && p.originalPrice > p.price && (
                   <span className="card-sale-badge">Sale</span>
                 )}
@@ -97,7 +98,7 @@ async function NewInSection() {
                   className="card-img"
                   style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
                 />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, rgba(8,8,8,0.55) 22%, transparent 48%)" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #080808 0%, rgba(8,8,8,0.7) 10%, transparent 38%)" }} />
                 <div style={{ position: "absolute", bottom: "12px", left: "12px", right: "12px" }}>
                   <p className="newin-name">
                     Oversize T-Shirt<br />
@@ -442,8 +443,54 @@ export default function Home() {
         .newin-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: #f0ede6; }
         .newin-viewall { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.55); text-decoration: none; border-bottom: 1px solid rgba(240,237,230,0.3); padding-bottom: 1px; }
 
-        .newin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(240,237,230,0.06); max-width: 100%; }
-        @media (min-width: 640px) { .newin-grid { grid-template-columns: repeat(4, 1fr); } }
+        .newin-grid {
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+          padding: 0 20px 6px;
+          margin: 0 -20px;
+          scroll-snap-type: x mandatory;
+          scrollbar-width: none;
+          max-width: 100vw;
+          position: relative;
+        }
+        .newin-grid::-webkit-scrollbar { display: none; }
+        .newin-card {
+          flex: 0 0 42vw;
+          max-width: 190px;
+          scroll-snap-align: start;
+        }
+        .newin-reveal-item { flex: 0 0 42vw; max-width: 190px; }
+        @media (min-width: 640px) {
+          .newin-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: rgba(240,237,230,0.06);
+            overflow-x: visible;
+            padding: 0;
+            margin: 0;
+            scroll-snap-type: none;
+          }
+          .newin-card { flex: none; max-width: none; }
+          .newin-reveal-item { flex: none; max-width: none; }
+        }
+
+        .newin-scroll-wrap { position: relative; }
+
+        .newin-progress-track {
+          height: 1px;
+          background: rgba(240,237,230,0.08);
+          margin: 12px 20px 0;
+          position: relative;
+          overflow: hidden;
+        }
+        .newin-progress-fill {
+          position: absolute; left: 0; top: 0; height: 100%;
+          background: rgba(240,237,230,0.4);
+          transition: width 0.15s ease, transform 0.1s linear;
+        }
+        @media (min-width: 640px) { .newin-progress-track { display: none; } }
 
         .card-img { transition: transform 0.8s ease, opacity 0.6s ease; }
         .product-card:hover .card-img { transform: scale(1.05); opacity: 0.95; }
@@ -610,6 +657,8 @@ export default function Home() {
           alt="2Z Minimal Streetwear"
           fetchPriority="high"
           loading="eager"
+          decoding="sync"
+          sizes="100vw"
           className="hero-img"
         />
 
@@ -693,11 +742,14 @@ export default function Home() {
             <Link href="/products" className="newin-viewall">View All</Link>
           </div>
         </RevealSection>
-        <div className="newin-grid">
-          <Suspense fallback={<NewInSkeleton />}>
-            <NewInSection />
-          </Suspense>
+        <div className="newin-scroll-wrap">
+          <div className="newin-grid">
+            <Suspense fallback={<NewInSkeleton />}>
+              <NewInSection />
+            </Suspense>
+          </div>
         </div>
+        <NewInScrollProgress />
       </section>
 
       {/* ── REVIEWS ── */}

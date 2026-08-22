@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react"
 
-export function RevealSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+export function RevealSection({ children, delay = 0, className }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const el = ref.current
@@ -23,5 +23,5 @@ export function RevealSection({ children, delay = 0 }: { children: React.ReactNo
     observer.observe(el)
     return () => observer.disconnect()
   }, [delay])
-  return <div ref={ref}>{children}</div>
+  return <div ref={ref} className={className}>{children}</div>
 }
