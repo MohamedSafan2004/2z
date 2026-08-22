@@ -28,18 +28,22 @@ const colorImages: Record<string, string[]> = {
   ],
   GREY: [
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey-7.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey-2.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey-3.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey-4.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey-5.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-grey-6.jpg",
   ],
   BEIGE: [
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-8.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-2.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-3.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-4.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-5.jpg",
     "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-6.jpg",
+    "https://res.cloudinary.com/ghetnovd/image/upload/2z-store/tee-beige-7.jpg",
   ],
 }
 
