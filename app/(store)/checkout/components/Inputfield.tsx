@@ -50,7 +50,7 @@ export default function InputField({
 
   return (
     <div>
-      <label style={{ fontSize: "10.5px", letterSpacing: "0.06em", color: "rgba(240,237,230,0.5)", marginBottom: "9px", display: "block" }}>
+      <label style={{ fontSize: "10.5px", letterSpacing: "0.06em", color: "#f0ede6", marginBottom: "9px", display: "block" }}>
         {label}
       </label>
       {multiline ? (

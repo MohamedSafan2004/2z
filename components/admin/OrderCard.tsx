@@ -54,6 +54,7 @@ type OrderCardProps = {
   bostaSendingId: string | null
   bostaError: { orderId: string; message: string } | null
   bostaSuccessId: string | null
+  isRepeatCustomer?: boolean
 }
 
 // Type scale ثابت للكارت كله — بدل ما كل نص يبقى له حجم مختلف عشوائي (كان في
@@ -94,6 +95,7 @@ function OrderCardComponent({
   bostaSendingId,
   bostaError,
   bostaSuccessId,
+  isRepeatCustomer,
 }: OrderCardProps) {
   const customerPhone = order.phone || order.user?.phone
   const customerName  = order.user?.name || "Guest"
@@ -136,7 +138,14 @@ function OrderCardComponent({
 
       <div style={{ paddingBottom: "16px", marginBottom: "16px", borderBottom: "1px solid rgba(240,237,230,0.08)" }}>
         <p style={{ fontSize: FONT.label, letterSpacing: "0.15em", textTransform: "uppercase", color: TXT.label, marginBottom: "10px", fontWeight: 600 }}>Customer</p>
-        <p style={{ fontSize: FONT.body, color: TXT.primary, marginBottom: "4px", fontWeight: 500 }}>{customerName}</p>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px", flexWrap: "wrap" }}>
+          <p style={{ fontSize: FONT.body, color: TXT.primary, margin: 0, fontWeight: 500 }}>{customerName}</p>
+          {isRepeatCustomer && (
+            <span title="له أوردر تاني في نفس الصفحة الحالية" style={{ fontSize: "9px", letterSpacing: "0.04em", padding: "2px 7px", borderRadius: "2px", color: "rgba(190,160,255,1)", background: "rgba(150,120,255,0.12)", border: "1px solid rgba(150,120,255,0.35)", fontWeight: 500 }}>
+              🔁 عميل متكرر
+            </span>
+          )}
+        </div>
         {customerPhone && <p style={{ fontSize: FONT.meta, color: TXT.secondary, marginBottom: "3px" }}>{customerPhone}</p>}
         {customerEmail && <p style={{ fontSize: FONT.meta, color: TXT.tertiary, marginBottom: "3px" }}>{customerEmail}</p>}
         {order.address && <p style={{ fontSize: FONT.meta, color: TXT.secondary, marginTop: "8px", lineHeight: 1.6 }}>{order.address}</p>}
@@ -261,7 +270,8 @@ function areEqual(prev: OrderCardProps, next: OrderCardProps) {
     (prev.bostaSendingId === prev.order.id) === (next.bostaSendingId === next.order.id) &&
     prev.bostaError?.orderId === next.bostaError?.orderId &&
     prev.bostaError?.message === next.bostaError?.message &&
-    (prev.bostaSuccessId === prev.order.id) === (next.bostaSuccessId === next.order.id)
+    (prev.bostaSuccessId === prev.order.id) === (next.bostaSuccessId === next.order.id) &&
+    prev.isRepeatCustomer === next.isRepeatCustomer
   )
 }
 

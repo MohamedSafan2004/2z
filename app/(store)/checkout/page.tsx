@@ -380,7 +380,7 @@ export default function CheckoutPage() {
               <InputField label="Full name" value={name} onChange={setName} />
               <InputField label="Phone" type="tel" value={phone} onChange={setPhone} placeholder="01XXXXXXXXX" />
               <div>
-                <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.7)", marginBottom: "8px", display: "block" }}>City *</label>
+                <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#f0ede6", marginBottom: "8px", display: "block" }}>City <span style={{ color: "#c8f04f" }}>*</span></label>
                 <select
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
@@ -394,7 +394,7 @@ export default function CheckoutPage() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: "14px", border: "1.5px solid rgba(240,237,230,0.14)", background: "rgba(255,255,255,0.015)" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                   <span style={{ fontSize: "14.5px", letterSpacing: "0.01em" }}>Standard Delivery</span>
-                  <span style={{ fontSize: "10.5px", color: "rgba(240,237,230,0.4)" }}>Shipping all over Egypt · 2–4 business days</span>
+                  <span style={{ fontSize: "10.5px", color: "#f0ede6" }}>Shipping all over Egypt · 2–4 business days</span>
                 </div>
                 <span style={{ fontSize: "14px", color: "rgba(240,237,230,0.9)", flexShrink: 0 }}>{SHIPPING_RATES.egypt} EGP</span>
               </div>
@@ -459,7 +459,7 @@ export default function CheckoutPage() {
       <div className="checkout-desktop-view">
         <div style={{ maxWidth: "1020px", margin: "0 auto", padding: "48px 24px 100px" }}>
 
-          <p style={{ fontSize: "10px", letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "8px" }}>Almost there</p>
+          <p style={{ fontSize: "10px", letterSpacing: "0.32em", textTransform: "uppercase", color: "#c8f04f", marginBottom: "8px" }}>Almost there</p>
           <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "38px", fontWeight: 300, color: "#f0ede6", marginBottom: "20px", letterSpacing: "-0.01em" }}>Checkout</h1>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "44px" }}>
@@ -482,35 +482,35 @@ export default function CheckoutPage() {
               {/* Section 1 — Contact */}
               <div style={{ padding: "0 0 32px", marginBottom: "32px", borderBottom: "1px solid rgba(240,237,230,0.08)" }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginBottom: "22px" }}>
-                  <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.3)", letterSpacing: "0.05em" }}>01</span>
+                  <span style={{ fontSize: "10px", color: "#c8f04f", letterSpacing: "0.05em" }}>01</span>
                   <span style={{ fontSize: "10px", letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(240,237,230,0.85)" }}>Contact</span>
                 </div>
                 <div>
-                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "8px", display: "block" }}>Email *</label>
+                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#f0ede6", marginBottom: "8px", display: "block" }}>Email <span style={{ color: "#c8f04f" }}>*</span></label>
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" style={{ width: "100%", padding: "13px 14px", background: "transparent", border: "1px solid rgba(240,237,230,0.18)", color: "#f0ede6", fontFamily: "Space Mono, monospace", fontSize: "12px", outline: "none", boxSizing: "border-box" }} />
-                  <p style={{ fontSize: "8.5px", color: "rgba(240,237,230,0.4)", marginTop: "7px", letterSpacing: "0.04em", lineHeight: 1.6 }}>Order updates will be sent to this email — no account needed</p>
+                  <p style={{ fontSize: "8.5px", color: "#f0ede6", marginTop: "7px", letterSpacing: "0.04em", lineHeight: 1.6 }}>Order updates will be sent to this email — no account needed</p>
                 </div>
               </div>
 
               {/* Section 2 — Delivery */}
               <div style={{ padding: "0 0 32px", marginBottom: "32px", borderBottom: "1px solid rgba(240,237,230,0.08)" }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginBottom: "22px" }}>
-                  <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.3)", letterSpacing: "0.05em" }}>02</span>
+                  <span style={{ fontSize: "10px", color: "#c8f04f", letterSpacing: "0.05em" }}>02</span>
                   <span style={{ fontSize: "10px", letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(240,237,230,0.85)" }}>Delivery</span>
                 </div>
 
                 <div style={{ marginBottom: "18px" }}>
-                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "8px", display: "block" }}>Full name *</label>
+                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#f0ede6", marginBottom: "8px", display: "block" }}>Full name <span style={{ color: "#c8f04f" }}>*</span></label>
                   <input type="text" value={name} onChange={(e) => setName(e.target.value)} style={{ width: "100%", padding: "13px 14px", background: "transparent", border: "1px solid rgba(240,237,230,0.18)", color: "#f0ede6", fontFamily: "Space Mono, monospace", fontSize: "12px", outline: "none", boxSizing: "border-box" }} />
                 </div>
 
                 <div style={{ marginBottom: "18px" }}>
-                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "8px", display: "block" }}>Phone *</label>
+                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#f0ede6", marginBottom: "8px", display: "block" }}>Phone <span style={{ color: "#c8f04f" }}>*</span></label>
                   <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="01XXXXXXXXX" style={{ width: "100%", padding: "13px 14px", background: "transparent", border: "1px solid rgba(240,237,230,0.18)", color: "#f0ede6", fontFamily: "Space Mono, monospace", fontSize: "12px", outline: "none", boxSizing: "border-box" }} />
                 </div>
 
                 <div style={{ marginBottom: "18px" }}>
-                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "8px", display: "block" }}>City *</label>
+                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#f0ede6", marginBottom: "8px", display: "block" }}>City <span style={{ color: "#c8f04f" }}>*</span></label>
                   <select
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
@@ -522,24 +522,24 @@ export default function CheckoutPage() {
                 </div>
 
                 <div style={{ marginBottom: "18px" }}>
-                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "8px", display: "block" }}>Delivery address *</label>
+                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#f0ede6", marginBottom: "8px", display: "block" }}>Delivery address <span style={{ color: "#c8f04f" }}>*</span></label>
                   <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} placeholder="Street, Area, Building, Floor" style={{ width: "100%", padding: "13px 14px", background: "transparent", border: "1px solid rgba(240,237,230,0.18)", color: "#f0ede6", fontFamily: "Space Mono, monospace", fontSize: "12px", outline: "none", boxSizing: "border-box", resize: "none" }} />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,230,0.55)", marginBottom: "8px", display: "block" }}>Delivery</label>
+                  <label style={{ fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#f0ede6", marginBottom: "8px", display: "block" }}>Delivery</label>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 16px", border: "1px solid rgba(240,237,230,0.18)" }}>
                     <span style={{ fontSize: "11px", letterSpacing: "0.05em" }}>Standard Delivery — all over Egypt</span>
                     <span style={{ fontSize: "10.5px", color: "rgba(240,237,230,0.85)", flexShrink: 0 }}>{SHIPPING_RATES.egypt} EGP</span>
                   </div>
-                  <p style={{ fontSize: "8.5px", color: "rgba(240,237,230,0.4)", marginTop: "7px", letterSpacing: "0.04em", lineHeight: 1.6 }}>2–4 business days</p>
+                  <p style={{ fontSize: "8.5px", color: "#f0ede6", marginTop: "7px", letterSpacing: "0.04em", lineHeight: 1.6 }}>2–4 business days</p>
                 </div>
               </div>
 
               {/* Section 3 — Payment */}
               <div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginBottom: "22px" }}>
-                  <span style={{ fontSize: "10px", color: "rgba(240,237,230,0.3)", letterSpacing: "0.05em" }}>03</span>
+                  <span style={{ fontSize: "10px", color: "#c8f04f", letterSpacing: "0.05em" }}>03</span>
                   <span style={{ fontSize: "10px", letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(240,237,230,0.85)" }}>Payment method</span>
                 </div>
                 <div style={{ border: "1px solid rgba(240,237,230,0.18)" }}>

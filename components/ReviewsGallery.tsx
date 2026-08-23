@@ -69,6 +69,10 @@ export function ReviewsGallery() {
           padding: 8px 4px 20px;
           margin: 0 -4px;
           scrollbar-width: none;
+          /* نفس مشكلة الـ New In section بالظبط: scroll-snap-type: x mandatory من غير touch-action
+             صريح كان بيخلي mobile swipe الرأسي للصفحة بيتلخبط مع الـ swipe الأفقي الداخلي بتاع
+             الكاروسيل. touch-action: pan-y بيخلي الحركة الرأسية دايمًا تعدي للصفحة. */
+          touch-action: pan-y;
         }
         .reviews-track::-webkit-scrollbar { display: none; }
 

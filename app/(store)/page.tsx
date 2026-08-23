@@ -453,6 +453,13 @@ export default function Home() {
           scrollbar-width: none;
           max-width: 100vw;
           position: relative;
+          /* مهم: بدون ده الـ scroll-snap-type: x mandatory كان بيلخبط mobile swipe الرأسي للصفحة
+             مع الـ swipe الأفقي الداخلي للكروت — المتصفح كان أحيانًا بيفسر أي swipe زي الـ
+             مقصود أفقي حتى لو الإصبع بيتحرك رأسي مع ميل بسيط للجنب. touch-action: pan-y
+             بيقول للمتصفح صراحة: الحركة الرأسية (pan-y) دايمًا تعدي للصفحة، والأفقي
+             فقط للـ swipe الداخلي بتاع الكروتل — مفيش لبس الموبايل (الـ CSS مليهشي فيها أصلًا
+             بيتحول لـ display: grid فوق 640px). */
+          touch-action: pan-y;
         }
         .newin-grid::-webkit-scrollbar { display: none; }
         .newin-card {
@@ -654,6 +661,7 @@ export default function Home() {
       <section className="hero-section">
         <img
           src={optimizeCloudinaryUrl("https://res.cloudinary.com/ghetnovd/image/upload/2z-store/hero.png", 1200)}
+          srcSet={[500, 800, 1200, 1600].map((w) => `${optimizeCloudinaryUrl("https://res.cloudinary.com/ghetnovd/image/upload/2z-store/hero.png", w)} ${w}w`).join(", ")}
           alt="2Z Minimal Streetwear"
           fetchPriority="high"
           loading="eager"

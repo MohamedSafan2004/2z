@@ -241,7 +241,28 @@ export default function AdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, hydrated, page, filterStatus, debouncedSearch])
 
+  // ترتيب التقدم الطبيعي للأوردر — مستخدم بس لتحديد لو التغيير "رجوع للخلف" (محتاج
+  // تأكيد)، مش لفرض أي ترتيب حقيقي على التدفق
+  const STATUS_ORDER = ["PENDING_PAYMENT", "PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED"]
+
   const updateStatus = async (orderId: string, status: string) => {
+    // تأكيد بس على التغييرات الخطرة: الإلغاء (CANCELLED) أو الرجوع لخطوة سابقة —
+    // أي تقدم طبيعي للأمام (مثلاً PENDING → CONFIRMED) بيتنفذ فوري زي ما كان
+    const current = orders.find((o) => o.id === orderId)
+    if (current && current.status !== status) {
+      const isCancel = status === "CANCELLED"
+      const currentIdx = STATUS_ORDER.indexOf(current.status)
+      const nextIdx = STATUS_ORDER.indexOf(status)
+      const isBackward = currentIdx !== -1 && nextIdx !== -1 && nextIdx < currentIdx
+
+      if (isCancel || isBackward) {
+        const confirmed = window.confirm(
+          `متأكد إنك عايز تغير الأوردر #${orderId.slice(0, 8).toUpperCase()} من ${current.status} لـ ${status}؟`
+        )
+        if (!confirmed) return
+      }
+    }
+
     const res = await fetch(`/api/admin/orders/${orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -461,13 +482,13 @@ export default function AdminPage() {
 
         <div style={{ display: "flex", gap: "8px", marginBottom: "24px", flexWrap: "wrap" }}>
           {statuses.map((s) => (
-            <button key={s} onClick={() => { setFilterStatus(s); setPage(1) }} style={{ padding: "6px 14px", fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", background: filterStatus === s ? "#f0ede6" : "transparent", color: filterStatus === s ? "#080808" : "rgba(240,237,230,0.4)", border: filterStatus === s ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.15)", cursor: "pointer", fontFamily: "Space Mono, monospace", transition: "all 0.2s" }}>
+            <button key={s} onClick={() => { setFilterStatus(s); setPage(1) }} style={{ padding: "7px 14px", fontSize: "10px", letterSpacing: "0.04em", borderRadius: "2px", fontWeight: filterStatus === s ? 600 : 400, background: filterStatus === s ? "#f0ede6" : "transparent", color: filterStatus === s ? "#080808" : "rgba(240,237,230,0.65)", border: filterStatus === s ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.2)", cursor: "pointer", fontFamily: "Space Mono, monospace", transition: "all 0.15s" }}>
               {s === "ALL" ? `All (${stats ? stats.totalOrders : "—"})` : `${s} (${stats ? (stats.byStatus[s] || 0) : "—"})`}
             </button>
           ))}
         </div>
 
-        <p style={{ fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,237,230,0.3)", marginBottom: "16px" }}>
+        <p style={{ fontSize: "11px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.5)", marginBottom: "16px" }}>
           {totalCount} order{totalCount !== 1 ? "s" : ""} — Page {page} of {totalPages || 1}
         </p>
 
@@ -484,25 +505,35 @@ export default function AdminPage() {
           <p style={{ fontSize: "10px", color: "rgba(240,237,230,0.2)", letterSpacing: "0.2em" }}>No orders found</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {orders.map((order) => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                formatDate={formatDate}
-                statusColor={statusColor}
-                statusBorder={statusBorder}
-                paymentStatusColor={paymentStatusColor}
-                onPrint={printPackingSlip}
-                onUpdateStatus={updateStatus}
-                onConfirmInstapay={confirmInstapay}
-                confirmingId={confirmingId}
-                confirmError={confirmError}
-                onSendToBosta={sendToBosta}
-                bostaSendingId={bostaSendingId}
-                bostaError={bostaError}
-                bostaSuccessId={bostaSuccessId}
-              />
-            ))}
+            {orders.map((order) => {
+              // لو نفس الرقم/الإيميل ظاهر في أوردر تاني في نفس الصفحة الحالية، نوري badge —
+              // مجرد إشارة، مش بحث فعلي لكل تاريخ العميل (الأوردرات في صفحات تانية مش محسوبة)
+              const orderKey = order.phone || order.user?.phone || order.guestEmail || order.user?.email
+              const isRepeatCustomer = orderKey
+                ? orders.some((o) => o.id !== order.id && (o.phone || o.user?.phone || o.guestEmail || o.user?.email) === orderKey)
+                : false
+
+              return (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  formatDate={formatDate}
+                  statusColor={statusColor}
+                  statusBorder={statusBorder}
+                  paymentStatusColor={paymentStatusColor}
+                  onPrint={printPackingSlip}
+                  onUpdateStatus={updateStatus}
+                  onConfirmInstapay={confirmInstapay}
+                  confirmingId={confirmingId}
+                  confirmError={confirmError}
+                  onSendToBosta={sendToBosta}
+                  bostaSendingId={bostaSendingId}
+                  bostaError={bostaError}
+                  bostaSuccessId={bostaSuccessId}
+                  isRepeatCustomer={isRepeatCustomer}
+                />
+              )
+            })}
           </div>
         )}
 

@@ -852,14 +852,6 @@ export default function ProductDetailClient({
               </div>
             </div>
 
-            <div style={{ height: "1px", background: "rgba(240,237,230,0.06)", marginBottom: "28px" }} />
-
-            {product.description && (
-              <p style={{ fontSize: "11px", lineHeight: 2, color: "rgba(240,237,230,0.65)", marginBottom: "28px", letterSpacing: "0.05em" }}>
-                {product.description}
-              </p>
-            )}
-
             <ProductInfoTabs />
 
             <div style={{ marginBottom: "12px" }}>
