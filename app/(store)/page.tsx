@@ -208,7 +208,7 @@ export default function Home() {
         .home-root {
           background: #080808;
           color: #f0ede6;
-          min-height: 100vh;
+          min-height: 100svh;
           width: 100%;
           overflow-x: hidden;
         }
@@ -242,11 +242,11 @@ export default function Home() {
           overflow: hidden;
           width: 100%;
           max-width: 100%;
-          height: 88vh;
+          height: 88svh;
           min-height: 560px;
         }
         @media (min-width: 768px) {
-          .hero-section { height: 100vh; min-height: 560px; max-height: 900px; }
+          .hero-section { height: 100svh; min-height: 560px; max-height: 900px; }
         }
 
         .hero-img {
@@ -268,6 +268,7 @@ export default function Home() {
         .hero-overlay {
           position: absolute;
           inset: 0;
+          pointer-events: none;
           background:
             linear-gradient(to bottom, rgba(8,8,8,0.05) 0%, transparent 22%, rgba(8,8,8,0.6) 64%, rgba(8,8,8,0.96) 88%, #080808 100%),
             linear-gradient(to right, rgba(8,8,8,0.3) 0%, transparent 45%);
@@ -315,6 +316,10 @@ export default function Home() {
         @media (min-width: 640px) { .hero-title { font-size: 80px; margin-bottom: 28px; } }
         @media (min-width: 900px) { .hero-title { font-size: 110px; } }
         @media (min-width: 1200px) { .hero-title { font-size: 120px; } }
+        /* تابلت (portrait أساسًا) — 900px breakpoint كان بيدي للـ hero-title حجم 110px
+           وده كبير جدًا نسبة لعرض التابلت. بنثبت مقاس وسطي لحد ما 1200px اللي بتبقى
+           للديسكتوب الحقيقي. */
+        @media (min-width: 900px) and (max-width: 1199px) { .hero-title { font-size: 85px; } }
 
         .hero-divider {
           height: 2px;
@@ -395,6 +400,7 @@ export default function Home() {
         }
         .marquee-wrap {
           overflow: hidden;
+          pointer-events: none;
           background: #0d0d0d;
           border-top: 1px solid rgba(240,237,230,0.08);
           border-bottom: 1px solid rgba(240,237,230,0.08);
@@ -449,7 +455,8 @@ export default function Home() {
           overflow-x: auto;
           padding: 0 20px 6px;
           margin: 0 -20px;
-          scroll-snap-type: x mandatory;
+          scroll-snap-type: x proximity;
+          overscroll-behavior-x: contain;
           scrollbar-width: none;
           max-width: 100vw;
           position: relative;
@@ -481,6 +488,11 @@ export default function Home() {
           }
           .newin-card { flex: none; max-width: none; }
           .newin-reveal-item { flex: none; max-width: none; }
+        }
+        /* تابلت — 4 أعمدة ضيقة جدًا على عرض تابلت. 3 أعمدة أوضح لحد ما الديسكتوب
+           الحقيقي فوق 1024px. */
+        @media (min-width: 640px) and (max-width: 1024px) {
+          .newin-grid { grid-template-columns: repeat(3, 1fr); }
         }
 
         .newin-scroll-wrap { position: relative; }
@@ -538,7 +550,7 @@ export default function Home() {
         @media (min-width: 640px) { .bestsellers-section { padding: 64px 24px 40px; } }
 
         .bs-list { display: flex; flex-direction: column; gap: 10px; max-width: 100%; }
-        @media (min-width: 900px) { .bs-list { max-width: 640px; margin: 0 auto; } }
+        @media (min-width: 768px) { .bs-list { max-width: 640px; margin: 0 auto; } }
 
         .bs-card {
           display: flex;

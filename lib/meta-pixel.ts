@@ -11,6 +11,7 @@ declare global {
     fbq?: (...args: unknown[]) => void
     _fbq?: unknown
     clarity?: (...args: unknown[]) => void
+    __fbqReady?: boolean
   }
 }
 
@@ -21,9 +22,20 @@ export function generateEventId(): string {
   return `evt_${Date.now()}_${Math.random().toString(36).slice(2)}`
 }
 
-/** بيتنادى مرة واحدة بس (من الـ MetaPixel component) — مش لازم تستخدمه يدوي. */
-export function fbqTrack(eventName: string, params?: Record<string, unknown>, eventId?: string) {
+/**
+ * بيتنادى مرة واحدة بس (من الـ MetaPixel component) — مش لازم تستخدمه يدوي.
+ * لو fbq('init') لسه ما استقرش (__fbqReady لسه false)، بنأجل النداء بدل ما
+ * نضيعه أو نبعته بدري ونسبب الـ "Invalid parameter format" warning في الكونسول.
+ */
+export function fbqTrack(eventName: string, params?: Record<string, unknown>, eventId?: string, retriesLeft = 20) {
   if (typeof window === "undefined" || typeof window.fbq !== "function") return
+
+  if (!window.__fbqReady) {
+    if (retriesLeft <= 0) return
+    setTimeout(() => fbqTrack(eventName, params, eventId, retriesLeft - 1), 100)
+    return
+  }
+
   const options = eventId ? { eventID: eventId } : undefined
   if (options) {
     window.fbq("track", eventName, params || {}, options)

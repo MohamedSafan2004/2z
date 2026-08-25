@@ -53,6 +53,9 @@ export default function MetaPixel({ userData }: { userData?: AdvancedMatching })
             // 4. التعديل هنا: تمرير البيانات كمعامل ثالث لحل مشكلة التحذير
             fbq('init', '${PIXEL_ID}', ${advancedMatchingString});
             fbq('track', 'PageView');
+            // علامة جاهزية منفصلة عن fbq نفسها — lib/meta-pixel.ts بيتأكد منها
+            // قبل ما يبعت أي event تاني عشان ميتبعتش قبل ما fbq('init') يخلص يستقر
+            window.__fbqReady = true;
           `,
         }}
       />
