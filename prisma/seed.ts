@@ -36,18 +36,38 @@ async function main() {
     data: { name: "T-Shirts", slug: "t-shirts" },
   })
 
-  const colors: { name: string; color: Color }[] = [
-    { name: "Essential Tee — Black", color: "BLACK" },
-    { name: "Essential Tee — White", color: "WHITE" },
-    { name: "Essential Tee — Grey",  color: "GREY"  },
-    { name: "Essential Tee — Beige", color: "BEIGE" },
+  const colors: { name: string; color: Color; description: string }[] = [
+    {
+      name: "Oversize T-Shirt — Black",
+      color: "BLACK",
+      description:
+        "Our sharpest everyday staple. Black Oversize T-Shirt in a relaxed oversized boxy fit, cut from 100% premium interlock cotton with a double-sided construction that holds its shape wash after wash. Designed and made in Egypt.",
+    },
+    {
+      name: "Oversize T-Shirt — White",
+      color: "WHITE",
+      description:
+        "A clean-slate essential. White Oversize T-Shirt in a relaxed oversized boxy fit, cut from 100% premium interlock cotton with a double-sided construction for a heavier, structured drape. Designed and made in Egypt.",
+    },
+    {
+      name: "Oversize T-Shirt — Grey",
+      color: "GREY",
+      description:
+        "The easiest tee to build around. Grey Oversize T-Shirt in a relaxed oversized boxy fit, cut from 100% premium interlock cotton with a double-sided construction that keeps its structure. Designed and made in Egypt.",
+    },
+    {
+      name: "Oversize T-Shirt — Beige",
+      color: "BEIGE",
+      description:
+        "A softer, warmer neutral. Beige Oversize T-Shirt in a relaxed oversized boxy fit, cut from 100% premium interlock cotton with a double-sided construction and a heavier drape. Designed and made in Egypt.",
+    },
   ]
 
   for (const item of colors) {
     const product = await prisma.product.create({
       data: {
         name: item.name,
-        description: "100% premium interlock cotton, relaxed oversized boxy fit. Designed & made in Cairo, Egypt.",
+        description: item.description,
         price: 700,
         categoryId: tshirts.id,
       },

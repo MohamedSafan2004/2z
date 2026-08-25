@@ -1,3 +1,11 @@
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions",
+  description: "2Z Store's terms and conditions — shipping, returns, and order policies.",
+  alternates: { canonical: "https://www.2zstore.com/terms" },
+}
+
 export default function TermsPage() {
   return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>

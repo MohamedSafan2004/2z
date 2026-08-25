@@ -32,7 +32,7 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://www.clarity.ms https://*.clarity.ms; " +
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
               "font-src 'self' https://fonts.gstatic.com; " +
-              "img-src 'self' data: https://images.unsplash.com https://res.cloudinary.com https://www.facebook.com; " +
+              "img-src 'self' data: https://images.unsplash.com https://res.cloudinary.com https://www.facebook.com https://c.clarity.ms; " +
               "connect-src 'self' https://api.anthropic.com https://*.prisma.io https://*.upstash.io https://connect.facebook.net https://www.facebook.com https://www.clarity.ms https://*.clarity.ms https://*.run.app https://*.on.aws;"
           }
         ]

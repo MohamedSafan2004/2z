@@ -1,3 +1,11 @@
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "2Z Store's privacy policy — how we collect, use, and protect your personal data.",
+  alternates: { canonical: "https://www.2zstore.com/privacy" },
+}
+
 export default function PrivacyPage() {
   return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>

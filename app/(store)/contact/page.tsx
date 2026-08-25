@@ -1,3 +1,12 @@
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description:
+    "Get in touch with 2Z Store. WhatsApp support, email, and answers to shipping & returns questions.",
+  alternates: { canonical: "https://www.2zstore.com/contact" },
+}
+
 export default function ContactPage() {
   return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", fontFamily: "Space Mono, monospace" }}>

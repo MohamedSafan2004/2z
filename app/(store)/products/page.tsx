@@ -1,6 +1,20 @@
 import Link from "next/link"
+import type { Metadata } from "next"
 import { db } from "@/lib/db"
 import ActiveOfferBanner from "@/components/ActiveOfferBanner"
+
+export const metadata: Metadata = {
+  title: "Shop All",
+  description:
+    "Shop 2Z Store's oversized T-Shirts in Black, White, Grey & Beige. Minimal Egyptian streetwear, sizes M/L/XL.",
+  alternates: { canonical: "https://www.2zstore.com/products" },
+  openGraph: {
+    title: "Shop All | 2Z Store",
+    description:
+      "Shop 2Z Store's oversized T-Shirts in Black, White, Grey & Beige. Minimal Egyptian streetwear, sizes M/L/XL.",
+    url: "https://www.2zstore.com/products",
+  },
+}
 
 // صورة الـ Main بس لكل لون — دي اللي بتظهر في صفحة قائمة المنتجات
 const colorImages: Record<string, string> = {

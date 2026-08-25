@@ -998,7 +998,7 @@ export default function ProductDetailClient({
                       {hasDisc && <span className="card-sale-badge">Sale</span>}
                       <img
                         src={optimizeCloudinaryUrl(productImgs[0], 500)}
-                        alt={`Oversize T-Shirt — ${colorLabel}`}
+                        alt={`${p.name} — ${colorLabel} oversized t-shirt`}
                         loading="lazy"
                         className="suggested-img"
                         style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
