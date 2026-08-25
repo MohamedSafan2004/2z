@@ -64,15 +64,15 @@ export function ReviewsGallery() {
           gap: 14px;
           overflow-x: auto;
           overflow-y: hidden;
-          scroll-snap-type: x mandatory;
           -webkit-overflow-scrolling: touch;
           padding: 8px 4px 20px;
           margin: 0 -4px;
           scrollbar-width: none;
-          /* نفس مشكلة الـ New In section بالظبط: scroll-snap-type: x mandatory من غير touch-action
-             صريح كان بيخلي mobile swipe الرأسي للصفحة بيتلخبط مع الـ swipe الأفقي الداخلي بتاع
-             الكاروسيل. touch-action: pan-y بيخلي الحركة الرأسية دايمًا تعدي للصفحة. */
-          touch-action: pan-y;
+          /* pan-x بدل pan-y: الكاروسيل ده لازم يفضل ثابت رأسيًا تمامًا — pan-y كانت تخلي
+             أي سحب (حتى الأفقي) يتفسر كمحاولة تمرير رأسي للصفحة، فكان بيحصل تعارض/تجمد
+             ومحدش قادر يعمل swipe أفقي خالص. شلنا كمان scroll-snap-type برضو — مفيش أي snap
+             محتاج يتفاوض مع التمرير، الكاروسيل بتتحرك بحرية بدون قفل. */
+          touch-action: pan-x;
         }
         .reviews-track::-webkit-scrollbar { display: none; }
 
@@ -80,7 +80,6 @@ export function ReviewsGallery() {
           flex: 0 0 auto;
           width: 76vw;
           max-width: 320px;
-          scroll-snap-align: center;
           border-radius: 22px;
           overflow: hidden;
           position: relative;
