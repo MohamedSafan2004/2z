@@ -456,8 +456,6 @@ export default function Home() {
           overflow-x: auto;
           padding: 0 20px 6px;
           margin: 0 -20px;
-          scroll-snap-type: x proximity;
-          overscroll-behavior-x: contain;
           scrollbar-width: none;
           max-width: 100vw;
           position: relative;
@@ -467,7 +465,7 @@ export default function Home() {
              بيقول للمتصفح صراحة: الحركة الرأسية (pan-y) دايمًا تعدي للصفحة، والأفقي
              فقط للـ swipe الداخلي بتاع الكروتل — مفيش لبس الموبايل (الـ CSS مليهشي فيها أصلًا
              بيتحول لـ display: grid فوق 640px). */
-          touch-action: pan-y;
+          touch-action: pan-x;
         }
         .newin-grid::-webkit-scrollbar { display: none; }
         .newin-card {
