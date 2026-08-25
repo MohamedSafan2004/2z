@@ -412,6 +412,7 @@ export default function Home() {
           gap: 48px;
           width: max-content;
           animation: marqueeScroll 22s linear infinite;
+          will-change: transform;
         }
         .marquee-item {
           font-family: 'Space Mono', monospace;
