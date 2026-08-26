@@ -4,11 +4,17 @@ import { useEffect, useRef } from "react"
 
 // بيتابع سكرول الـ New In الأفقي على الموبايل وبيحدث progress bar رفيع تحته
 // بشكل حي. مالوش تأثير على الديسكتوب (الـ wrap بيبقى grid عادي هناك أصلاً).
-export function NewInScrollProgress() {
+export function NewInScrollProgress({
+  trackClassName = "newin-progress-track",
+  fillClassName = "newin-progress-fill",
+}: {
+  trackClassName?: string
+  fillClassName?: string
+} = {}) {
   const fillRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const scrollEl = document.querySelector<HTMLDivElement>(".newin-grid")
+    const scrollEl = document.querySelector<HTMLDivElement>("[data-newin-grid]")
     const fillEl = fillRef.current
     if (!scrollEl || !fillEl) return
 
@@ -36,8 +42,8 @@ export function NewInScrollProgress() {
   }, [])
 
   return (
-    <div className="newin-progress-track" aria-hidden="true">
-      <div className="newin-progress-fill" ref={fillRef} />
+    <div className={trackClassName} aria-hidden="true">
+      <div className={fillClassName} ref={fillRef} />
     </div>
   )
 }
