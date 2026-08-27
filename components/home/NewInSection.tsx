@@ -18,31 +18,34 @@ async function NewInContent() {
           const color = variant?.color ?? "BLACK"
           const img = colorImages[color]
           const onSale = p.originalPrice && p.originalPrice > p.price
+          const isSoldOut = p.variants?.length > 0 && p.variants.every((v) => v.stockQuantity === 0)
           return (
             <Link key={p.id} href={`/products/${p.id}`} className={`${styles["newin-item"]} ${styles["newin-cardlink"]}`}>
               <div style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden", marginBottom: "10px" }}>
-                {onSale && <span className={styles["card-sale-badge"]}>First Drop</span>}
+                {isSoldOut ? (
+                  <span className={styles["bs-badge"]}>Sold Out</span>
+                ) : onSale ? (
+                  <span className={styles["card-sale-badge"]}>First Drop</span>
+                ) : null}
                 {img && (
                   <img
                     src={optimizeCloudinaryUrl(img, 400)}
                     alt={p.name}
                     className={styles["card-img"]}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", opacity: isSoldOut ? 0.45 : 1 }}
                     loading="lazy"
                   />
                 )}
               </div>
-              {/* p.name أصلاً كامل في الداتابيز (زي "Oversize T-Shirt — Beige")،
-                  فبنستخدمه زي ما هو من غير ما نضيف اللون تاني — ده كان باگ
-                  التكرار ("Beige — Beige") اللي ظهر في صفحة Products */}
               <h3 className={styles["newin-name"]}>{p.name}</h3>
-              <div className={styles["newin-meta-row"]}>
-                <span className={styles["newin-cat"]}>T-Shirts</span>
-                <span>
-                  {onSale && <span className={styles["newin-orig"]}>{p.originalPrice} </span>}
+              {onSale ? (
+                <span className={styles["bs-price-row"]}>
+                  <span className={styles["newin-orig"]}>{p.originalPrice}</span>
                   <span className={styles["newin-price"]}>{p.price} EGP</span>
                 </span>
-              </div>
+              ) : (
+                <span className={styles["newin-price"]}>{p.price} EGP</span>
+              )}
             </Link>
           )
         })}

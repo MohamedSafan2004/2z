@@ -5,9 +5,9 @@ import { SkeletonBlock } from "@/components/Skeleton"
 import { getBestSellers, colorImages, optimizeCloudinaryUrl } from "@/lib/home-data"
 import styles from "../../app/(store)/home.module.css"
 
-// كارت نضيف: صورة full-bleed + اسم/سعر تحتها بس. مفيش بوردر، مفيش تاج
-// ملون، مفيش خلفية شفافة — نفس منطق المتاجر الحقيقية (Galvano وغيره):
-// الصورة نفسها هي اللي بتتكلم، الـ UI بيدعمها مش بيزاحمها.
+// كارت مبسّط زي المتاجر الحقيقية (Galvano وغيره): صورة نضيفة + اسم + سعر
+// بس. مفيش تصنيف "T-Shirts" تحت كل كارت (زيادة مالهاش داعي، المنتجات كلها
+// تيشيرتات أصلاً)، مفيش تاج ملون، مفيش badge غير Sold Out لو حصل.
 async function BestSellersContent() {
   const products = await getBestSellers()
   if (products.length === 0) return null
@@ -18,30 +18,31 @@ async function BestSellersContent() {
         const variant = p.variants?.[0]
         const color = variant?.color ?? "BLACK"
         const img = colorImages[color]
+        const isSoldOut = p.variants?.length > 0 && p.variants.every((v) => v.stockQuantity === 0)
         return (
           <Link key={p.id} href={`/products/${p.id}`} className={styles["bs-card"]}>
             <div className={styles["bs-imgwrap"]}>
-              <span className={styles["bs-badge"]}>Best Seller</span>
+              {isSoldOut && <span className={styles["bs-badge"]}>Sold Out</span>}
               {img && (
                 <img
                   src={optimizeCloudinaryUrl(img, 500)}
                   alt={p.name}
                   className={`${styles["bs-img"]} ${styles["card-img"]}`}
+                  style={{ opacity: isSoldOut ? 0.45 : 1 }}
                   loading="lazy"
                 />
               )}
             </div>
             <div className={styles["bs-info"]}>
-              {/* p.name أصلاً كامل ("Oversize T-Shirt — Black")، من غير ما نضيف
-                  اللون تاني — نفس إصلاح باگ التكرار اللي كان في صفحة Products */}
               <h3 className={styles["bs-name"]}>{p.name}</h3>
-              <div className={styles["bs-meta"]}>
-                <span className={styles["bs-cat"]}>T-Shirts</span>
-                <span>
-                  {p.originalPrice && <span className={styles["bs-orig"]}>{p.originalPrice} </span>}
+              {p.originalPrice ? (
+                <span className={styles["bs-price-row"]}>
+                  <span className={styles["bs-orig"]}>{p.originalPrice}</span>
                   <span className={styles["bs-price"]}>{p.price} EGP</span>
                 </span>
-              </div>
+              ) : (
+                <span className={styles["bs-price"]}>{p.price} EGP</span>
+              )}
             </div>
           </Link>
         )

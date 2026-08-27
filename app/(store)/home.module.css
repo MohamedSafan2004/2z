@@ -9,12 +9,14 @@
       تلقائي بيعتمد على مساحة متبقية.
    3. أي عنصر أفقي قابل للسحب (scroll-x) لازم يكون عليه touch-action:
       pan-x صريح، عشان السحب الأفقي ميتلخبطش مع سكرول الصفحة الرأسي.
-   4. مفيش أي <img> في الهيرو خالص — أول شاشة تحميلها فوري 100%.
-   5. كل الأرقام (01/02/03/04) اتشالت خالص من أي سكشن منتجات بناءً على
+   4. كل الأرقام (01/02/03/04) اتشالت خالص من أي سكشن منتجات بناءً على
       طلب محمد الصريح.
-   6. كروت المنتجات كلها (Best Sellers, New In) بقت "صورة نضيفة + نص
-      تحتها" — مفيش بوردرات، مفيش تاجات ملونة، مفيش overlay فوق الصورة.
-      نفس منطق المتاجر الحقيقية (Galvano وغيره): الصورة بتتكلم لوحدها.
+   5. كروت المنتجات كلها (Best Sellers, New In) بقت "صورة نضيفة + اسم +
+      سعر" بس — مفيش بوردرات، مفيش تصنيف "T-Shirts" مكرر تحت كل كارت،
+      مفيش تاجات ملونة، مفيش overlay فوق الصورة. نفس منطق المتاجر
+      الحقيقية (Galvano وغيره): الصورة بتتكلم لوحدها، النص أقل ما يمكن.
+   6. الهيرو بقى بصورة تيشيرت أسود حقيقية full-bleed (مش typography
+      بس) بطلب محمد — الجملة الكاملة "2Z Next Level." فوقها.
    ════════════════════════════════════════════════════════════════ */
 
 .home-root {
@@ -43,55 +45,60 @@
 }
 
 /* ════════════════════════════════════════════════════════════════
-   1. HERO — typography-led. الارتفاع = محتواه الفعلي بس (padding
-   طبيعي)، مفيش أي فرض لنسبة شاشة. التباعد بين العناصر gap ثابت.
+   1. HERO — صورة التيشيرت الأسود الحقيقية full-bleed في الخلفية،
+   الجملة الكاملة "2Z Next Level." فوقها في التلت السفلي. تدرج أسود من
+   تحت لضمان قراءة النص مهما كانت الصورة.
    ════════════════════════════════════════════════════════════════ */
 .hero {
   position: relative;
   width: 100%;
   max-width: 100%;
+  min-height: 92svh;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  padding: 18px 20px 36px;
   overflow: hidden;
-  isolation: isolate;
-}
-@media (min-width: 640px) {
-  .hero { padding: 22px 40px 44px; gap: 40px; }
 }
 @media (min-width: 1024px) {
-  .hero { padding: 26px 60px 56px; gap: 48px; min-height: 82svh; justify-content: center; }
+  .hero { min-height: 88svh; }
 }
 
-.hero::before {
+.hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  z-index: 0;
+}
+
+/* تدرج من تحت لضمان قراءة النص، وتدرج خفيف من فوق عشان الـ nav يفضل
+   واضح فوق الصورة */
+.hero::after {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: -2;
+  z-index: 1;
   background:
-    radial-gradient(ellipse 120% 55% at 50% 0%, rgba(240,237,230,0.05), transparent 60%),
-    radial-gradient(ellipse 70% 45% at 100% 100%, rgba(200,240,79,0.05), transparent 60%);
+    linear-gradient(to top, rgba(8,8,8,0.96) 0%, rgba(8,8,8,0.6) 30%, rgba(8,8,8,0.08) 58%, transparent 72%),
+    linear-gradient(to bottom, rgba(8,8,8,0.45) 0%, transparent 16%);
   pointer-events: none;
 }
 
-.hero-bignum {
-  position: absolute;
-  z-index: -1;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 300;
-  font-size: 50vw;
-  line-height: 1;
-  color: rgba(240,237,230,0.34);
-  white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
+.hero-content {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px 32px;
 }
-@media (min-width: 640px) { .hero-bignum { font-size: 32vw; color: rgba(240,237,230,0.24); } }
-@media (min-width: 1024px) { .hero-bignum { font-size: 400px; } }
+@media (min-width: 640px) {
+  .hero-content { padding: 22px 40px 40px; }
+}
+@media (min-width: 1024px) {
+  .hero-content { padding: 26px 60px 52px; }
+}
 
 .hero-topbar {
   display: flex;
@@ -100,48 +107,43 @@
   animation: fadeUp 0.7s ease 0.05s both;
 }
 .hero-eyebrow { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.hero-eyebrow-line { width: 20px; height: 1px; background: rgba(200,240,79,0.5); flex-shrink: 0; }
+.hero-eyebrow-line { width: 20px; height: 1px; background: rgba(200,240,79,0.7); flex-shrink: 0; }
 .hero-eyebrow-text {
   font-family: 'Space Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: rgba(240,237,230,0.55);
+  color: rgba(240,237,230,0.75);
   white-space: nowrap;
 }
-.hero-mark {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: 20px;
-  color: #f0ede6;
-  flex-shrink: 0;
+
+/* الجملة والزرار نازلين في التلت السفلي فوق الصورة — مش في المنتصف،
+   عشان الصورة تفضل بايتة أكتر في التلت الفوقي والأوسطي */
+.hero-bottom-stack {
+  margin-top: auto;
 }
 
 .hero-title {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 300;
-  letter-spacing: -0.035em;
-  line-height: 0.86;
+  letter-spacing: -0.03em;
+  line-height: 0.9;
   color: #f0ede6;
   margin: 0;
-  font-size: 16.5vw;
+  font-size: 12.5vw;
+  text-shadow: 0 6px 34px rgba(0,0,0,0.5);
 }
 .hero-title-line { display: block; overflow: hidden; }
 .hero-title-line span {
   display: block;
   animation: revealUp 1s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.hero-title-line:nth-child(1) span { animation-delay: 0.12s; }
-.hero-title-line:nth-child(2) span { animation-delay: 0.26s; }
-.hero-title-accent {
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(240,237,230,0.55);
-  font-style: italic;
-}
-@media (min-width: 480px) { .hero-title { font-size: 80px; } }
-@media (min-width: 640px) { .hero-title { font-size: 110px; } }
-@media (min-width: 900px) and (max-width: 1199px) { .hero-title { font-size: 132px; } }
-@media (min-width: 1200px) { .hero-title { font-size: 168px; } }
+.hero-title-line:nth-child(1) span { animation-delay: 0.15s; }
+.hero-title-line:nth-child(2) span { animation-delay: 0.28s; color: rgba(240,237,230,0.6); font-style: italic; }
+@media (min-width: 480px) { .hero-title { font-size: 62px; } }
+@media (min-width: 640px) { .hero-title { font-size: 86px; } }
+@media (min-width: 900px) and (max-width: 1199px) { .hero-title { font-size: 104px; } }
+@media (min-width: 1200px) { .hero-title { font-size: 130px; } }
 
 .hero-sub {
   display: flex;
@@ -149,8 +151,11 @@
   justify-content: space-between;
   gap: 20px;
   flex-wrap: wrap;
+  margin-top: 22px;
   animation: fadeUp 0.8s ease 0.6s both;
 }
+@media (min-width: 640px) { .hero-sub { margin-top: 28px; } }
+
 .hero-divider {
   height: 2px;
   width: 52px;
@@ -162,7 +167,7 @@
   font-size: 9.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(240,237,230,0.62);
+  color: rgba(240,237,230,0.78);
   line-height: 2;
   margin: 0;
 }
@@ -190,33 +195,6 @@
 .btn-solid:active { transform: scale(0.96); }
 .btn-solid-arrow { transition: transform 0.25s ease; flex-shrink: 0; }
 .btn-solid:hover .btn-solid-arrow { transform: translateX(3px); }
-
-.hero-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(240,237,230,0.07);
-  animation: fadeUp 0.8s ease 0.8s both;
-}
-.hero-bottom-text {
-  font-family: 'Space Mono', monospace;
-  font-size: 8px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(240,237,230,0.35);
-  margin: 0;
-}
-.scroll-hint { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
-.scroll-hint-track { width: 1px; height: 22px; background: rgba(240,237,230,0.1); overflow: hidden; }
-.scroll-hint-line { width: 100%; height: 100%; background: rgba(240,237,230,0.5); animation: scrollDrop 2s ease 1.4s infinite; }
-@keyframes scrollDrop {
-  0%   { transform: scaleY(0); transform-origin: top;    }
-  50%  { transform: scaleY(1); transform-origin: top;    }
-  51%  { transform: scaleY(1); transform-origin: bottom; }
-  100% { transform: scaleY(0); transform-origin: bottom; }
-}
 
 /* ════════════════════════════════════════════════════════════════
    2. TRUST STRIP — تريت ماركتينج حقيقي، محل الـ color-block القديم.
@@ -251,7 +229,7 @@
 .trust-sub {
   font-family: 'Space Mono', monospace;
   font-size: 7px;
-  color: rgba(240,237,230,0.4);
+  color: #f0ede6;
   margin: 0;
   line-height: 1.3;
   white-space: nowrap;
@@ -282,9 +260,9 @@
 }
 
 /* ════════════════════════════════════════════════════════════════
-   4. BEST SELLERS — كارت نضيف: صورة full-bleed + نص تحتها بس.
-   مفيش بوردر ولا تاج ملون ولا خلفية شفافة — 2 عمود على الموبايل،
-   جريد أوسع على الديسكتوب زي منتجات Galvano بالظبط.
+   4. BEST SELLERS — كارت مبسّط: صورة + اسم + سعر بس. مفيش تصنيف
+   "T-Shirts" مكرر (المنتجات كلها تيشيرتات أصلاً)، مفيش بوردر، مفيش
+   تاج ملون. الـ badge الوحيد هو "Sold Out" لو حصل فعليًا.
    ════════════════════════════════════════════════════════════════ */
 .bestsellers { padding: 60px 20px 8px; max-width: 100%; }
 @media (min-width: 640px) { .bestsellers { padding: 76px 24px 8px; } }
@@ -295,7 +273,7 @@
   gap: 14px;
   max-width: 100%;
 }
-@media (min-width: 640px) { .bs-grid { gap: 24px; } }
+@media (min-width: 640px) { .bs-grid { gap: 28px; } }
 @media (min-width: 1024px) { .bs-grid { max-width: 900px; margin: 0 auto; } }
 
 .bs-card {
@@ -332,23 +310,27 @@
 }
 @media (min-width: 640px) { .bs-badge { font-size: 8px; padding: 5px 9px; } }
 
-.bs-info {}
-
-.bs-name { font-family: 'Cormorant Garamond', serif; font-weight: 300; color: #f0ede6; font-size: 16px; line-height: 1.15; margin: 0 0 6px; transition: color 0.3s ease; }
-.bs-name span { color: rgba(240,237,230,0.5); }
+.bs-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  color: #f0ede6;
+  font-size: 15px;
+  line-height: 1.15;
+  margin: 0 0 5px;
+  transition: color 0.3s ease;
+}
 .bs-card:hover .bs-name { color: rgba(240,237,230,0.75); }
-@media (min-width: 480px) { .bs-name { font-size: 18px; } }
-@media (min-width: 640px) { .bs-name { font-size: 21px; } }
+@media (min-width: 480px) { .bs-name { font-size: 17px; } }
+@media (min-width: 640px) { .bs-name { font-size: 20px; margin-bottom: 6px; } }
 
-.bs-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.bs-cat { font-family: 'Space Mono', monospace; font-size: 7px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.4); white-space: nowrap; }
+.bs-price-row { display: flex; align-items: center; gap: 8px; }
 .bs-price { font-family: 'Space Mono', monospace; font-size: 12.5px; color: #f0ede6; white-space: nowrap; }
-@media (min-width: 640px) { .bs-cat { font-size: 8px; } .bs-price { font-size: 14px; } }
 .bs-orig { font-family: 'Space Mono', monospace; color: rgba(240,237,230,0.35); text-decoration: line-through; font-size: 10px; white-space: nowrap; }
+@media (min-width: 640px) { .bs-price { font-size: 14px; } .bs-orig { font-size: 11.5px; } }
 
 /* ════════════════════════════════════════════════════════════════
    5. NEW IN — كاروسيل أفقي على الموبايل، جريد نضيف على الديسكتوب.
-   نفس منطق Best Sellers: صورة + نص تحتها، مفيش خلفية شبكة ملاصقة.
+   نفس منطق Best Sellers: صورة + اسم + سعر بس.
    ════════════════════════════════════════════════════════════════ */
 .newin { padding: 60px 20px 8px; max-width: 100%; }
 @media (min-width: 640px) { .newin { padding: 76px 24px 8px; } }
@@ -359,12 +341,17 @@
   display: flex;
   gap: 10px;
   overflow-x: auto;
+  overflow-y: hidden;
   padding: 0 20px 6px;
   margin: 0 -20px;
   scrollbar-width: none;
   max-width: 100vw;
   position: relative;
-  touch-action: pan-x;
+  /* مفيش pan-x مقفولة هنا لنفس السبب اللي اتصلح ف ReviewsGallery.tsx:
+     pan-x كانت بتمنع السكرول الرأسي للصفحة لو الإصبع على صورة المنتج
+     نفسها. overflow-y: hidden + overflow-x: auto بيخلوا المتصفح يوجّه
+     اللمسة تلقائيًا من غير ما نقفل اتجاه بالـ touch-action. */
+  touch-action: auto;
 }
 .newin-grid::-webkit-scrollbar { display: none; }
 .newin-item { flex: 0 0 42vw; max-width: 190px; scroll-snap-align: start; }
@@ -372,7 +359,7 @@
   .newin-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 28px;
     background: none;
     overflow-x: visible;
     padding: 0;
@@ -398,8 +385,8 @@
 }
 @media (min-width: 640px) { .newin-progress-track { display: none; } }
 
-.card-img { transition: transform 0.8s ease, opacity 0.6s ease; }
-.newin-cardlink:hover .card-img { transform: scale(1.05); }
+.card-img { transition: transform 0.8s ease; }
+.newin-cardlink:hover .card-img { transform: scale(1.06); }
 
 @keyframes cardSaleShine {
   0%   { background-position: -60px 0; }
@@ -431,19 +418,24 @@
   animation: cardSaleShine 2.6s ease-in-out infinite;
 }
 
-.newin-name  { font-family: 'Cormorant Garamond', serif; font-weight: 300; color: #f0ede6; margin: 0 0 4px; line-height: 1.15; font-size: 15px; transition: color 0.3s ease; }
+.newin-name  {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  color: #f0ede6;
+  margin: 0 0 5px;
+  line-height: 1.15;
+  font-size: 15px;
+  transition: color 0.3s ease;
+}
 .newin-cardlink:hover .newin-name { color: rgba(240,237,230,0.75); }
-.newin-cat   { font-family: 'Space Mono', monospace; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,237,230,0.4); font-size: 7px; white-space: nowrap; }
-.newin-price { font-family: 'Space Mono', monospace; color: #f0ede6; font-size: 13px; white-space: nowrap; }
-.newin-orig  { font-family: 'Space Mono', monospace; color: rgba(240,237,230,0.35); text-decoration: line-through; font-size: 10.5px; white-space: nowrap; }
-.newin-meta-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.newin-price { font-family: 'Space Mono', monospace; color: #f0ede6; font-size: 12.5px; white-space: nowrap; }
+.newin-orig  { font-family: 'Space Mono', monospace; color: rgba(240,237,230,0.35); text-decoration: line-through; font-size: 10px; white-space: nowrap; }
 
 @media (min-width: 480px) { .newin-name { font-size: 17px; } .newin-price { font-size: 14px; } }
 @media (min-width: 640px) {
-  .newin-name { font-size: 19px; }
-  .newin-cat  { font-size: 8px; }
-  .newin-price { font-size: 15px; }
-  .newin-orig { font-size: 12px; }
+  .newin-name { font-size: 19px; margin-bottom: 6px; }
+  .newin-price { font-size: 14px; }
+  .newin-orig { font-size: 11.5px; }
 }
 
 /* ════════════════════════════════════════════════════════════════

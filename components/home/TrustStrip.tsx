@@ -15,7 +15,7 @@ export function TrustStrip() {
     },
     {
       label: "Fast Delivery",
-      sub: "2–4 days nationwide",
+      sub: "2–5 days nationwide",
       icon: (
         <path d="M3 12h13l-2-5h4l3 5v5H3z M7 20a2 2 0 100-4 2 2 0 000 4z M17 20a2 2 0 100-4 2 2 0 000 4z" strokeLinecap="round" strokeLinejoin="round" />
       ),
