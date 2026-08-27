@@ -67,7 +67,7 @@ export default async function ProductsPage() {
         }
         .p-card { animation: fadeUp 0.5s ease both; text-decoration: none; display: block; }
         .p-img  { transition: transform 0.7s ease, opacity 0.5s ease; }
-        .p-card:hover .p-img { transform: scale(1.04); opacity: 0.92 !important; }
+        .p-card:hover .p-img { transform: scale(1.04); opacity: 1 !important; }
         .p-card:hover .p-name { color: rgba(240,237,230,0.7) !important; }
 
         /* ── Sold out badge on product cards ── */
@@ -134,7 +134,7 @@ export default async function ProductsPage() {
         }
 
         @media (min-width: 640px) {
-          .p-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .p-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 20px !important; }
           .p-name  { font-size: 19px; }
           .p-cat   { font-size: 8px; }
           .p-price { font-size: 15px; }
@@ -266,11 +266,10 @@ export default async function ProductsPage() {
 
         <div
           className="p-grid"
-          style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "2px" }}
+          style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}
         >
           {products.map((p, i) => {
             const color = p.variants?.[0]?.color || "BLACK"
-            const colorLabel = color ? color.charAt(0) + color.slice(1).toLowerCase() : ""
             const isSoldOut = p.variants?.length > 0 && p.variants.every((v) => v.stockQuantity === 0)
             return (
             <Link
@@ -279,6 +278,8 @@ export default async function ProductsPage() {
               className={`p-card ${isSoldOut ? "soldout" : ""}`}
               style={{ animationDelay: `${i * 60}ms` }}
             >
+              {/* الصورة نفسها بس — مفيش أي نص أو overlay فوقها، النضافة دي هي
+                  اللي بتخلي الكارت يحس متجر حقيقي مش UI مزحوم */}
               <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "#111", position: "relative" }}>
                 {isSoldOut ? (
                   <span className="card-soldout-badge">Sold Out</span>
@@ -287,52 +288,49 @@ export default async function ProductsPage() {
                 ) : null}
                 <img
                   src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
-                  alt={`Oversize T-Shirt — ${colorLabel}`}
+                  alt={p.name}
                   loading="lazy"
                   className="p-img"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", opacity: isSoldOut ? 0.45 : 0.88 }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", opacity: isSoldOut ? 0.45 : 1 }}
                 />
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: "linear-gradient(to top, #080808 0%, rgba(8,8,8,0.75) 12%, transparent 42%)",
-                }} />
+              </div>
 
-                <div style={{ position: "absolute", bottom: "16px", left: "16px", right: "16px" }}>
-                  <p
-                    className="p-name"
-                    style={{
-                      fontFamily: "Cormorant Garamond, serif",
-                      fontWeight: 300,
-                      color: "#f0ede6", margin: "0 0 6px",
-                      lineHeight: 1.15,
-                      transition: "color 0.3s",
-                    }}
-                  >
-                    Oversize T-Shirt<br />
-                    <span style={{ color: "rgba(240,237,230,0.5)" }}>— {colorLabel}</span>
-                  </p>
-                  <div className="p-meta-row">
-                    <span className="p-cat" style={{
-                      letterSpacing: "0.2em",
-                      textTransform: "uppercase", color: "rgba(240,237,230,0.4)",
-                    }}>
-                      T-Shirts
-                    </span>
-                    {p.originalPrice && p.originalPrice > p.price ? (
-                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <span className="p-orig" style={{ color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>
-                          {p.originalPrice}
-                        </span>
-                        <span className="p-price" style={{ color: "rgba(240,237,230,0.7)" }}>
-                          {p.price} EGP
-                        </span>
+              {/* النص تحت الصورة تمامًا، برة أي overlay — زي الكروت الحقيقية
+                  (Galvano وغيره): اسم، تصنيف، سعر، وخلاص */}
+              <div style={{ paddingTop: "12px" }}>
+                <p
+                  className="p-name"
+                  style={{
+                    fontFamily: "Cormorant Garamond, serif",
+                    fontWeight: 300,
+                    color: "#f0ede6", margin: "0 0 6px",
+                    lineHeight: 1.15,
+                    transition: "color 0.3s",
+                  }}
+                >
+                  {p.name}
+                </p>
+                <div className="p-meta-row">
+                  <span className="p-cat" style={{
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase", color: "rgba(240,237,230,0.4)",
+                  }}>
+                    T-Shirts
+                  </span>
+                  {p.originalPrice && p.originalPrice > p.price ? (
+                    <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span className="p-orig" style={{ color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>
+                        {p.originalPrice}
                       </span>
-                    ) : (
-                      <span className="p-price" style={{ color: "rgba(240,237,230,0.5)" }}>
+                      <span className="p-price" style={{ color: "#f0ede6" }}>
                         {p.price} EGP
                       </span>
-                    )}
-                  </div>
+                    </span>
+                  ) : (
+                    <span className="p-price" style={{ color: "#f0ede6" }}>
+                      {p.price} EGP
+                    </span>
+                  )}
                 </div>
               </div>
             </Link>

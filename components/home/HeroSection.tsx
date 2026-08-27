@@ -1,58 +1,53 @@
 import Link from "next/link"
-import { optimizeCloudinaryUrl } from "@/lib/home-data"
 import styles from "../../app/(store)/home.module.css"
 
+// هيرو typography-led — مفيش أي <img> خالص. الارتفاع = محتواه الفعلي بس،
+// مفيش فرض svh ومفيش justify-content: space-between بيقدر يطلع فراغ ميت.
 export function HeroSection() {
   return (
-    <section className={styles["hero-section"]}>
-      <img
-        src={optimizeCloudinaryUrl("https://res.cloudinary.com/ghetnovd/image/upload/2z-store/hero.png", 1200)}
-        srcSet={[500, 800, 1200, 1600].map((w) => `${optimizeCloudinaryUrl("https://res.cloudinary.com/ghetnovd/image/upload/2z-store/hero.png", w)} ${w}w`).join(", ")}
-        alt="2Z Minimal Streetwear"
-        fetchPriority="high"
-        loading="eager"
-        decoding="sync"
-        sizes="100vw"
-        className={styles["hero-img"]}
-      />
-
-      <div className={styles["hero-overlay"]} />
+    <section className={styles.hero}>
+      <div className={styles["hero-bignum"]} aria-hidden="true">2Z</div>
 
       <div className={styles["hero-topbar"]}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{ width: "20px", height: "1px", background: "rgba(200,240,79,0.5)" }} />
-          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>
-            Egypt · SS26
-          </span>
+        <div className={styles["hero-eyebrow"]}>
+          <div className={styles["hero-eyebrow-line"]} />
+          <span className={styles["hero-eyebrow-text"]}>Egypt · SS26</span>
         </div>
-        <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400, fontSize: "22px", letterSpacing: "0.02em", color: "#f0ede6" }}>
-          2Z
-        </span>
+        <span className={styles["hero-mark"]}>2Z</span>
       </div>
 
-      <div className={styles["hero-content"]}>
-        <h1 className={styles["hero-title"]}>
-          2Z Next <br />
-          Level
-        </h1>
+      <h1 className={styles["hero-title"]}>
+        <span className={styles["hero-title-line"]}><span>Next</span></span>
+        <span className={styles["hero-title-line"]}>
+          <span>
+            Level<span className={styles["hero-title-accent"]}>.</span>
+          </span>
+        </span>
+      </h1>
 
-        <div className={styles["hero-divider"]} />
-
-        <div className={styles["hero-bottom-row"]}>
+      <div className={styles["hero-sub"]}>
+        <div>
+          <div className={styles["hero-divider"]} />
           <p className={styles["hero-desc"]}>
             Oversized T-Shirts<br />
             Black · White · Grey · Beige
           </p>
-
-          <Link href="/products" className={styles["shop-btn"]}>
-            Shop Now
-          </Link>
         </div>
+
+        <Link href="/products" className={styles["btn-solid"]}>
+          Shop Now
+          <svg className={styles["btn-solid-arrow"]} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </Link>
       </div>
 
-      <div className={styles["scroll-indicator"]}>
-        <div className={styles["scroll-track"]}>
-          <div className={styles["scroll-line"]} />
+      <div className={styles["hero-bottom"]}>
+        <p className={styles["hero-bottom-text"]}>Oversized Fit — Cut For The Streets</p>
+        <div className={styles["scroll-hint"]} aria-hidden="true">
+          <div className={styles["scroll-hint-track"]}>
+            <div className={styles["scroll-hint-line"]} />
+          </div>
         </div>
       </div>
     </section>
