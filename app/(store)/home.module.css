@@ -53,13 +53,20 @@
   position: relative;
   width: 100%;
   max-width: 100%;
-  min-height: 92svh;
+  /* svh/dvh بتتغير أثناء اللودينج نفسه في Safari iOS (بيحسبها تاني
+     كل ما شريط الـ toolbar/URL يقصر أو يطول)، وبما إن الهيرو هو أول
+     عنصر في الصفحة وارتفاعه كان مبني على svh، كل تغيير كان بيرمي كل
+     المحتوى اللي تحته (Best Sellers, New In...) لفوق أو لتحت أثناء
+     اللودينج — ده اللي كان حاسس إنه "استكاك"/الصفحة بترجع فوق لوحدها.
+     الحل: min-height ثابتة بالـ vh (مش svh/dvh)، عشان الـ browser يحجز
+     المساحة فورًا من غير ما يستنى قياس viewport متغير. */
+  min-height: 92vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 @media (min-width: 1024px) {
-  .hero { min-height: 88svh; }
+  .hero { min-height: 88vh; }
 }
 
 .hero-img {
@@ -70,6 +77,9 @@
   object-fit: cover;
   object-position: center 20%;
   z-index: 0;
+  /* background solid لحد ما الصورة تلود، عشان مفيش فلاش أبيض/شفاف
+     وقت الانتظار (الـ height نفسه محجوز أصلاً بالـ min-height فوق) */
+  background: #111;
 }
 
 /* تدرج من تحت لضمان قراءة النص، وتدرج خفيف من فوق عشان الـ nav يفضل
