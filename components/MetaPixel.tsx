@@ -36,9 +36,15 @@ export default function MetaPixel({ userData }: { userData?: AdvancedMatching })
 
   return (
     <>
+      {/* lazyOnload بدل afterInteractive: retry logic جوه fbqTrack() (lib/meta-pixel.ts)
+          أصلاً مبني يستحمل تأخير في تحميل الـ pixel (بيحاول 20 مرة كل 100ms
+          لو __fbqReady لسه false)، فتأجيل التحميل هنا آمن. الأداء أهم من فرق
+          بسيط في توقيت PageView — lazyOnload بيأجل السكريبت لحد بعد
+          window.onload، فمش بيزاحم أول محاولة تفاعل/سكرول من المستخدم
+          على الـ main thread. */}
       <Script
         id="meta-pixel-base"
-        strategy="afterInteractive"
+        strategy="lazyOnload"
         dangerouslySetInnerHTML={{
           __html: `
             !function(f,b,e,v,n,t,s)

@@ -4,11 +4,18 @@ import Script from "next/script"
 
 const CLARITY_PROJECT_ID = "xv5l7tqp7n"
 
+// lazyOnload بدل afterInteractive: Clarity script مش محتاج يتحمل قبل ما
+// المستخدم يقدر يتفاعل مع الصفحة أصلاً (session recording مش حاجة تبدأ
+// من أول milisecond). afterInteractive كان بيحمل السكريبت ده في نفس
+// الـ window اللي React بيعمل hydrate فيه، يعني بيتزامن بالظبط مع أول
+// لحظة المستخدم بيحاول يتفاعل (زي السكرول). lazyOnload بيأجل التحميل
+// لحد ما المتصفح يبقى فاضي تمامًا (بعد window.onload)، فميبقاش منافس
+// على الـ main thread وقت اللود وأول محاولة سكرول من المستخدم.
 export default function Clarity() {
   return (
     <Script
       id="ms-clarity"
-      strategy="afterInteractive"
+      strategy="lazyOnload"
       dangerouslySetInnerHTML={{
         __html: `
           (function(c,l,a,r,i,t,y){

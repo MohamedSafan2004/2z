@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Suspense } from "react"
 import { RevealSection } from "@/components/RevealSection"
-import { SkeletonBlock } from "@/components/Skeleton"
+import { SkeletonCard } from "@/components/Skeleton"
 import { NewInScrollProgress } from "@/components/NewInScrollProgress"
 import { getFeaturedProducts, colorImages, optimizeCloudinaryUrl } from "@/lib/home-data"
 import styles from "../../app/(store)/home.module.css"
@@ -55,6 +55,23 @@ async function NewInContent() {
   )
 }
 
+// نفس منطق Best Sellers: الـ fallback بيطابق newin-grid الحقيقي بالظبط (نفس
+// flex/scroll-x على الموبايل، نفس grid على الديسكتوب) بدل ارتفاع بكسل
+// ثابت (كان 280px) مختلف عن الارتفاع الفعلي. نفس السبب اللي اتصلح
+// في BestSellersSection: الفرق في الارتفاع بين skeleton والمحتوى الحقيقي كان
+// بيرمي موضع الصفحة بالظبط لحظة ما الـ Suspense يتحل أثناء ما المستخدم
+// بيحاول يسكرول.
+function NewInSkeleton() {
+  return (
+    <div className={styles["newin-grid"]}>
+      <div className={styles["newin-item"]}><SkeletonCard /></div>
+      <div className={styles["newin-item"]}><SkeletonCard /></div>
+      <div className={styles["newin-item"]}><SkeletonCard /></div>
+      <div className={styles["newin-item"]}><SkeletonCard /></div>
+    </div>
+  )
+}
+
 export function NewInSection() {
   return (
     <RevealSection className={styles.newin}>
@@ -62,7 +79,7 @@ export function NewInSection() {
         <span className={styles["sec-label"]}>New In</span>
         <Link href="/products" className={styles["sec-viewall"]}>View All</Link>
       </div>
-      <Suspense fallback={<SkeletonBlock height="280px" />}>
+      <Suspense fallback={<NewInSkeleton />}>
         <NewInContent />
       </Suspense>
     </RevealSection>

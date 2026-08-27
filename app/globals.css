@@ -38,3 +38,21 @@ body {
   background: #f0ede6;
   color: #080808;
 }
+
+/* Navbar background — blur() على position: fixed بيتـ repaint من الـ GPU
+   في كل frame أثناء أي scroll تحته، وده تكلفة حقيقية على iOS Safari لو
+   الصفحة بتعمل مليون repaint وهي بتحاول تستجيب للمس. اللون الصلب بدون
+   blur بياخد نفس الشكل تقريبًا (الخلفية أصلاً غامقة #080808) من غير
+   التكلفة دي — نطبقه على الموبايل بس، الديسكتوب مفيهوش نفس ضغط اللمس
+   المتكرر فمُبقّي الـ blur اللي شكله أحلى شوية هناك. */
+.navbar-blur {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+@media (max-width: 767px) {
+  .navbar-blur {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: #080808 !important;
+  }
+}

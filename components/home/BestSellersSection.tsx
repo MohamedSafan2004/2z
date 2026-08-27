@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Suspense } from "react"
 import { RevealSection } from "@/components/RevealSection"
-import { SkeletonBlock } from "@/components/Skeleton"
+import { SkeletonCard } from "@/components/Skeleton"
 import { getBestSellers, colorImages, optimizeCloudinaryUrl } from "@/lib/home-data"
 import styles from "../../app/(store)/home.module.css"
 
@@ -51,6 +51,21 @@ async function BestSellersContent() {
   )
 }
 
+// الـ fallback بيستخدم نفس bs-grid (2 عمود + aspect-ratio 3/4) اللي المحتوى
+// الحقيقي بيستخدمه، بدل ارتفاع بكسل ثابت (كان 360px) كان بيفرق شوية عن
+// الارتفاع الفعلي حسب عرض الشاشة. الفرق ده كان بيحصل بالظبط لحظة ما الـ
+// Suspense يتحل — يعني في نفس التوقيت اللي المستخدم غالبًا بيبدأ يسكرول
+// فيه — فكان بيرمي موضع الصفحة فجأة ويخلي Safari على iOS يفسرها كمحاولة
+// pull-to-refresh (نفس عدد الأعمدة ونفس aspect-ratio = نفس الارتفاع بالظبط).
+function BestSellersSkeleton() {
+  return (
+    <div className={styles["bs-grid"]}>
+      <SkeletonCard />
+      <SkeletonCard />
+    </div>
+  )
+}
+
 export function BestSellersSection() {
   return (
     <RevealSection className={styles.bestsellers}>
@@ -58,7 +73,7 @@ export function BestSellersSection() {
         <span className={styles["sec-label"]}>Best Sellers</span>
         <Link href="/products" className={styles["sec-viewall"]}>View All</Link>
       </div>
-      <Suspense fallback={<SkeletonBlock height="360px" />}>
+      <Suspense fallback={<BestSellersSkeleton />}>
         <BestSellersContent />
       </Suspense>
     </RevealSection>

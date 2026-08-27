@@ -18,7 +18,15 @@ export function NewInScrollProgress({
     const fillEl = fillRef.current
     if (!scrollEl || !fillEl) return
 
+    // rAF throttle: الـ scroll event بيتطلق أكتر من مرة في نفس الـ frame
+    // أثناء اللمس على iOS. من غير throttle، كل event كان بيعمل read (scrollWidth/
+    // clientWidth/scrollLeft) وwrite (style.width/transform) على الـ DOM في
+    // نفس الـ synchronous call، وده بيسبب layout thrashing لو حصل كذا مرة في
+    // نفس الـ frame. rAF بيضمن إن القراءة والكتابة تحصل مرة واحدة بس لكل frame.
+    let ticking = false
+
     function updateProgress() {
+      ticking = false
       if (!scrollEl || !fillEl) return
       const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth
       if (maxScroll <= 0) {
@@ -32,12 +40,18 @@ export function NewInScrollProgress({
       fillEl.style.transform = `translateX(${(ratio * trackWidth * 100) / visibleRatio}%)`
     }
 
+    function onScroll() {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(updateProgress)
+    }
+
     updateProgress()
-    scrollEl.addEventListener("scroll", updateProgress, { passive: true })
-    window.addEventListener("resize", updateProgress)
+    scrollEl.addEventListener("scroll", onScroll, { passive: true })
+    window.addEventListener("resize", onScroll)
     return () => {
-      scrollEl.removeEventListener("scroll", updateProgress)
-      window.removeEventListener("resize", updateProgress)
+      scrollEl.removeEventListener("scroll", onScroll)
+      window.removeEventListener("resize", onScroll)
     }
   }, [])
 
