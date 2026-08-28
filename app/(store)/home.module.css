@@ -24,7 +24,20 @@
   color: #f0ede6;
   width: 100%;
   max-width: 100vw;
-  overflow-x: hidden;
+  /* مهم: overflow-x لوحدها من غير overflow-y بتخلي الـ browser يحسب
+     overflow-y كـ "auto" تلقائيًا (موثق في CSS Overflow spec — تحديد
+     قيمة على محور واحد بس بيفرض على المحور التاني يتحول من visible
+     لـ auto بدل ما يفضل visible). ده كان بيحول .home-root نفسه لـ
+     scroll container رأسي تاني فوق الـ HTML scrollbar الأساسي (nested
+     scrolling)، وكمان كان بيقفل margin collapsing على children زي
+     .marquee-wrap (margin-top) فبيتحسب كمساحة إضافية جوه scrollHeight
+     بدل ما يندمج عادي مع المسافة اللي قبله. overflow-x: clip بيمنع
+     الـ horizontal overflow (المارکي وغيره) بدون ما يفعّل أي auto على
+     المحور التاني، وoverflow-y: visible بيتأكد إن .home-root مايبقاش
+     scroll container أبدًا — الـ HTML/body هما بس المسؤولين عن
+     الـ scrolling الرأسي للصفحة كلها. */
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 @keyframes fadeUp {
