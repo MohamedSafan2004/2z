@@ -123,7 +123,7 @@ export default function Navbar({ hideAnnouncementOffset = false }: { hideAnnounc
         </div>
 
         {/* Mobile Menu — Orders, Admin/Login live here too, guest or logged in */}
-        <divgit 
+        <div 
           className="md:hidden"
           style={{
             maxHeight: menuOpen ? "320px" : "0px",
