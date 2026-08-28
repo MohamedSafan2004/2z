@@ -1,8 +1,30 @@
 import type { Metadata } from "next"
+import { Space_Mono, Cormorant_Garamond } from "next/font/google"
 import "./globals.css"
 import Providers from "./providers"
 import MetaPixel from "@/components/MetaPixel"
 import Clarity from "@/components/Clarity"
+
+// next/font/google بدل @import url(...) اللي كانت في globals.css: الـ @import بيخلي
+// المتصفح مضطر يستنى fonts.googleapis.com يخلص تحميله بالكامل (DNS +
+// TLS + download لسيرفر خارجي تمامًا) قبل ما يقدر يطبق أي CSS تاني جوه نفس الملف
+// (زي Tailwind) — ده رندر-بلوكينج موثق وموجود في تقرير الـ Lighthouse. next/font/google
+// بيعمل self-host للخطوط وقت الـ build (بيحملهم مرة واحدة ويخزنهم كملفات جوه
+// 2zstore.com نفسه)، فالمتصفح مش محتاج يعمل أي طلب خارجي خالص للخطوط، ومعاها
+// Next.js بيحقن preload + font-display: swap تلقائيًا.
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-space-mono",
+  display: "swap",
+})
+const cormorantGaramond = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["300", "400"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
+  display: "swap",
+})
 
 const SITE_URL = "https://www.2zstore.com"
 const DEFAULT_TITLE = "2Z Store — Oversized Minimal Streetwear | Egypt"
@@ -92,7 +114,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${spaceMono.variable} ${cormorantGaramond.variable}`}>
       <body>
         <script
           type="application/ld+json"
