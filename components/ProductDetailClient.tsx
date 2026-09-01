@@ -7,7 +7,6 @@ import { useCart } from "@/lib/store/cart"
 import { trackViewContent, trackAddToCart } from "@/lib/meta-pixel"
 import ActiveOfferBanner from "@/components/ActiveOfferBanner"
 import SizeRecommendationModal from "@/components/Sizerecommendationmodal"
-import { getAllTiers, getTierDiscountPercent } from "@/lib/pricing"
 
 
 const colorImages: Record<string, string[]> = {
@@ -48,14 +47,15 @@ function optimizeCloudinaryUrl(url: string, width: number): string {
 }
 
 const sizes = ["M", "L", "XL", "XXL"] // XXL مضاف UI بس دلوقتي — مفيش variant ليه في الداتابيز فبيظهر Sold Out دايمًا تلقائيًا لحد 21 يضيفوه في الداتابيز
-const giftSizes = ["M", "L", "XL"] // مقاسات الهدية المجانية — مش فيها XXL لأنه مفيش variant حقيقي يتم اختياره فعليًا للهدية
+const giftSizes = ["M", "L", "XL", "XXL"] // مقاسات الهدية المجانية — XXL مضاف UI بس زي sizes الأساسية، مفيش له variant حقيقي فبيظهر Out of Stock دايمًا لحد ما يتضاف في الداتابيز
 const colorsList = ["BLACK", "WHITE", "GREY", "BEIGE"]
 const LOW_STOCK_THRESHOLD = 3
 const ACCENT = "#c8f04f"
 
-// عتبات العروض — لازم تتطابق مع الـ Promotion rows في الداتابيز
+// عتبة العرض — لازم تتطابق مع الـ Promotion row الفعّال في الداتابيز (isActive: true).
+// Buy 2 Get 1 بس — تير واحد. لو اتضاف تير تاني في الداتابيز لازم يتضاف هنا برضه عشان
+// الـ progress bar يعرضه صح.
 const TIERS = [
-  { triggerQuantity: 3, freeQuantity: 2 },
   { triggerQuantity: 2, freeQuantity: 1 },
 ].sort((a, b) => b.triggerQuantity - a.triggerQuantity)
 
@@ -459,102 +459,6 @@ export default function ProductDetailClient({
           color: #080808;
         }
 
-        /* ── Quantity discount bar (product page, above Add to Cart) ── */
-        .qty-discount-box {
-          border: 1px solid rgba(240,237,230,0.12);
-          padding: 16px 18px;
-          margin-bottom: 16px;
-          transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
-        }
-        .qty-discount-box.active {
-          border-color: rgba(200,240,79,0.3);
-          background: rgba(200,240,79,0.02);
-        }
-        .qty-discount-box.maxed {
-          border: 1.5px solid ${ACCENT};
-          background: rgba(200,240,79,0.06);
-          box-shadow: 0 0 0 3px rgba(200,240,79,0.08);
-          animation: qtyMaxPulse 2.2s ease infinite;
-        }
-        @keyframes qtyMaxPulse {
-          0%, 100% { box-shadow: 0 0 0 3px rgba(200,240,79,0.08); }
-          50% { box-shadow: 0 0 0 5px rgba(200,240,79,0.03); }
-        }
-
-        .qty-discount-segments {
-          display: flex;
-          gap: 3px;
-          margin-bottom: 10px;
-        }
-        .qty-discount-segment {
-          height: 6px;
-          border-radius: 3px;
-          background: rgba(240,237,230,0.1);
-          transition: background 0.4s ease;
-        }
-        .qty-discount-segment.reached {
-          background: ${ACCENT};
-        }
-
-        .qty-discount-labels-row {
-          display: flex;
-          gap: 3px;
-          margin-bottom: 14px;
-        }
-        .qty-discount-label-col {
-          text-align: center;
-        }
-        .qty-discount-qty {
-          font-family: 'Space Mono', monospace;
-          font-size: 8px;
-          letter-spacing: 0.03em;
-          color: rgba(240,237,230,0.35);
-          margin: 0;
-          transition: color 0.3s ease;
-        }
-        .qty-discount-qty.reached {
-          color: rgba(240,237,230,0.55);
-        }
-        .qty-discount-pct {
-          font-family: 'Space Mono', monospace;
-          font-weight: 700;
-          color: rgba(240,237,230,0.3);
-          margin: 2px 0 0;
-          transition: color 0.3s ease;
-        }
-        .qty-discount-pct.reached {
-          color: ${ACCENT};
-        }
-
-        .qty-discount-footer {
-          border-top: 1px solid rgba(240,237,230,0.08);
-          padding-top: 10px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .qty-discount-box.maxed .qty-discount-footer {
-          border-top-color: rgba(200,240,79,0.15);
-        }
-        .qty-discount-dot {
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: ${ACCENT};
-          flex-shrink: 0;
-        }
-        .qty-discount-footer-text {
-          font-family: 'Space Mono', monospace;
-          font-size: 9.5px;
-          letter-spacing: 0.02em;
-          color: rgba(240,237,230,0.7);
-          margin: 0;
-        }
-        .qty-discount-footer-text.maxed {
-          color: ${ACCENT};
-          font-weight: 700;
-        }
-
         /* ── Gift picker ── */
         .gift-picker { animation: slideDown 0.4s ease both; overflow: hidden; }
         .gift-swatch {
@@ -568,6 +472,24 @@ export default function ProductDetailClient({
           cursor: pointer; transition: all 0.15s; background: transparent;
         }
         .check-pop { animation: checkPop 0.3s ease; }
+
+        /* ── Out-of-stock diagonal strike — used for size buttons (product page + gift picker).
+           A single line across the whole button reads instantly as "exists but sold out",
+           unlike a faint/disabled look which reads as "not offered". */
+        .size-btn-oos {
+          position: relative;
+        }
+        .size-btn-oos::after {
+          content: "";
+          position: absolute;
+          left: 8%;
+          right: 8%;
+          top: 50%;
+          height: 1px;
+          background: rgba(240,237,230,0.55);
+          transform: translateY(-50%) rotate(-14deg);
+          pointer-events: none;
+        }
 
         /* ── Promo banner (top of product page) — compact, tag-style tiers ── */
         .promo-banner {
@@ -888,16 +810,16 @@ export default function ProductDetailClient({
                   return (
                     <button
                       key={size}
+                      className={disabled ? "size-btn-oos" : ""}
                       onClick={() => { if (!disabled) { setSelectedSize(size); setQuantity(1) } }}
                       disabled={disabled}
+                      title={disabled ? "Out of stock" : undefined}
                       style={{
                         flex: 1, padding: "14px 0", fontSize: "11px", fontFamily: "Space Mono, monospace",
                         letterSpacing: "0.1em", cursor: disabled ? "not-allowed" : "pointer",
                         background: isSelected ? "#f0ede6" : "transparent",
-                        color: disabled ? "rgba(240,237,230,0.2)" : isSelected ? "#080808" : "#f0ede6",
+                        color: disabled ? "rgba(240,237,230,0.4)" : isSelected ? "#080808" : "#f0ede6",
                         border: isSelected ? "1px solid #f0ede6" : "1px solid rgba(240,237,230,0.15)",
-                        textDecoration: disabled ? "line-through" : "none",
-                        textDecorationColor: "rgba(240,237,230,0.3)",
                         transition: "all 0.2s",
                       }}
                     >
@@ -906,6 +828,15 @@ export default function ProductDetailClient({
                   )
                 })}
               </div>
+              {(() => {
+                const outOfStockSizes = sizes.filter((size) => (variants.find((v) => v.size === size)?.stockQuantity ?? 0) === 0)
+                if (outOfStockSizes.length === 0) return null
+                return (
+                  <p style={{ fontSize: "11px", letterSpacing: "0.03em", color: "rgba(240,237,230,0.85)", marginTop: "10px", marginBottom: 0 }}>
+                    Out of stock: <span style={{ color: "#f0ede6", fontWeight: 700 }}>{outOfStockSizes.join(", ")}</span>
+                  </p>
+                )
+              })()}
             </div>
 
             {selectedSize && isLowStock && !isSoldOut && (
@@ -936,7 +867,15 @@ export default function ProductDetailClient({
               </div>
             </div>
 
-            <QuantityDiscountBar projectedQuantity={projectedQuantity} unitPrice={Number(product.price)} />
+            <BundleSection
+              currentCartQuantity={currentCartQuantity}
+              eligibleNow={eligibleNow}
+              nextTier={nextTier}
+              gifts={gifts}
+              setGift={setGift}
+              availableGiftVariants={availableGiftVariants}
+              loadingGiftVariants={loadingGiftVariants}
+            />
 
             <button
               onClick={handleAdd}
@@ -1043,99 +982,11 @@ export default function ProductDetailClient({
   )
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Bundle progress bar + inline gift picker (lives right under Buy It Now)
-// ─────────────────────────────────────────────────────────────────────────
-
-function QuantityDiscountBar({ projectedQuantity, unitPrice }: { projectedQuantity: number; unitPrice: number }) {
-  const tiers: { minQty: number; percent: number }[] = getAllTiers()
-  const maxTier = tiers[tiers.length - 1]
-  const currentPercent = getTierDiscountPercent(projectedQuantity)
-  const isMaxTier = currentPercent === maxTier.percent
-
-  const nextTier = tiers.find((t) => t.percent > currentPercent) ?? null
-  const remaining = nextTier ? nextTier.minQty - projectedQuantity : 0
-
-  // قيمة التوفير بالجنيه — مبنية على إجمالي قيمة القطع الحالية في الصفحة (unitPrice * projectedQuantity)،
-  // محتاجة تقريبية لأن الخصم الفعلي في الأوردر بيتحسب على subtotal الكارت كامل في السيرفر
-  const projectedValue = unitPrice * projectedQuantity
-  const currentSaving = Math.round((projectedValue * currentPercent) / 100)
-  const nextSaving = nextTier ? Math.round((unitPrice * nextTier.minQty * nextTier.percent) / 100) : 0
-
-  return (
-    <div className={`qty-discount-box ${currentPercent > 0 ? "active" : ""} ${isMaxTier ? "maxed" : ""}`}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "12px", gap: "8px", flexWrap: "wrap" }}>
-        {currentPercent === 0 ? (
-          <p style={{ fontSize: "11px", letterSpacing: "0.03em", color: "rgba(240,237,230,0.7)", margin: 0 }}>
-            Add this piece to unlock <span style={{ color: ACCENT, fontWeight: 700 }}>10% off</span>
-          </p>
-        ) : isMaxTier ? (
-          <p style={{ fontSize: "11px", letterSpacing: "0.03em", color: "#f0ede6", margin: 0 }}>
-            Max discount unlocked — <span style={{ color: ACCENT, fontSize: "15px", fontWeight: 700 }}>{currentPercent}% off</span>
-          </p>
-        ) : (
-          <p style={{ fontSize: "11px", letterSpacing: "0.03em", color: "#f0ede6", margin: 0 }}>
-            <span style={{ color: ACCENT, fontSize: "15px", fontWeight: 700 }}>{currentPercent}% off</span> unlocked
-          </p>
-        )}
-        {currentSaving > 0 && !isMaxTier && (
-          <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.5)", margin: 0, whiteSpace: "nowrap" }}>
-            saving <span style={{ color: ACCENT }}>{currentSaving} EGP</span>
-          </p>
-        )}
-      </div>
-
-      {/* بار مقسّم لحد قطع متدرجة العرض — كل قطعة flex أكبر من اللي قبلها عشان تدي إحساس بالتصعيد */}
-      <div className="qty-discount-segments">
-        {tiers.map((t, i) => {
-          const reached = projectedQuantity >= t.minQty
-          return (
-            <div
-              key={t.minQty}
-              className={`qty-discount-segment ${reached ? "reached" : ""}`}
-              style={{ flex: 1 + i * 0.12 }}
-            />
-          )
-        })}
-      </div>
-
-      <div className="qty-discount-labels-row">
-        {tiers.map((t, i) => {
-          const reached = projectedQuantity >= t.minQty
-          return (
-            <div key={t.minQty} className="qty-discount-label-col" style={{ flex: 1 + i * 0.12 }}>
-              <p className={`qty-discount-qty ${reached ? "reached" : ""}`}>{t.minQty}pc</p>
-              <p className={`qty-discount-pct ${reached ? "reached" : ""}`} style={{ fontSize: `${9 + i * 0.6}px` }}>{t.percent}%</p>
-            </div>
-          )
-        })}
-      </div>
-
-      <div className="qty-discount-footer">
-        <span className="qty-discount-dot" />
-        {isMaxTier ? (
-          <p className="qty-discount-footer-text maxed">You&apos;ve hit the top tier — biggest discount applied</p>
-        ) : nextTier ? (
-          <p className="qty-discount-footer-text">
-            {remaining} more piece{remaining > 1 ? "s" : ""} unlocks <span style={{ color: ACCENT, fontWeight: 700 }}>{nextTier.percent}% off</span>
-            {nextSaving > 0 && ` — ${nextSaving} EGP saved`}
-          </p>
-        ) : null}
-      </div>
-    </div>
-  )
-}
-
 const SWATCH_COLORS: Record<string, string> = {
   BLACK: "#1a1a1a",
   WHITE: "#f0ede6",
   GREY:  "#8a8a85",
   BEIGE: "#d8c8a8",
-}
-
-function activeFreeQty(eligibleNow: { triggerQuantity: number; freeQuantity: number } | null): string {
-  if (!eligibleNow) return ""
-  return eligibleNow.freeQuantity === 1 ? "1 free tee" : `${eligibleNow.freeQuantity} free tees`
 }
 
 function BundleSection({
@@ -1170,14 +1021,14 @@ function BundleSection({
 
   return (
     <div className={`bundle-box ${eligibleNow ? "eligible" : ""}`}>
-      {/* رسالة الحالة الحالية — دايمًا واضحة سواء لسه مفيش عرض اتحقق أو خدت عرض وفيه عرض أكبر جاي */}
+      {/* رسالة الحالة الحالية — دايمًا واضحة سواء لسه مفيش عرض اتحقق أو خد الهدية */}
       {upcomingTier ? (
         <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
-          🎁 {eligibleNow ? "One more and" : "Add"} <span style={{ color: ACCENT }}>{remaining}</span> more to unlock {upcomingTier.freeQuantity === 1 ? "a free tee" : `${upcomingTier.freeQuantity} free tees`}
+          🎁 Buy <span style={{ color: ACCENT }}>{upcomingTier.triggerQuantity}</span>, get <span style={{ color: ACCENT }}>1 free</span> — add <span style={{ color: ACCENT }}>{remaining}</span> more piece{remaining > 1 ? "s" : ""} to unlock it
         </p>
       ) : (
         <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: ACCENT, margin: 0 }}>
-          🎉 Max offer unlocked — {activeFreeQty(eligibleNow)}
+          🎉 Offer unlocked — pick your free tee below
         </p>
       )}
 
@@ -1216,26 +1067,24 @@ function BundleSection({
 
                   return (
                     <div key={idx}>
-                      {eligibleNow.freeQuantity > 1 && (
-                        <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "10px" }}>
-                          <div className={isDone ? "check-pop" : ""} style={{
-                            width: "15px", height: "15px", borderRadius: "50%", flexShrink: 0,
-                            border: `1px solid ${isDone ? ACCENT : "rgba(240,237,230,0.25)"}`,
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            background: isDone ? ACCENT : "transparent",
-                          }}>
-                            {isDone && <span style={{ fontSize: "9px", color: "#080808", lineHeight: 1 }}>✓</span>}
-                          </div>
-                          <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.4)", margin: 0 }}>
-                            Free Gift {idx + 1}
-                          </p>
+                      <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "12px" }}>
+                        <div className={isDone ? "check-pop" : ""} style={{
+                          width: "15px", height: "15px", borderRadius: "50%", flexShrink: 0,
+                          border: `1px solid ${isDone ? ACCENT : "rgba(240,237,230,0.25)"}`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          background: isDone ? ACCENT : "transparent",
+                        }}>
+                          {isDone && <span style={{ fontSize: "9px", color: "#080808", lineHeight: 1 }}>✓</span>}
                         </div>
-                      )}
+                        <p style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: isDone ? ACCENT : "#f0ede6", fontWeight: 700, margin: 0 }}>
+                          {eligibleNow.freeQuantity > 1 ? `Your Free Gift ${idx + 1}` : "Your Free Gift"}
+                        </p>
+                      </div>
 
-                      <div style={{ display: "flex", gap: "18px", flexWrap: "wrap" }}>
+                      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", paddingLeft: "22px", borderLeft: "1px solid rgba(240,237,230,0.08)" }}>
                         <div>
-                          <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "7px" }}>
-                            {currentGift?.color ? currentGift.color.charAt(0) + currentGift.color.slice(1).toLowerCase() : "Color"}
+                          <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.9)", marginBottom: "7px" }}>
+                            Color
                           </p>
                           <div style={{ display: "flex", gap: "8px" }}>
                             {colorOptions.map((c) => {
@@ -1256,6 +1105,7 @@ function BundleSection({
                                     })
                                   }}
                                   aria-label={c}
+                                  title={c.charAt(0) + c.slice(1).toLowerCase()}
                                   style={{
                                     background: SWATCH_COLORS[c],
                                     border: isSelected ? `2px solid ${ACCENT}` : "1px solid rgba(240,237,230,0.2)",
@@ -1272,22 +1122,29 @@ function BundleSection({
                               )
                             })}
                           </div>
+                          {currentGift?.color && (
+                            <p style={{ fontSize: "8px", color: ACCENT, marginTop: "7px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                              {currentGift.color.charAt(0) + currentGift.color.slice(1).toLowerCase()}
+                            </p>
+                          )}
                         </div>
 
                         <div>
-                          <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.35)", marginBottom: "7px" }}>
+                          <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.9)", marginBottom: "7px" }}>
                             Size
                           </p>
-                          <div style={{ display: "flex", gap: "6px", opacity: currentGift?.color ? 1 : 0.35 }}>
+                          <div style={{ display: "flex", gap: "6px" }}>
                             {giftSizes.map((s) => {
-                              const isAvailable = sizeOptionsForColor.includes(s)
+                              const colorPicked = !!currentGift?.color
+                              const isOutOfStock = colorPicked && !sizeOptionsForColor.includes(s)
                               const isSelected = currentGift?.size === s
-                              const disabled = !currentGift?.color || !isAvailable
+                              const disabled = !colorPicked || isOutOfStock
                               return (
                                 <button
                                   key={s}
-                                  className="gift-size-btn"
+                                  className={`gift-size-btn ${isOutOfStock ? "size-btn-oos" : ""}`}
                                   disabled={disabled}
+                                  title={isOutOfStock ? "Out of stock" : undefined}
                                   onClick={() => {
                                     const variant = availableGiftVariants.find((v) => v.color === currentGift?.color && v.size === s)
                                     if (currentGift) setGift(idx, { ...currentGift, variantId: variant?.variantId || "", size: s })
@@ -1295,9 +1152,8 @@ function BundleSection({
                                   style={{
                                     cursor: disabled ? "not-allowed" : "pointer",
                                     background: isSelected ? ACCENT : "transparent",
-                                    color: !isAvailable ? "rgba(240,237,230,0.15)" : isSelected ? "#080808" : "#f0ede6",
-                                    border: isSelected ? `1px solid ${ACCENT}` : "1px solid rgba(240,237,230,0.15)",
-                                    textDecoration: !isAvailable && currentGift?.color ? "line-through" : "none",
+                                    color: isOutOfStock ? "rgba(240,237,230,0.4)" : !colorPicked ? "rgba(240,237,230,0.35)" : isSelected ? "#080808" : "#f0ede6",
+                                    borderColor: isSelected ? ACCENT : "rgba(240,237,230,0.3)",
                                   }}
                                 >
                                   {s}
@@ -1305,8 +1161,28 @@ function BundleSection({
                               )
                             })}
                           </div>
+                          {!currentGift?.color && (
+                            <p style={{ fontSize: "8px", color: "rgba(240,237,230,0.4)", marginTop: "7px", letterSpacing: "0.02em" }}>
+                              Pick a color first
+                            </p>
+                          )}
+                          {currentGift?.color && (() => {
+                            const outOfStockSizes = giftSizes.filter((s) => !sizeOptionsForColor.includes(s))
+                            if (outOfStockSizes.length === 0) return null
+                            return (
+                              <p style={{ fontSize: "10.5px", letterSpacing: "0.02em", color: "rgba(240,237,230,0.85)", marginTop: "8px" }}>
+                                Out of stock: <span style={{ color: "#f0ede6", fontWeight: 700 }}>{outOfStockSizes.join(", ")}</span>
+                              </p>
+                            )
+                          })()}
                         </div>
                       </div>
+
+                      {isDone && (
+                        <p style={{ fontSize: "8px", letterSpacing: "0.04em", color: ACCENT, marginTop: "10px", paddingLeft: "22px" }}>
+                          ✓ Ready — added free to your order
+                        </p>
+                      )}
                     </div>
                   )
                 })}
@@ -1414,7 +1290,7 @@ function ShippingInfoBanner() {
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
           <rect x="1" y="6" width="14" height="11"/><path d="M15 9h4l3 3v5h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="17.5" cy="19" r="2"/>
         </svg>
-        <span className="shipping-info-text">Estimated delivery: <strong>1–3 business days</strong></span>
+        <span className="shipping-info-text">Estimated delivery: <strong> 2-5 business days</strong></span>
       </div>
     </div>
   )
@@ -1447,7 +1323,7 @@ function ProductInfoTabs() {
       title: "Shipping and Returns",
       content: (
         <>
-          shiping all over Egypt. Orders are processed within 24 hours and delivered within 1–3 business days. Delivery estimates may vary due to holidays, weather, or courier delays.
+          shiping all over Egypt. Orders are processed within 24 hours and delivered within 2-5 business days. Delivery estimates may vary due to holidays, weather, or courier delays.
           <br /><br />
           To be eligible for a return or exchange, items must be unused, unwashed, and with all original tags attached. Manufacturing defects or incorrectly shipped items are handled entirely at 2Z&apos;s expense.
         </>

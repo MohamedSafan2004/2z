@@ -14,7 +14,7 @@ export const SHIPPING_LABELS: Record<ShippingZone, string> = {
 // لو عايز تغير الحد (دلوقتي 1000 جنيه): عدّل الرقم بس
 // محتاجش تلمس أي ملف تاني في المشروع — كل مكان بيستخدمه بيجيبه من هنا
 // (checkout API والبانرات في الواجهة التلاتا بيقروه من هنا أو من الـ API endpoint الجديد).
-export const FREE_SHIPPING_THRESHOLD: number | null = 1500
+export const FREE_SHIPPING_THRESHOLD: number | null = null
 
 export function getShippingCost(zone: string | null | undefined): number {
   if (zone === "egypt") return SHIPPING_RATES.egypt

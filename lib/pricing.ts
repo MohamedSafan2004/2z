@@ -1,46 +1,38 @@
-// ── Tiered quantity discount ──
-// خصم بينزاد كل ما العميل يزود قطع في الأوردر، بيتحسب على إجمالي عدد القطع
-// (paid items) في الكارت كله — مش شرط تكون نفس اللون ولا نفس المقاس.
+// ── Tiered quantity discount ── [معطّل حاليًا بطلب من محمد] ──
+// العرض ده ("buy more save more") اتشال كاملاً — UI في checkout/product page/cart
+// والحساب في checkout API. الدوال تحت راجعة دايمًا 0 عشان أي ملف لسه بيعمل
+// import من هنا يفضل يشتغل من غير ما يكسر.
 //
-// لو عايز تغيّر النسب أو الحدود: عدّل TIERS بس، محتاجش تلمس أي ملف تاني —
-// checkout API (source of truth الفعلي) والـ UI (cart, checkout, product page)
-// كلهم بيقروا من الدالة دي.
-//
-// مهم: التقييم من الأعلى للأقل (أول tier بيتحقق شرطه بيكسب) — لازم تفضل TIERS
-// مرتبة تنازليًا بالـ minQty وإلا المنطق هيتلخبط.
+// لإرجاع العرض: رجّع TIERS للقيم القديمة المحفوظة تحت، وشيل conditional
+// الإخفاء من الـ UI في checkout/page.tsx وComponents\ProductDetailClient.tsx.
 interface Tier {
   minQty: number
   percent: number
 }
 
-const TIERS: Tier[] = [
-  { minQty: 4, percent: 25 },
-  { minQty: 3, percent: 20 },
-  { minQty: 2, percent: 15 },
-  { minQty: 1, percent: 10 },
-]
+// const TIERS: Tier[] = [
+//   { minQty: 4, percent: 25 },
+//   { minQty: 3, percent: 20 },
+//   { minQty: 2, percent: 15 },
+//   { minQty: 1, percent: 10 },
+// ]
 
 /**
- * بيرجع نسبة الخصم المستحقة لعدد قطع معين (0 لو مفيش قطع خالص).
- * paidQuantity = إجمالي عدد القطع المدفوعة في الأوردر (مش شامل أي هدايا مجانية).
+ * معطّل — بيرجع 0 دايمًا. خصم الكمية موقف بطلب من محمد — التوقيعة موجودة
+ * فوق لو قررنا نرجعه.
  */
-export function getTierDiscountPercent(paidQuantity: number): number {
-  if (!paidQuantity || paidQuantity < 1) return 0
-  const tier = TIERS.find((t) => paidQuantity >= t.minQty)
-  return tier ? tier.percent : 0
+export function getTierDiscountPercent(_paidQuantity: number): number {
+  return 0
 }
 
 /**
- * بيرجع الـ tier القادم (اللي لسه مش متحقق) عشان العرض في الـ UI —
- * زي "هتشتري قطعة كمان وتاخد خصم 30%". null لو العميل وصل لأعلى تير (40%).
+ * معطّل — بيرجع null دايمًا طالما مفيش tiers فعّالة.
  */
-export function getNextTier(paidQuantity: number): Tier | null {
-  const currentPercent = getTierDiscountPercent(paidQuantity)
-  const next = [...TIERS].reverse().find((t) => t.percent > currentPercent)
-  return next || null
+export function getNextTier(_paidQuantity: number): Tier | null {
+  return null
 }
 
-/** كل الـ tiers بترتيب تصاعدي — للعرض في UI (جدول/بار الخصم على صفحة المنتج مثلاً) */
+/** معطّل — بيرجع مصفوفة فارغة دايمًا. */
 export function getAllTiers(): Tier[] {
-  return [...TIERS].sort((a, b) => a.minQty - b.minQty)
+  return []
 }

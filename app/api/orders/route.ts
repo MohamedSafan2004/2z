@@ -7,7 +7,6 @@ import { sanitize } from "@/lib/validation"
 import { getFinalShippingCost, type ShippingZone } from "@/lib/shipping"
 import { isValidBostaCity } from "@/lib/cities"
 import { calculatePromotion, type GiftSelection } from "@/lib/promotions"
-import { getTierDiscountPercent } from "@/lib/pricing"
 import { sendPurchaseCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 import { normalizeEgyptianPhone } from "@/lib/phone"
 import crypto from "crypto"
@@ -105,10 +104,10 @@ export async function POST(req: NextRequest) {
     // بيتحسب على إجمالي عدد القطع المدفوعة في الأوردر (مش شامل هدايا الـ bundle)
     // — 1 قطعة = 10%، 2 = 15%، 3 = 20%، 4+ = 25%. بيتحسب الأول قبل أي حاجة
     // تانية، على السعر بعد خصم الـ bundle مباشرة.
-    const paidQuantity = items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0)
-    const tierPercent = getTierDiscountPercent(paidQuantity)
+    // خصم الكمية معطّل خالص بطلب من محمد — راجع lib/pricing.ts لإرجاعه
     const afterPromotion = subtotal - promotionDiscount
-    const tierDiscountAmount = Math.round((afterPromotion * tierPercent) / 100)
+    const tierPercent = 0
+    const tierDiscountAmount = 0
 
     // ─── Promo Code ───────────────────────────────────────────────────────────
     // تراكمي فوق خصم الكمية — مش الأعلى بس. البرومو كود بيتحسب على القيمة
