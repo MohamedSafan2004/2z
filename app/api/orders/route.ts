@@ -166,10 +166,18 @@ export async function POST(req: NextRequest) {
     const appliedTierPercent = tierPercent
     const discountAmount = tierDiscountAmount + promoDiscountAmount
 
-    // الفري شيبينج بيتحسب على المبلغ الفعلي اللي العميل هيدفعه في المنتجات (بعد خصم الـ bundle + promo code)
-    const amountAfterDiscounts = subtotal - promotionDiscount - discountAmount
+    // ─── Buy X Get Y Free ─── الهدية متتحسبش كخصم من المبلغ المطلوب — العميل بيدفع
+    // تمن القطع المدفوعة كاملة، والهدية تتضاف ببلاش من غير ما تأثر على السعر النهائي.
+    // promotionDiscount لسه بتتحسب وتتحفظ في الداتابيز (للعرض في الإيميل/الأدمن بس —
+    // "قيمة الهدية اللي وفرتها"، مش خصم فعلي من الإجمالي). لا تدخله في حساب amountAfterDiscounts
+    // وtotalAmount تحت — قرار محمد الصريح: العميل يدفع تمن القطع المدفوعة كاملة، والهدية إضافة
+    // حقيقية ببلاش مش خصم مخفي على السعر.
+
+    // الفري شيبينج بيتحسب على المبلغ الفعلي اللي العميل هيدفعه في المنتجات (بعد خصم الكمية + promo code،
+    // مش بعد خصم الـ bundle لأن الهدية متأثرشي على السعر النهائي خالص)
+    const amountAfterDiscounts = subtotal - discountAmount
     const shippingCost = getFinalShippingCost(shippingZone as ShippingZone, amountAfterDiscounts)
-    const totalAmount = subtotal - promotionDiscount - discountAmount + shippingCost
+    const totalAmount = subtotal - discountAmount + shippingCost
     const user = auth.userId ? await db.user.findUnique({ where: { id: auth.userId } }) : null
     const verifyToken = crypto.randomBytes(32).toString("hex")
 
@@ -303,7 +311,7 @@ export async function POST(req: NextRequest) {
             total: totalAmount,
             address: address || "",
             promoCode: validatedPromoCode ?? undefined,
-            discountAmount: (discountAmount + promotionDiscount) > 0 ? (discountAmount + promotionDiscount) : undefined,
+            discountAmount: discountAmount > 0 ? discountAmount : undefined,
           })
         } catch (error) {
           console.error("Customer email failed:", error instanceof Error ? error.message : error)
@@ -327,7 +335,7 @@ export async function POST(req: NextRequest) {
           })),
           total: totalAmount,
           promoCode: validatedPromoCode ?? undefined,
-          discountAmount: (discountAmount + promotionDiscount) > 0 ? (discountAmount + promotionDiscount) : undefined,
+          discountAmount: discountAmount > 0 ? discountAmount : undefined,
         })
       } catch (error) {
         console.error("Admin notification failed:", error instanceof Error ? error.message : error)
