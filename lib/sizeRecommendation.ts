@@ -83,6 +83,17 @@ const BMI_FALLOFF = 4
 // Scores within `epsilon` of the top score are treated as a genuine tie.
 const TIE_EPSILON = 0.012
 
+// "Lean-and-tall" bias: for an oversized brand, a customer whose HEIGHT
+// clearly points to a bigger size while their WEIGHT clearly favors the
+// current winner (a lean, tall build) should get the bigger size — sizing
+// up is the safe mistake, sizing down is the one that gets returned. This
+// only fires when height and weight genuinely disagree (both margins must
+// be met), so it targets the actual failure mode — e.g. 182cm/67kg scored
+// L overall but ran small — without nudging ordinary borderline cases
+// where height and weight already agree.
+const LEAN_TALL_HEIGHT_MARGIN = 0.1
+const LEAN_TALL_WEIGHT_MARGIN = 0.03
+
 // "Ceiling case": how close (in cm / kg) to a range's upper edge counts
 // as maxing that size out on that axis.
 const CEILING_PROXIMITY_CM = 1
@@ -181,18 +192,49 @@ function pickBestSize(scores: Record<SizeKey, number>, input: SizeRecommendation
   const maxScore = Math.max(...entries.map((e) => e.score))
   const tied = entries.filter((e) => maxScore - e.score <= TIE_EPSILON)
 
+  let winner: SizeKey
+
   if (tied.length > 1) {
     const sorted = tied.slice().sort((a, b) => SIZE_ORDER.indexOf(a.size) - SIZE_ORDER.indexOf(b.size))
     const smaller = sorted[0]
     const larger = sorted[sorted.length - 1]
 
     // Maxed-out-on-every-axis beats stated preference: round up.
-    if (isCeilingCase(smaller.size, input)) return larger.size
-
-    return input.fitPreference === "REGULAR" ? smaller.size : larger.size
+    if (isCeilingCase(smaller.size, input)) {
+      winner = larger.size
+    } else {
+      winner = input.fitPreference === "REGULAR" ? smaller.size : larger.size
+    }
+  } else {
+    winner = entries.reduce((best, e) => (e.score > best.score ? e : best)).size
   }
 
-  return entries.reduce((best, e) => (e.score > best.score ? e : best)).size
+  // Lean-and-tall bias: size up only when height and weight genuinely
+  // disagree — height clearly favors the next size up AND weight clearly
+  // favors the current winner. Requiring both avoids nudging ordinary
+  // borderline cases where the two axes already agree. Only ever rounds
+  // UP, never down — a lean-but-short build already wins on weight/BMI
+  // and doesn't need correcting.
+  const winnerIndex = SIZE_ORDER.indexOf(winner)
+  if (winnerIndex < SIZE_ORDER.length - 1) {
+    const nextUp = SIZE_ORDER[winnerIndex + 1]
+    const winnerRange = SIZE_RANGES[winner]
+    const nextUpRange = SIZE_RANGES[nextUp]
+
+    const heightScoreForWinner = peakScore(input.heightCm, winnerRange.height[0], winnerRange.height[1], HEIGHT_FALLOFF_CM)
+    const heightScoreForNextUp = peakScore(input.heightCm, nextUpRange.height[0], nextUpRange.height[1], HEIGHT_FALLOFF_CM)
+    const heightPrefersNextUp = (heightScoreForNextUp - heightScoreForWinner) >= LEAN_TALL_HEIGHT_MARGIN
+
+    const weightScoreForWinner = peakScore(input.weightKg, winnerRange.weight[0], winnerRange.weight[1], WEIGHT_FALLOFF_KG)
+    const weightScoreForNextUp = peakScore(input.weightKg, nextUpRange.weight[0], nextUpRange.weight[1], WEIGHT_FALLOFF_KG)
+    const weightPrefersWinner = (weightScoreForWinner - weightScoreForNextUp) >= LEAN_TALL_WEIGHT_MARGIN
+
+    if (heightPrefersNextUp && weightPrefersWinner) {
+      return nextUp
+    }
+  }
+
+  return winner
 }
 
 function confidenceFromScore(topScore: number, runnerUpScore: number): Confidence {
