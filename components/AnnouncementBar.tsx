@@ -7,10 +7,17 @@
 // (58s بدل 22s) لأن الرسالة هنا تسويقية لازم تتقرا، مش ديكور خلفي بس.
 //
 // لتغيير الرسالة: عدّل MESSAGE_PARTS بس. كل جزء عنده bold: true/false للتحكم
-// في التركيز البصري (الأجزاء المهمة زي "Buy 2 Get 1 Free" بولد، والباقي عادي).
+// في التركيز البصري (الأجزاء المهمة بولد، والباقي عادي).
+//
+// Buy 2 Get 1 Free — DISABLED (commented out below for reference).
+// لإرجاعه: استبدل MESSAGE_PARTS تحت باللي فوق في الكومنت.
+// const MESSAGE_PARTS: { text: string; bold?: boolean }[] = [
+//   { text: "BUY 2 GET 1 FREE", bold: true },
+//   { text: "— mix any colors & sizes", bold: false },
+// ]
 const MESSAGE_PARTS: { text: string; bold?: boolean }[] = [
-  { text: "BUY 2 GET 1 FREE", bold: true },
-  { text: "— mix any colors & sizes", bold: false },
+  { text: "SHIPPING ALL OVER EGYPT", bold: true },
+  { text: "— 2-5 business days", bold: true },
 ]
 
 const REPEAT_COUNT = 6 // عدد تكرارات الرسالة جوه المسار — يغطي عرض الشاشة كامل مهما كانت واسعة

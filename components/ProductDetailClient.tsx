@@ -55,15 +55,28 @@ const ACCENT = "#c8f04f"
 // عتبة العرض — لازم تتطابق مع الـ Promotion row الفعّال في الداتابيز (isActive: true).
 // Buy 2 Get 1 بس — تير واحد. لو اتضاف تير تاني في الداتابيز لازم يتضاف هنا برضه عشان
 // الـ progress bar يعرضه صح.
-const TIERS = [
-  { triggerQuantity: 2, freeQuantity: 1 },
-].sort((a, b) => b.triggerQuantity - a.triggerQuantity)
-
-function getEligibleTier(paidQuantity: number) {
-  return TIERS.find((t) => paidQuantity >= t.triggerQuantity) ?? null
+//
+// Buy 2 Get 1 Free — DISABLED (معطل بطلب محمد، الداتابيز معطلة من ناحيته). لإرجاعه:
+// 1) فعّل الـ Promotion في الداتابيز (npx tsx prisma/reactivate-promotions.ts)
+// 2) شيل الكومنت اللي تحت دي ورجّع الـ const الحقيقي
+// 3) رجّع استدعاء <BundleSection /> والـ useEffect بتوع الـ gift-fetching
+//
+// const TIERS = [
+//   { triggerQuantity: 2, freeQuantity: 1 },
+// ].sort((a, b) => b.triggerQuantity - a.triggerQuantity)
+//
+// function getEligibleTier(paidQuantity: number) {
+//   return TIERS.find((t) => paidQuantity >= t.triggerQuantity) ?? null
+// }
+// function getNextTier(paidQuantity: number) {
+//   return TIERS.slice().sort((a, b) => a.triggerQuantity - b.triggerQuantity).find((t) => t.triggerQuantity > paidQuantity) ?? null
+// }
+const TIERS: { triggerQuantity: number; freeQuantity: number }[] = []
+function getEligibleTier(_paidQuantity: number): { triggerQuantity: number; freeQuantity: number } | null {
+  return null
 }
-function getNextTier(paidQuantity: number) {
-  return TIERS.slice().sort((a, b) => a.triggerQuantity - b.triggerQuantity).find((t) => t.triggerQuantity > paidQuantity) ?? null
+function getNextTier(_paidQuantity: number): { triggerQuantity: number; freeQuantity: number } | null {
+  return null
 }
 
 interface Variant {
@@ -116,6 +129,8 @@ export default function ProductDetailClient({
   const [imgIndex, setImgIndex] = useState(0)
   const [sizeGuideTab, setSizeGuideTab] = useState<"CHART" | "FINDER" | null>(null)
   const [buying, setBuying] = useState(false)
+  // setGift مستخدمة بس جوه <BundleSection /> المعطلة تحت — مسيّبة لحد ما الـ Bundle يرجع
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { addItem, items, gifts, setGift, clearGifts, paidQuantity } = useCart()
   const router = useRouter()
 
@@ -135,39 +150,51 @@ export default function ProductDetailClient({
   const projectedQuantity = paidQuantity() + (selectedSize && !isSoldOut ? quantity : 0)
   const currentCartQuantity = paidQuantity()
 
+  // المتغيرات دي كانت مستخدمة بس لـ <BundleSection /> المعطلة تحت — مسيّبة لحد ما الـ Bundle يرجع
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const eligibleNow  = useMemo(() => getEligibleTier(currentCartQuantity), [currentCartQuantity])
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const eligibleNext = useMemo(() => getEligibleTier(projectedQuantity), [projectedQuantity])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const nextTier      = useMemo(() => getNextTier(currentCartQuantity), [currentCartQuantity])
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [availableGiftVariants, setAvailableGiftVariants] = useState<AvailableGiftVariant[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingGiftVariants, setLoadingGiftVariants] = useState(false)
 
-  useEffect(() => {
-    if (!eligibleNow) return
-    queueMicrotask(() => {
-      setLoadingGiftVariants(true)
-      fetch("/api/products/gift-variants")
-        .then((res) => res.json())
-        .then((data) => setAvailableGiftVariants(data.variants || []))
-        .catch(() => setAvailableGiftVariants([]))
-        .finally(() => setLoadingGiftVariants(false))
-    })
-  }, [eligibleNow])
+  // ─── Gift-fetching ─── DISABLED (مع الـ TIERS الفارغة فوق، eligibleNow دايماً null فالـ effect مبيشتغلشي). لإرجاعه شيل الكومنت.
+  // useEffect(() => {
+  //   if (!eligibleNow) return
+  //   queueMicrotask(() => {
+  //     setLoadingGiftVariants(true)
+  //     fetch("/api/products/gift-variants")
+  //       .then((res) => res.json())
+  //       .then((data) => setAvailableGiftVariants(data.variants || []))
+  //       .catch(() => setAvailableGiftVariants([]))
+  //       .finally(() => setLoadingGiftVariants(false))
+  //   })
+  // }, [eligibleNow])
 
   // ─── Stale gift cleanup ─────────────────────────────────────────────────
   // لو الكارت رجع مش مؤهل لأي عرض (اتشالت قطعة مثلاً)، أو عدد الهدايا المحفوظة
   // من عرض قديم أكبر من الـ freeQuantity الحالي، امسح الهدايا القديمة فورًا
   // عشان محتفضش بهدية إضافية من تير سابق كان أعلى.
+  // الـ Buy 2 Get 1 Free معطل، فمفيش eligibleNow تاني. لو الكارت محتفظ بهدايا قديمة من قبل ما العرض يتقفل، امسحها.
+  // النسخة الأصلية المعطلة تحت لإرجاعها لو العرض رجع:
+  // useEffect(() => {
+  //   if (!eligibleNow) {
+  //     if (gifts.length > 0) clearGifts()
+  //     return
+  //   }
+  //   if (gifts.length > eligibleNow.freeQuantity) {
+  //     clearGifts()
+  //   }
+  // }, [eligibleNow, gifts.length, clearGifts])
   useEffect(() => {
-    if (!eligibleNow) {
-      if (gifts.length > 0) clearGifts()
-      return
-    }
-    if (gifts.length > eligibleNow.freeQuantity) {
-      clearGifts()
-    }
-  }, [eligibleNow, gifts.length, clearGifts])
+    if (gifts.length > 0) clearGifts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   React.useEffect(() => {
     const preloadRest = () => {
@@ -867,6 +894,7 @@ export default function ProductDetailClient({
               </div>
             </div>
 
+            {/* Buy 2 Get 1 Free — DISABLED. لإرجاعه شيل الكومنت ورجّع الـ TIERS والـ useEffects فوق.
             <BundleSection
               currentCartQuantity={currentCartQuantity}
               eligibleNow={eligibleNow}
@@ -876,6 +904,7 @@ export default function ProductDetailClient({
               availableGiftVariants={availableGiftVariants}
               loadingGiftVariants={loadingGiftVariants}
             />
+            */}
 
             <button
               onClick={handleAdd}
@@ -982,6 +1011,8 @@ export default function ProductDetailClient({
   )
 }
 
+// SWATCH_COLORS و BundleSection مستخدمين بس في استدعاء <BundleSection /> المعطل فوق (Buy 2 Get 1 Free معطل). مسيّبين لحد ما الـ Bundle يرجع.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const SWATCH_COLORS: Record<string, string> = {
   BLACK: "#1a1a1a",
   WHITE: "#f0ede6",
@@ -989,6 +1020,7 @@ const SWATCH_COLORS: Record<string, string> = {
   BEIGE: "#d8c8a8",
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function BundleSection({
   currentCartQuantity,
   eligibleNow,
