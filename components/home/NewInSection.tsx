@@ -25,7 +25,7 @@ async function NewInContent() {
                 {isSoldOut ? (
                   <span className={styles["bs-badge"]}>Sold Out</span>
                 ) : onSale ? (
-                  <span className={styles["card-sale-badge"]}>First Drop</span>
+                  <span className={styles["card-sale-badge"]}>Sale</span>
                 ) : null}
                 {img && (
                   <img

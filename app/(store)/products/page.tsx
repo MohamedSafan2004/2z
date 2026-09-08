@@ -92,10 +92,6 @@ export default async function ProductsPage() {
         .p-card.soldout .p-img { filter: grayscale(60%); }
 
         /* ── Sale badge on cards ── */
-        @keyframes cardSaleShine {
-          0%   { background-position: -60px 0; }
-          100% { background-position: 160px 0; }
-        }
         .card-sale-badge {
           position: absolute;
           top: 10px;
@@ -103,23 +99,16 @@ export default async function ProductsPage() {
           z-index: 2;
           display: inline-flex;
           align-items: center;
+          gap: 5px;
           font-family: 'Space Mono', monospace;
-          font-size: 8px;
+          font-size: 9px;
           font-weight: 700;
-          letter-spacing: 0.14em;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
           color: #080808;
           background: #c8f04f;
-          padding: 4px 8px;
-          overflow: hidden;
-        }
-        .card-sale-badge::after {
-          content: "";
-          position: absolute;
-          top: 0; left: 0;
-          width: 30px; height: 100%;
-          background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
-          animation: cardSaleShine 2.6s ease-in-out infinite;
+          padding: 5px 9px;
+          box-shadow: 0 2px 10px rgba(200,240,79,0.35);
         }
 
         .p-name  { font-size: 15px; }
@@ -271,6 +260,7 @@ export default async function ProductsPage() {
           {products.map((p, i) => {
             const color = p.variants?.[0]?.color || "BLACK"
             const isSoldOut = p.variants?.length > 0 && p.variants.every((v) => v.stockQuantity === 0)
+            const onSale = p.originalPrice && p.originalPrice > p.price
             return (
             <Link
               href={`/products/${p.id}`}
@@ -283,7 +273,7 @@ export default async function ProductsPage() {
               <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "#111", position: "relative" }}>
                 {isSoldOut ? (
                   <span className="card-soldout-badge">Sold Out</span>
-                ) : p.originalPrice && p.originalPrice > p.price ? (
+                ) : onSale ? (
                   <span className="card-sale-badge">Sale</span>
                 ) : null}
                 <img
@@ -317,12 +307,12 @@ export default async function ProductsPage() {
                   }}>
                     T-Shirts
                   </span>
-                  {p.originalPrice && p.originalPrice > p.price ? (
+                  {onSale ? (
                     <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <span className="p-orig" style={{ color: "rgba(240,237,230,0.3)", textDecoration: "line-through" }}>
+                      <span className="p-orig" style={{ color: "rgba(240,237,230,0.5)", textDecoration: "line-through", textDecorationThickness: "1.4px" }}>
                         {p.originalPrice}
                       </span>
-                      <span className="p-price" style={{ color: "#f0ede6" }}>
+                      <span className="p-price" style={{ color: "#c8f04f", fontWeight: 700 }}>
                         {p.price} EGP
                       </span>
                     </span>

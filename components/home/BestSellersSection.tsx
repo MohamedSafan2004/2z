@@ -19,10 +19,15 @@ async function BestSellersContent() {
         const color = variant?.color ?? "BLACK"
         const img = colorImages[color]
         const isSoldOut = p.variants?.length > 0 && p.variants.every((v) => v.stockQuantity === 0)
+        const onSale = p.originalPrice && p.originalPrice > p.price
         return (
           <Link key={p.id} href={`/products/${p.id}`} className={styles["bs-card"]}>
             <div className={styles["bs-imgwrap"]}>
-              {isSoldOut && <span className={styles["bs-badge"]}>Sold Out</span>}
+              {isSoldOut ? (
+                <span className={styles["bs-badge"]}>Sold Out</span>
+              ) : onSale ? (
+                <span className={styles["card-sale-badge"]}>Sale</span>
+              ) : null}
               {img && (
                 <img
                   src={optimizeCloudinaryUrl(img, 500)}

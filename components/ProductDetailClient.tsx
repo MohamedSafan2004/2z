@@ -368,10 +368,6 @@ export default function ProductDetailClient({
         .suggested-card:hover .suggested-img { transform: scale(1.04); opacity: 0.95 !important; }
 
         /* ── Sale badge on suggested product cards ── */
-        @keyframes cardSaleShine {
-          0%   { background-position: -60px 0; }
-          100% { background-position: 160px 0; }
-        }
         .card-sale-badge {
           position: absolute;
           top: 10px;
@@ -379,23 +375,16 @@ export default function ProductDetailClient({
           z-index: 2;
           display: inline-flex;
           align-items: center;
+          gap: 5px;
           font-family: 'Space Mono', monospace;
-          font-size: 8px;
+          font-size: 9px;
           font-weight: 700;
-          letter-spacing: 0.14em;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
           color: #080808;
           background: ${ACCENT};
-          padding: 4px 8px;
-          overflow: hidden;
-        }
-        .card-sale-badge::after {
-          content: "";
-          position: absolute;
-          top: 0; left: 0;
-          width: 30px; height: 100%;
-          background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
-          animation: cardSaleShine 2.6s ease-in-out infinite;
+          padding: 5px 9px;
+          box-shadow: 0 2px 10px rgba(200,240,79,0.35);
         }
 
         .suggested-name  { font-size: 14px; }
@@ -408,14 +397,11 @@ export default function ProductDetailClient({
         }
 
         /* ── Sale badge ── */
-        @keyframes saleShine {
-          0%   { background-position: -60px 0; }
-          100% { background-position: 160px 0; }
-        }
         .sale-badge {
           position: relative;
           display: inline-flex;
           align-items: center;
+          gap: 5px;
           font-size: 9px;
           font-weight: 700;
           letter-spacing: 0.18em;
@@ -423,15 +409,7 @@ export default function ProductDetailClient({
           color: #080808;
           background: ${ACCENT};
           padding: 5px 10px;
-          overflow: hidden;
-        }
-        .sale-badge::after {
-          content: "";
-          position: absolute;
-          top: 0; left: 0;
-          width: 40px; height: 100%;
-          background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
-          animation: saleShine 2.6s ease-in-out infinite;
+          box-shadow: 0 2px 10px rgba(200,240,79,0.35);
         }
 
         /* ── Bundle progress bar ── */
@@ -791,7 +769,7 @@ export default function ProductDetailClient({
                     {Number(product.originalPrice)}
                   </span>
                 )}
-                <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "32px", fontWeight: 300, color: "#f0ede6" }}>{Number(product.price)}</span>
+                <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "32px", fontWeight: hasDiscount ? 600 : 300, color: hasDiscount ? ACCENT : "#f0ede6" }}>{Number(product.price)}</span>
                 <span style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,237,230,0.6)" }}>EGP</span>
                 {hasDiscount && (
                   <span className="sale-badge">
@@ -983,8 +961,8 @@ export default function ProductDetailClient({
                           </span>
                           {hasDisc ? (
                             <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                              <span className="suggested-orig" style={{ color: "rgba(240,237,230,0.45)", textDecoration: "line-through" }}>{p.originalPrice}</span>
-                              <span className="suggested-price" style={{ color: "#f0ede6" }}>{p.price} EGP</span>
+                              <span className="suggested-orig" style={{ color: "rgba(240,237,230,0.5)", textDecoration: "line-through", textDecorationThickness: "1.4px" }}>{p.originalPrice}</span>
+                              <span className="suggested-price" style={{ color: "#c8f04f", fontWeight: 700 }}>{p.price} EGP</span>
                             </span>
                           ) : (
                             <span className="suggested-price" style={{ color: "#f0ede6" }}>{p.price} EGP</span>
