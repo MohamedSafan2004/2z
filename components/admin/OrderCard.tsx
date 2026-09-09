@@ -29,8 +29,10 @@ export type Order = {
   shippingCost: number | string
   createdAt: string
   address: string | null
+  city?: string | null
   phone?: string | null
   guestEmail?: string | null
+  guestName?: string | null
   invoiceNumber?: number | null
   instapayRef?: string | null
   bostaTrackingNumber?: string | null
@@ -98,7 +100,7 @@ function OrderCardComponent({
   isRepeatCustomer,
 }: OrderCardProps) {
   const customerPhone = order.phone || order.user?.phone
-  const customerName  = order.user?.name || "Guest"
+  const customerName  = order.user?.name || order.guestName || "Guest"
   const customerEmail = order.guestEmail || order.user?.email
   const invoiceNum = order.invoiceNumber
     ? `INV-${String(order.invoiceNumber).padStart(4, "0")}`
@@ -148,7 +150,12 @@ function OrderCardComponent({
         </div>
         {customerPhone && <p style={{ fontSize: FONT.meta, color: TXT.secondary, marginBottom: "3px" }}>{customerPhone}</p>}
         {customerEmail && <p style={{ fontSize: FONT.meta, color: TXT.tertiary, marginBottom: "3px" }}>{customerEmail}</p>}
-        {order.address && <p style={{ fontSize: FONT.meta, color: TXT.secondary, marginTop: "8px", lineHeight: 1.6 }}>{order.address}</p>}
+        {order.city && (
+          <p style={{ fontSize: FONT.meta, color: TXT.secondary, marginTop: "8px", fontWeight: 500 }}>
+            🏙 {order.city}
+          </p>
+        )}
+        {order.address && <p style={{ fontSize: FONT.meta, color: TXT.secondary, marginTop: order.city ? "4px" : "8px", lineHeight: 1.6 }}>{order.address}</p>}
         {order.shippingZone && (
           <p style={{ fontSize: FONT.meta, color: "rgba(240,190,140,0.9)", marginTop: "6px", letterSpacing: "0.02em" }}>
             📍 {Number(order.shippingCost).toLocaleString()} EGP shipping

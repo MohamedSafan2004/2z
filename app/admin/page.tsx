@@ -32,8 +32,10 @@ type Order = {
   shippingCost: number | string
   createdAt: string
   address: string | null
+  city?: string | null
   phone?: string | null
   guestEmail?: string | null
+  guestName?: string | null
   invoiceNumber?: number | null
   instapayRef?: string | null
   bostaTrackingNumber?: string | null
@@ -106,9 +108,9 @@ function printPackingSlip(order: Order) {
       <div class="section">
         <div class="section-label">Deliver To</div>
         <div class="section-value">
-          <strong>${order.user?.name || "Guest"}</strong><br/>
+          <strong>${order.user?.name || order.guestName || "Guest"}</strong><br/>
           ${order.phone || order.user?.phone || ""}<br/>
-          ${order.address || ""}
+          ${order.city ? order.city + " — " : ""}${order.address || ""}
         </div>
       </div>
 

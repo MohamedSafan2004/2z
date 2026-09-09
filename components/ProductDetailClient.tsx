@@ -765,7 +765,7 @@ export default function ProductDetailClient({
               </h1>
               <div style={{ display: "flex", alignItems: "baseline", gap: "10px", flexWrap: "wrap" }}>
                 {hasDiscount && (
-                  <span style={{ fontSize: "16px", color: "rgba(240,237,230,0.5)", textDecoration: "line-through", fontFamily: "Cormorant Garamond, serif" }}>
+                  <span style={{ fontSize: "16px", color: "rgba(240,237,230,0.5)", textDecoration: "line-through", textDecorationThickness: "1.4px", fontFamily: "Space Mono, monospace" }}>
                     {Number(product.originalPrice)}
                   </span>
                 )}
