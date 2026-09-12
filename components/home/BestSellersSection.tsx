@@ -19,15 +19,10 @@ async function BestSellersContent() {
         const color = variant?.color ?? "BLACK"
         const img = colorImages[color]
         const isSoldOut = p.variants?.length > 0 && p.variants.every((v) => v.stockQuantity === 0)
-        const onSale = p.originalPrice && p.originalPrice > p.price
         return (
           <Link key={p.id} href={`/products/${p.id}`} className={styles["bs-card"]}>
             <div className={styles["bs-imgwrap"]}>
-              {isSoldOut ? (
-                <span className={styles["bs-badge"]}>Sold Out</span>
-              ) : onSale ? (
-                <span className={styles["card-sale-badge"]}>Sale</span>
-              ) : null}
+              {isSoldOut && <span className={styles["bs-badge"]}>Sold Out</span>}
               {img && (
                 <img
                   src={optimizeCloudinaryUrl(img, 500)}
@@ -40,14 +35,7 @@ async function BestSellersContent() {
             </div>
             <div className={styles["bs-info"]}>
               <h3 className={styles["bs-name"]}>{p.name}</h3>
-              {p.originalPrice ? (
-                <span className={styles["bs-price-row"]}>
-                  <span className={styles["bs-orig"]}>{p.originalPrice}</span>
-                  <span className={styles["bs-price"]}>{p.price} EGP</span>
-                </span>
-              ) : (
-                <span className={styles["bs-price"]}>{p.price} EGP</span>
-              )}
+              <span className={styles["bs-price"]}>{p.price} EGP</span>
             </div>
           </Link>
         )

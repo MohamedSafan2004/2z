@@ -17,16 +17,11 @@ async function NewInContent() {
           const variant = p.variants?.[0]
           const color = variant?.color ?? "BLACK"
           const img = colorImages[color]
-          const onSale = p.originalPrice && p.originalPrice > p.price
           const isSoldOut = p.variants?.length > 0 && p.variants.every((v) => v.stockQuantity === 0)
           return (
             <Link key={p.id} href={`/products/${p.id}`} className={`${styles["newin-item"]} ${styles["newin-cardlink"]}`}>
               <div style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden", marginBottom: "10px" }}>
-                {isSoldOut ? (
-                  <span className={styles["bs-badge"]}>Sold Out</span>
-                ) : onSale ? (
-                  <span className={styles["card-sale-badge"]}>Sale</span>
-                ) : null}
+                {isSoldOut && <span className={styles["bs-badge"]}>Sold Out</span>}
                 {img && (
                   <img
                     src={optimizeCloudinaryUrl(img, 400)}
@@ -38,14 +33,7 @@ async function NewInContent() {
                 )}
               </div>
               <h3 className={styles["newin-name"]}>{p.name}</h3>
-              {onSale ? (
-                <span className={styles["bs-price-row"]}>
-                  <span className={styles["newin-orig"]}>{p.originalPrice}</span>
-                  <span className={styles["newin-price"]}>{p.price} EGP</span>
-                </span>
-              ) : (
-                <span className={styles["newin-price"]}>{p.price} EGP</span>
-              )}
+              <span className={styles["newin-price"]}>{p.price} EGP</span>
             </Link>
           )
         })}

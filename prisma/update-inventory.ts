@@ -16,15 +16,12 @@ const STOCK_ADD: Record<string, Record<string, number>> = {
   BEIGE: { M: 0, L: 0, XL: 0 },
 }
 
-const NEW_PRICE: number | null = 400
-// Sale شغالة دلوقتي: originalPrice = 550 (السعر الحالي قبل التخفيض) هيبقى مشطوب في الـ UI،
-// و400 هو السعر الفعلي الجديد. كل الـ UI اللي بيعتمد على originalPrice > price (badge "SALE"
-// + نسبة الخصم + السعر بلون البراند) هيتفعل أوتوماتيك في الأماكن التلاتة (Home, Products, Product detail)
-const NEW_ORIGINAL_PRICE: number | null = 550
-// عشان نقدر نمسح originalPrice الموجود فعلاً في الداتابيز (updateMany بيتجاهل undefined
-// لكن مش null)، لازم نبعتها صراحةً لو عايزين null — دلوقتي مش عايزين نمسحه، عايزينه يتظبط
-// على NEW_ORIGINAL_PRICE فوق
-const CLEAR_ORIGINAL_PRICE = false
+const NEW_PRICE: number | null = 550
+// Sale اتلغت بالكامل بطلب محمد — رجعنا للسعر العادي 550 من غير originalPrice خالص.
+// CLEAR_ORIGINAL_PRICE = true بيبعت null صراحةً لعمود originalPrice (updateMany بيتجاهل
+// undefined لكن مش null، فلازم نبعتها صريحة عشان تتمسح فعليًا من الداتابيز)
+const NEW_ORIGINAL_PRICE: number | null = null
+const CLEAR_ORIGINAL_PRICE = true
 // ────────────────────────────────────────────────────────────────
 
 function skuCode(color: string): string {

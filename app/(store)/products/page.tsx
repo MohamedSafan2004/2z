@@ -91,30 +91,9 @@ export default async function ProductsPage() {
         }
         .p-card.soldout .p-img { filter: grayscale(60%); }
 
-        /* ── Sale badge on cards ── */
-        .card-sale-badge {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          z-index: 2;
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          font-family: 'Space Mono', monospace;
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #080808;
-          background: #c8f04f;
-          padding: 5px 9px;
-          box-shadow: 0 2px 10px rgba(200,240,79,0.35);
-        }
-
         .p-name  { font-size: 15px; }
         .p-cat   { font-size: 7px; white-space: nowrap; }
         .p-price { font-size: 13px; white-space: nowrap; }
-        .p-orig  { font-size: 10.5px; white-space: nowrap; }
         .p-meta-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
 
         @media (min-width: 480px) {
@@ -127,7 +106,6 @@ export default async function ProductsPage() {
           .p-name  { font-size: 19px; }
           .p-cat   { font-size: 8px; }
           .p-price { font-size: 15px; }
-          .p-orig  { font-size: 12px; }
         }
         @media (min-width: 1024px) { .p-grid { grid-template-columns: repeat(4, 1fr) !important; } }
 
@@ -260,7 +238,6 @@ export default async function ProductsPage() {
           {products.map((p, i) => {
             const color = p.variants?.[0]?.color || "BLACK"
             const isSoldOut = p.variants?.length > 0 && p.variants.every((v) => v.stockQuantity === 0)
-            const onSale = p.originalPrice && p.originalPrice > p.price
             return (
             <Link
               href={`/products/${p.id}`}
@@ -271,11 +248,7 @@ export default async function ProductsPage() {
               {/* الصورة نفسها بس — مفيش أي نص أو overlay فوقها، النضافة دي هي
                   اللي بتخلي الكارت يحس متجر حقيقي مش UI مزحوم */}
               <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "#111", position: "relative" }}>
-                {isSoldOut ? (
-                  <span className="card-soldout-badge">Sold Out</span>
-                ) : onSale ? (
-                  <span className="card-sale-badge">Sale</span>
-                ) : null}
+                {isSoldOut && <span className="card-soldout-badge">Sold Out</span>}
                 <img
                   src={optimizeCloudinaryUrl(colorImages[color] || colorImages.BLACK, 600)}
                   alt={p.name}
@@ -307,20 +280,9 @@ export default async function ProductsPage() {
                   }}>
                     T-Shirts
                   </span>
-                  {onSale ? (
-                    <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <span className="p-orig" style={{ color: "rgba(240,237,230,0.5)", textDecoration: "line-through", textDecorationThickness: "1.4px" }}>
-                        {p.originalPrice}
-                      </span>
-                      <span className="p-price" style={{ color: "#c8f04f", fontWeight: 700 }}>
-                        {p.price} EGP
-                      </span>
-                    </span>
-                  ) : (
-                    <span className="p-price" style={{ color: "#f0ede6" }}>
-                      {p.price} EGP
-                    </span>
-                  )}
+                  <span className="p-price" style={{ color: "#f0ede6" }}>
+                    {p.price} EGP
+                  </span>
                 </div>
               </div>
             </Link>

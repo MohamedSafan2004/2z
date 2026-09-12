@@ -46,37 +46,25 @@ function optimizeCloudinaryUrl(url: string, width: number): string {
   return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`)
 }
 
-const sizes = ["M", "L", "XL", "XXL"] // XXL مضاف UI بس دلوقتي — مفيش variant ليه في الداتابيز فبيظهر Sold Out دايمًا تلقائيًا لحد 21 يضيفوه في الداتابيز
+const sizes = ["M", "L", "XL", "XXL"] // XXL مضاف UI بس دلوقتي — مفيش variant ليه في الداتابيز فبيظهر Sold Out دايمًا تلقائيًا لحد ما يضيفوه في الداتابيز
 const giftSizes = ["M", "L", "XL", "XXL"] // مقاسات الهدية المجانية — XXL مضاف UI بس زي sizes الأساسية، مفيش له variant حقيقي فبيظهر Out of Stock دايمًا لحد ما يتضاف في الداتابيز
 const colorsList = ["BLACK", "WHITE", "GREY", "BEIGE"]
 const LOW_STOCK_THRESHOLD = 3
 const ACCENT = "#c8f04f"
 
-// عتبة العرض — لازم تتطابق مع الـ Promotion row الفعّال في الداتابيز (isActive: true).
-// Buy 2 Get 1 بس — تير واحد. لو اتضاف تير تاني في الداتابيز لازم يتضاف هنا برضه عشان
-// الـ progress bar يعرضه صح.
-//
-// Buy 2 Get 1 Free — DISABLED (معطل بطلب محمد، الداتابيز معطلة من ناحيته). لإرجاعه:
-// 1) فعّل الـ Promotion في الداتابيز (npx tsx prisma/reactivate-promotions.ts)
-// 2) شيل الكومنت اللي تحت دي ورجّع الـ const الحقيقي
-// 3) رجّع استدعاء <BundleSection /> والـ useEffect بتوع الـ gift-fetching
-//
-// const TIERS = [
-//   { triggerQuantity: 2, freeQuantity: 1 },
-// ].sort((a, b) => b.triggerQuantity - a.triggerQuantity)
-//
-// function getEligibleTier(paidQuantity: number) {
-//   return TIERS.find((t) => paidQuantity >= t.triggerQuantity) ?? null
-// }
-// function getNextTier(paidQuantity: number) {
-//   return TIERS.slice().sort((a, b) => a.triggerQuantity - b.triggerQuantity).find((t) => t.triggerQuantity > paidQuantity) ?? null
-// }
-const TIERS: { triggerQuantity: number; freeQuantity: number }[] = []
-function getEligibleTier(_paidQuantity: number): { triggerQuantity: number; freeQuantity: number } | null {
-  return null
+// عتبة العرض — لازم تتطابق مع الـ Promotion rows الفعّالة في الداتابيز (isActive: true).
+// شوف prisma/seed-promotions.ts. تيرين حاليًا: Buy 2 Get 3 Free و Buy 3 Get 5 Free — تيرد
+// (tiered) مش تراكمية، يعني العميل بياخد أعلى تير مستحق بس (مش الاتنين مع بعض).
+const TIERS = [
+  { triggerQuantity: 2, freeQuantity: 3 },
+  { triggerQuantity: 3, freeQuantity: 5 },
+].sort((a, b) => b.triggerQuantity - a.triggerQuantity)
+
+function getEligibleTier(paidQuantity: number) {
+  return TIERS.find((t) => paidQuantity >= t.triggerQuantity) ?? null
 }
-function getNextTier(_paidQuantity: number): { triggerQuantity: number; freeQuantity: number } | null {
-  return null
+function getNextTier(paidQuantity: number) {
+  return TIERS.slice().sort((a, b) => a.triggerQuantity - b.triggerQuantity).find((t) => t.triggerQuantity > paidQuantity) ?? null
 }
 
 interface Variant {
@@ -129,8 +117,6 @@ export default function ProductDetailClient({
   const [imgIndex, setImgIndex] = useState(0)
   const [sizeGuideTab, setSizeGuideTab] = useState<"CHART" | "FINDER" | null>(null)
   const [buying, setBuying] = useState(false)
-  // setGift مستخدمة بس جوه <BundleSection /> المعطلة تحت — مسيّبة لحد ما الـ Bundle يرجع
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { addItem, items, gifts, setGift, clearGifts, paidQuantity } = useCart()
   const router = useRouter()
 
@@ -140,7 +126,6 @@ export default function ProductDetailClient({
   const isSoldOut         = selectedSize ? stockQuantity === 0 : false
   const isLowStock        = selectedSize ? stockQuantity > 0 && stockQuantity <= LOW_STOCK_THRESHOLD : false
   const quantityDisabled  = !selectedSize || isSoldOut
-  const hasDiscount       = product.originalPrice && Number(product.originalPrice) > Number(product.price)
 
   const productColor = variants[0]?.color || "BLACK"
   const images = colorImages[productColor] || colorImages.BLACK
@@ -150,51 +135,42 @@ export default function ProductDetailClient({
   const projectedQuantity = paidQuantity() + (selectedSize && !isSoldOut ? quantity : 0)
   const currentCartQuantity = paidQuantity()
 
-  // المتغيرات دي كانت مستخدمة بس لـ <BundleSection /> المعطلة تحت — مسيّبة لحد ما الـ Bundle يرجع
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const eligibleNow  = useMemo(() => getEligibleTier(currentCartQuantity), [currentCartQuantity])
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const eligibleNext = useMemo(() => getEligibleTier(projectedQuantity), [projectedQuantity])
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const nextTier      = useMemo(() => getNextTier(currentCartQuantity), [currentCartQuantity])
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [availableGiftVariants, setAvailableGiftVariants] = useState<AvailableGiftVariant[]>([])
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingGiftVariants, setLoadingGiftVariants] = useState(false)
 
-  // ─── Gift-fetching ─── DISABLED (مع الـ TIERS الفارغة فوق، eligibleNow دايماً null فالـ effect مبيشتغلشي). لإرجاعه شيل الكومنت.
-  // useEffect(() => {
-  //   if (!eligibleNow) return
-  //   queueMicrotask(() => {
-  //     setLoadingGiftVariants(true)
-  //     fetch("/api/products/gift-variants")
-  //       .then((res) => res.json())
-  //       .then((data) => setAvailableGiftVariants(data.variants || []))
-  //       .catch(() => setAvailableGiftVariants([]))
-  //       .finally(() => setLoadingGiftVariants(false))
-  //   })
-  // }, [eligibleNow])
+  // ─── Gift-fetching ────────────────────────────────────────────────────────
+  // لما الكارت يستاهل تير (Buy 2 أو Buy 3)، نجيب كل الـ variants المتاحة كهدية
+  // (كل الألوان والمقاسات اللي فيها ستوك) عشان الـ picker يقدر يعرضها فورًا
+  useEffect(() => {
+    if (!eligibleNow) return
+    queueMicrotask(() => {
+      setLoadingGiftVariants(true)
+      fetch("/api/products/gift-variants")
+        .then((res) => res.json())
+        .then((data) => setAvailableGiftVariants(data.variants || []))
+        .catch(() => setAvailableGiftVariants([]))
+        .finally(() => setLoadingGiftVariants(false))
+    })
+  }, [eligibleNow])
 
   // ─── Stale gift cleanup ─────────────────────────────────────────────────
   // لو الكارت رجع مش مؤهل لأي عرض (اتشالت قطعة مثلاً)، أو عدد الهدايا المحفوظة
-  // من عرض قديم أكبر من الـ freeQuantity الحالي، امسح الهدايا القديمة فورًا
-  // عشان محتفضش بهدية إضافية من تير سابق كان أعلى.
-  // الـ Buy 2 Get 1 Free معطل، فمفيش eligibleNow تاني. لو الكارت محتفظ بهدايا قديمة من قبل ما العرض يتقفل، امسحها.
-  // النسخة الأصلية المعطلة تحت لإرجاعها لو العرض رجع:
-  // useEffect(() => {
-  //   if (!eligibleNow) {
-  //     if (gifts.length > 0) clearGifts()
-  //     return
-  //   }
-  //   if (gifts.length > eligibleNow.freeQuantity) {
-  //     clearGifts()
-  //   }
-  // }, [eligibleNow, gifts.length, clearGifts])
+  // من عرض قديم أكبر من الـ freeQuantity الحالي (مثلاً كان مستاهل Buy 3 Get 5
+  // وبعدين قلل لـ Buy 2 Get 3)، امسح الهدايا الزيادة فورًا.
   useEffect(() => {
-    if (gifts.length > 0) clearGifts()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    if (!eligibleNow) {
+      if (gifts.length > 0) clearGifts()
+      return
+    }
+    if (gifts.length > eligibleNow.freeQuantity) {
+      clearGifts()
+    }
+  }, [eligibleNow, gifts.length, clearGifts])
 
   React.useEffect(() => {
     const preloadRest = () => {
@@ -345,7 +321,7 @@ export default function ProductDetailClient({
         @media (min-width: 768px) { .product-grid { grid-template-columns: 1fr 1fr !important; gap: 64px !important; } }
         @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
         @keyframes giftGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(200,240,79,0.15); } 50% { box-shadow: 0 0 0 6px rgba(200,240,79,0); } }
-        @keyframes slideDown { from { opacity: 0; max-height: 0; transform: translateY(-6px); } to { opacity: 1; max-height: 600px; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; max-height: 0; transform: translateY(-6px); } to { opacity: 1; max-height: 1200px; transform: translateY(0); } }
         @keyframes checkPop { 0% { transform: scale(0); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
 
         .img-nav-btn {
@@ -367,65 +343,52 @@ export default function ProductDetailClient({
         .suggested-img { transition: transform 0.6s ease, opacity 0.4s ease; }
         .suggested-card:hover .suggested-img { transform: scale(1.04); opacity: 0.95 !important; }
 
-        /* ── Sale badge on suggested product cards ── */
-        .card-sale-badge {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          z-index: 2;
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          font-family: 'Space Mono', monospace;
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #080808;
-          background: ${ACCENT};
-          padding: 5px 9px;
-          box-shadow: 0 2px 10px rgba(200,240,79,0.35);
-        }
-
         .suggested-name  { font-size: 14px; }
         .suggested-price { font-size: 12px; }
-        .suggested-orig  { font-size: 10px; }
         @media (min-width: 640px) {
           .suggested-name  { font-size: 17px; }
           .suggested-price { font-size: 13px; }
-          .suggested-orig  { font-size: 11px; }
         }
 
-        /* ── Sale badge ── */
-        .sale-badge {
-          position: relative;
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          color: #080808;
-          background: ${ACCENT};
-          padding: 5px 10px;
-          box-shadow: 0 2px 10px rgba(200,240,79,0.35);
-        }
-
-        /* ── Bundle progress bar ── */
+        /* ── Bundle box (outer container) ── */
         .bundle-box {
           border: 1px solid rgba(240,237,230,0.12);
-          padding: 16px 18px;
+          padding: 18px 18px 16px;
           margin-bottom: 10px;
-          transition: border-color 0.3s ease;
+          transition: border-color 0.3s ease, background 0.3s ease;
         }
         .bundle-box.eligible {
           border-color: rgba(200,240,79,0.4);
+          background: rgba(200,240,79,0.02);
           animation: giftGlow 2.5s ease infinite;
           animation-delay: 1s;
         }
+
+        /* ── Tier pills row — shows both offers at a glance, active one highlighted ── */
+        .bundle-tier-pills { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+        .bundle-tier-pill {
+          font-size: 8.5px;
+          letter-spacing: 0.06em;
+          padding: 5px 9px;
+          border: 1px solid rgba(240,237,230,0.18);
+          color: rgba(240,237,230,0.5);
+          background: transparent;
+          white-space: nowrap;
+          transition: all 0.25s ease;
+        }
+        .bundle-tier-pill.active {
+          border-color: ${ACCENT};
+          color: ${ACCENT};
+          background: rgba(200,240,79,0.08);
+          font-weight: 700;
+        }
+        .bundle-tier-pill.reached {
+          border-color: rgba(240,237,230,0.3);
+          color: rgba(240,237,230,0.75);
+        }
+
         /* ── Unified multi-tier progress bar (shows both milestones together) ── */
-        .tier-progress { position: relative; margin-top: 14px; padding-top: 4px; padding-bottom: 4px; }
+        .tier-progress { position: relative; margin-top: 6px; padding-top: 4px; padding-bottom: 10px; }
         .tier-progress-track {
           position: relative;
           height: 4px;
@@ -463,16 +426,92 @@ export default function ProductDetailClient({
           font-weight: 700;
           color: #080808;
         }
+        .tier-progress-marker-label {
+          position: absolute;
+          top: 16px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 7.5px;
+          letter-spacing: 0.03em;
+          white-space: nowrap;
+          color: rgba(240,237,230,0.4);
+        }
+        .tier-progress-marker-label.reached { color: ${ACCENT}; }
 
         /* ── Gift picker ── */
         .gift-picker { animation: slideDown 0.4s ease both; overflow: hidden; }
+        .gift-picker-summary {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          margin-top: 4px;
+          margin-bottom: 14px;
+        }
+        .gift-picker-count {
+          font-size: 9px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: ${ACCENT};
+          font-weight: 700;
+        }
+        .gift-quick-fill-btn {
+          font-size: 8px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(240,237,230,0.55);
+          background: transparent;
+          border: 1px solid rgba(240,237,230,0.2);
+          padding: 5px 9px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+        }
+        .gift-quick-fill-btn:hover { border-color: rgba(240,237,230,0.4); color: #f0ede6; }
+        .gift-quick-fill-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* Compact rows once there are multiple gift slots — each row is one line
+           with an inline color+size picker that expands only when tapped, instead
+           of showing 5 full swatch+size blocks stacked vertically at once. */
+        .gift-slot { border: 1px solid rgba(240,237,230,0.08); margin-bottom: 8px; }
+        .gift-slot:last-child { margin-bottom: 0; }
+        .gift-slot-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px;
+          cursor: pointer;
+          background: transparent;
+          border: none;
+          width: 100%;
+          text-align: left;
+          font-family: 'Space Mono', monospace;
+        }
+        .gift-slot-check {
+          width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          border: 1px solid rgba(240,237,230,0.25);
+          transition: all 0.2s ease;
+        }
+        .gift-slot-check.done { background: ${ACCENT}; border-color: ${ACCENT}; }
+        .gift-slot-label { font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #f0ede6; flex: 1; }
+        .gift-slot-value { font-size: 9px; color: rgba(240,237,230,0.5); letter-spacing: 0.04em; }
+        .gift-slot-value.done { color: ${ACCENT}; }
+        .gift-slot-chevron { color: rgba(240,237,230,0.35); transition: transform 0.2s ease; flex-shrink: 0; }
+        .gift-slot-chevron.open { transform: rotate(180deg); }
+        .gift-slot-body {
+          padding: 4px 12px 16px;
+          border-top: 1px solid rgba(240,237,230,0.06);
+          animation: slideDown 0.25s ease both;
+        }
+
         .gift-swatch {
-          width: 32px; height: 32px; border-radius: 50%;
+          width: 30px; height: 30px; border-radius: 50%;
           cursor: pointer; position: relative; flex-shrink: 0;
           transition: all 0.2s;
         }
         .gift-size-btn {
-          min-width: 38px; height: 34px; padding: 0 8px; font-size: 10px;
+          min-width: 36px; height: 32px; padding: 0 8px; font-size: 10px;
           font-family: 'Space Mono', monospace; letter-spacing: 0.05em;
           cursor: pointer; transition: all 0.15s; background: transparent;
         }
@@ -494,59 +533,6 @@ export default function ProductDetailClient({
           background: rgba(240,237,230,0.55);
           transform: translateY(-50%) rotate(-14deg);
           pointer-events: none;
-        }
-
-        /* ── Promo banner (top of product page) — compact, tag-style tiers ── */
-        .promo-banner {
-          border: 1px solid rgba(200,240,79,0.22);
-          background: rgba(200,240,79,0.04);
-          margin-bottom: 20px;
-          padding: 14px 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .promo-row {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .promo-row-tier {
-          font-family: 'Space Mono', monospace;
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.05em;
-          color: #080808;
-          background: ${ACCENT};
-          padding: 3px 7px;
-          flex-shrink: 0;
-          min-width: 52px;
-          text-align: center;
-        }
-        .promo-row-divider {
-          width: 1px;
-          height: 14px;
-          background: rgba(240,237,230,0.15);
-          flex-shrink: 0;
-        }
-        .promo-row-title {
-          font-family: 'Space Mono', monospace;
-          font-size: 11px;
-          letter-spacing: 0.03em;
-          color: #f0ede6;
-          white-space: nowrap;
-        }
-        .promo-row-sub {
-          font-family: 'Space Mono', monospace;
-          font-size: 8px;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: rgba(240,237,230,0.35);
-          padding-top: 6px;
-          border-top: 1px solid rgba(240,237,230,0.06);
-        }
-        @media (max-width: 420px) {
-          .promo-row-title { font-size: 10px; white-space: normal; }
         }
 
         /* ── Shipping info banner (top of product page) ── */
@@ -764,18 +750,8 @@ export default function ProductDetailClient({
                 {product.name}
               </h1>
               <div style={{ display: "flex", alignItems: "baseline", gap: "10px", flexWrap: "wrap" }}>
-                {hasDiscount && (
-                  <span style={{ fontSize: "16px", color: "rgba(240,237,230,0.5)", textDecoration: "line-through", textDecorationThickness: "1.4px", fontFamily: "Space Mono, monospace" }}>
-                    {Number(product.originalPrice)}
-                  </span>
-                )}
-                <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "32px", fontWeight: hasDiscount ? 600 : 300, color: hasDiscount ? ACCENT : "#f0ede6" }}>{Number(product.price)}</span>
+                <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "32px", fontWeight: 300, color: "#f0ede6" }}>{Number(product.price)}</span>
                 <span style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,237,230,0.6)" }}>EGP</span>
-                {hasDiscount && (
-                  <span className="sale-badge">
-                    Sale
-                  </span>
-                )}
               </div>
             </div>
 
@@ -872,7 +848,6 @@ export default function ProductDetailClient({
               </div>
             </div>
 
-            {/* Buy 2 Get 1 Free — DISABLED. لإرجاعه شيل الكومنت ورجّع الـ TIERS والـ useEffects فوق.
             <BundleSection
               currentCartQuantity={currentCartQuantity}
               eligibleNow={eligibleNow}
@@ -882,7 +857,6 @@ export default function ProductDetailClient({
               availableGiftVariants={availableGiftVariants}
               loadingGiftVariants={loadingGiftVariants}
             />
-            */}
 
             <button
               onClick={handleAdd}
@@ -937,11 +911,9 @@ export default function ProductDetailClient({
                 const color = p.variants?.[0]?.color || "BLACK"
                 const colorLabel = color ? color.charAt(0) + color.slice(1).toLowerCase() : ""
                 const productImgs = colorImages[color] || colorImages.BLACK
-                const hasDisc = p.originalPrice && p.originalPrice > p.price
                 return (
                   <Link href={`/products/${p.id}`} key={p.id} className="suggested-card">
                     <div style={{ aspectRatio: "3/4", overflow: "hidden", background: "#111", position: "relative" }}>
-                      {hasDisc && <span className="card-sale-badge">Sale</span>}
                       <img
                         src={optimizeCloudinaryUrl(productImgs[0], 500)}
                         alt={`${p.name} — ${colorLabel} oversized t-shirt`}
@@ -959,14 +931,7 @@ export default function ProductDetailClient({
                           <span style={{ fontSize: "7px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(240,237,230,0.6)" }}>
                             {colorLabel}
                           </span>
-                          {hasDisc ? (
-                            <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                              <span className="suggested-orig" style={{ color: "rgba(240,237,230,0.5)", textDecoration: "line-through", textDecorationThickness: "1.4px" }}>{p.originalPrice}</span>
-                              <span className="suggested-price" style={{ color: "#c8f04f", fontWeight: 700 }}>{p.price} EGP</span>
-                            </span>
-                          ) : (
-                            <span className="suggested-price" style={{ color: "#f0ede6" }}>{p.price} EGP</span>
-                          )}
+                          <span className="suggested-price" style={{ color: "#f0ede6" }}>{p.price} EGP</span>
                         </div>
                       </div>
                     </div>
@@ -989,8 +954,18 @@ export default function ProductDetailClient({
   )
 }
 
-// SWATCH_COLORS و BundleSection مستخدمين بس في استدعاء <BundleSection /> المعطل فوق (Buy 2 Get 1 Free معطل). مسيّبين لحد ما الـ Bundle يرجع.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// ─────────────────────────────────────────────────────────────────────────
+// Bundle section — Buy 2 Get 3 Free / Buy 3 Get 5 Free
+//
+// تصميم جديد (مش نفس كود الـ Buy 2 Get 1 القديم): بدل ما كل هدية تتعرض كبلوك
+// كامل (لون + مقاس) مفتوح على طول، كل هدية دلوقتي صف واحد قابل للطي
+// (accordion-style row) — مهم جدًا لما العدد يوصل 5 هدايا مع بعض، عشان الشاشة
+// متتقلبش بـ 5 بلوكات مفتوحة كلها في نفس الوقت. الصف المقفول بيوري ملخص سريع
+// ("BLACK / L" أو "Choose gift 2") والمستخدم يفتحه بس لما يحب يغيّر اختياره.
+// فيه كمان زرار "Fill all same as gift 1" لما يبقى فيه أكتر من هدية، عشان
+// اليوزر ميضطرش يختار نفس اللون/المقاس يدويًا لكل قطعة لو عايز نفس الحاجة.
+// ─────────────────────────────────────────────────────────────────────────
+
 const SWATCH_COLORS: Record<string, string> = {
   BLACK: "#1a1a1a",
   WHITE: "#f0ede6",
@@ -998,11 +973,9 @@ const SWATCH_COLORS: Record<string, string> = {
   BEIGE: "#d8c8a8",
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function BundleSection({
   currentCartQuantity,
   eligibleNow,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   nextTier,
   gifts,
   setGift,
@@ -1017,6 +990,9 @@ function BundleSection({
   availableGiftVariants: AvailableGiftVariant[]
   loadingGiftVariants: boolean
 }) {
+  // أول slot مفتوح افتراضيًا (أول حاجة يشوفها اليوزر لما يستاهل عرض)، والباقي مقفول
+  const [openSlot, setOpenSlot] = useState<number | null>(0)
+
   // لو مفيش أي تير خالص متعرف في النظام، منعرضش حاجة
   if (TIERS.length === 0) return null
 
@@ -1025,22 +1001,51 @@ function BundleSection({
   const maxTrigger = sortedTiers[sortedTiers.length - 1].triggerQuantity
   const fillPercent = Math.min(100, (currentCartQuantity / maxTrigger) * 100)
 
-  // أعلى تير متبقي بعد آخر تير محقق — ده اللي بنوريله "كمان X تضيف"
-  const upcomingTier = sortedTiers.find((t) => t.triggerQuantity > currentCartQuantity) ?? null
-  const remaining = upcomingTier ? upcomingTier.triggerQuantity - currentCartQuantity : 0
+  const completedGifts = gifts.filter((g) => g?.variantId).length
+  const totalGiftSlots = eligibleNow?.freeQuantity ?? 0
+
+  const handleQuickFill = () => {
+    const first = gifts[0]
+    if (!first?.color) return
+    for (let i = 1; i < totalGiftSlots; i++) {
+      const variant = availableGiftVariants.find((v) => v.color === first.color && v.size === first.size)
+      if (variant) {
+        setGift(i, {
+          variantId: variant.variantId,
+          productName: variant.productName,
+          color: first.color,
+          size: first.size,
+          imageUrl: gifts[0]?.imageUrl,
+        })
+      }
+    }
+  }
 
   return (
     <div className={`bundle-box ${eligibleNow ? "eligible" : ""}`}>
-      {/* رسالة الحالة الحالية — دايمًا واضحة سواء لسه مفيش عرض اتحقق أو خد الهدية */}
-      {upcomingTier ? (
+      {/* ── Tier pills — كل العروض المتاحة تظهر مرة واحدة، والمستحق/المتحقق منهم يتميّز ── */}
+      <div className="bundle-tier-pills">
+        {sortedTiers.map((t) => {
+          const reached = currentCartQuantity >= t.triggerQuantity
+          const isCurrentBest = eligibleNow?.triggerQuantity === t.triggerQuantity
+          return (
+            <span key={t.triggerQuantity} className={`bundle-tier-pill ${isCurrentBest ? "active" : reached ? "reached" : ""}`}>
+              {reached ? "✓ " : ""}Buy {t.triggerQuantity} Get {t.freeQuantity} Free
+            </span>
+          )
+        })}
+      </div>
+
+      {/* رسالة الحالة الحالية — دايمًا واضحة سواء لسه مفيش عرض اتحقق أو خد الهدايا */}
+      {nextTier ? (
         <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
-          🎁 Buy <span style={{ color: ACCENT }}>{upcomingTier.triggerQuantity}</span>, get <span style={{ color: ACCENT }}>1 free</span> — add <span style={{ color: ACCENT }}>{remaining}</span> more piece{remaining > 1 ? "s" : ""} to unlock it
+          🎁 Add <span style={{ color: ACCENT, fontWeight: 700 }}>{nextTier.triggerQuantity - currentCartQuantity}</span> more piece{nextTier.triggerQuantity - currentCartQuantity > 1 ? "s" : ""} to unlock <span style={{ color: ACCENT }}>Buy {nextTier.triggerQuantity} Get {nextTier.freeQuantity} Free</span>
         </p>
-      ) : (
+      ) : eligibleNow ? (
         <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: ACCENT, margin: 0 }}>
-          🎉 Offer unlocked — pick your free tee below
+          🎉 Unlocked — pick your {eligibleNow.freeQuantity} free piece{eligibleNow.freeQuantity > 1 ? "s" : ""} below
         </p>
-      )}
+      ) : null}
 
       {/* بار موحّد بيوري كل المراحل مع بعض */}
       <div className="tier-progress">
@@ -1050,48 +1055,76 @@ function BundleSection({
             const reached = currentCartQuantity >= t.triggerQuantity
             const leftPct = (t.triggerQuantity / maxTrigger) * 100
             return (
-              <div
-                key={t.triggerQuantity}
-                className={`tier-progress-marker ${reached ? "reached" : ""}`}
-                style={{ left: `${leftPct}%` }}
-              />
+              <div key={t.triggerQuantity}>
+                <div
+                  className={`tier-progress-marker ${reached ? "reached" : ""}`}
+                  style={{ left: `${leftPct}%` }}
+                />
+                <span className={`tier-progress-marker-label ${reached ? "reached" : ""}`} style={{ left: `${leftPct}%` }}>
+                  {t.triggerQuantity}pc
+                </span>
+              </div>
             )
           })}
         </div>
       </div>
 
       {eligibleNow && (
-        <>
-          <div className="gift-picker" style={{ marginTop: "18px" }}>
-            {loadingGiftVariants ? (
-              <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)" }}>Loading options...</p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-                {Array.from({ length: eligibleNow.freeQuantity }).map((_, idx) => {
-                  const currentGift = gifts[idx]
-                  const colorOptions = colorsList.filter((c) => availableGiftVariants.some((v) => v.color === c))
-                  const sizeOptionsForColor = currentGift?.color
-                    ? availableGiftVariants.filter((v) => v.color === currentGift.color).map((v) => v.size)
-                    : []
-                  const isDone = !!currentGift?.variantId
+        <div className="gift-picker" style={{ marginTop: "22px" }}>
+          <div className="gift-picker-summary">
+            <span className="gift-picker-count">
+              {completedGifts} / {totalGiftSlots} gifts selected
+            </span>
+            {totalGiftSlots > 1 && (
+              <button
+                type="button"
+                className="gift-quick-fill-btn"
+                onClick={handleQuickFill}
+                disabled={!gifts[0]?.color || loadingGiftVariants}
+                title={!gifts[0]?.color ? "Pick gift 1 first" : undefined}
+              >
+                Same as gift 1 for all
+              </button>
+            )}
+          </div>
 
-                  return (
-                    <div key={idx}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "12px" }}>
-                        <div className={isDone ? "check-pop" : ""} style={{
-                          width: "15px", height: "15px", borderRadius: "50%", flexShrink: 0,
-                          border: `1px solid ${isDone ? ACCENT : "rgba(240,237,230,0.25)"}`,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          background: isDone ? ACCENT : "transparent",
-                        }}>
-                          {isDone && <span style={{ fontSize: "9px", color: "#080808", lineHeight: 1 }}>✓</span>}
-                        </div>
-                        <p style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: isDone ? ACCENT : "#f0ede6", fontWeight: 700, margin: 0 }}>
-                          {eligibleNow.freeQuantity > 1 ? `Your Free Gift ${idx + 1}` : "Your Free Gift"}
-                        </p>
-                      </div>
+          {loadingGiftVariants ? (
+            <p style={{ fontSize: "9px", color: "rgba(240,237,230,0.3)" }}>Loading options...</p>
+          ) : (
+            Array.from({ length: totalGiftSlots }).map((_, idx) => {
+              const currentGift = gifts[idx]
+              const colorOptions = colorsList.filter((c) => availableGiftVariants.some((v) => v.color === c))
+              const sizeOptionsForColor = currentGift?.color
+                ? availableGiftVariants.filter((v) => v.color === currentGift.color).map((v) => v.size)
+                : []
+              const isDone = !!currentGift?.variantId
+              const isOpen = openSlot === idx
+              const summaryLabel = isDone
+                ? `${currentGift.color.charAt(0) + currentGift.color.slice(1).toLowerCase()} / ${currentGift.size}`
+                : "Tap to choose"
 
-                      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", paddingLeft: "22px", borderLeft: "1px solid rgba(240,237,230,0.08)" }}>
+              return (
+                <div key={idx} className="gift-slot">
+                  <button
+                    type="button"
+                    className="gift-slot-header"
+                    onClick={() => setOpenSlot(isOpen ? null : idx)}
+                  >
+                    <span className={`gift-slot-check ${isDone ? "check-pop done" : ""}`}>
+                      {isDone && <span style={{ fontSize: "8px", color: "#080808", lineHeight: 1 }}>✓</span>}
+                    </span>
+                    <span className="gift-slot-label">
+                      {totalGiftSlots > 1 ? `Free Gift ${idx + 1}` : "Your Free Gift"}
+                    </span>
+                    <span className={`gift-slot-value ${isDone ? "done" : ""}`}>{summaryLabel}</span>
+                    <svg className={`gift-slot-chevron ${isOpen ? "open" : ""}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
+
+                  {isOpen && (
+                    <div className="gift-slot-body">
+                      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
                         <div>
                           <p style={{ fontSize: "8px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(240,237,230,0.9)", marginBottom: "7px" }}>
                             Color
@@ -1132,11 +1165,6 @@ function BundleSection({
                               )
                             })}
                           </div>
-                          {currentGift?.color && (
-                            <p style={{ fontSize: "8px", color: ACCENT, marginTop: "7px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                              {currentGift.color.charAt(0) + currentGift.color.slice(1).toLowerCase()}
-                            </p>
-                          )}
                         </div>
 
                         <div>
@@ -1180,7 +1208,7 @@ function BundleSection({
                             const outOfStockSizes = giftSizes.filter((s) => !sizeOptionsForColor.includes(s))
                             if (outOfStockSizes.length === 0) return null
                             return (
-                              <p style={{ fontSize: "10.5px", letterSpacing: "0.02em", color: "rgba(240,237,230,0.85)", marginTop: "8px" }}>
+                              <p style={{ fontSize: "9.5px", letterSpacing: "0.02em", color: "rgba(240,237,230,0.8)", marginTop: "8px" }}>
                                 Out of stock: <span style={{ color: "#f0ede6", fontWeight: 700 }}>{outOfStockSizes.join(", ")}</span>
                               </p>
                             )
@@ -1189,43 +1217,18 @@ function BundleSection({
                       </div>
 
                       {isDone && (
-                        <p style={{ fontSize: "8px", letterSpacing: "0.04em", color: ACCENT, marginTop: "10px", paddingLeft: "22px" }}>
+                        <p style={{ fontSize: "8px", letterSpacing: "0.04em", color: ACCENT, marginTop: "12px" }}>
                           ✓ Ready — added free to your order
                         </p>
                       )}
                     </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </>
+                  )}
+                </div>
+              )
+            })
+          )}
+        </div>
       )}
-    </div>
-  )
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Promo banner — DISABLED (kept for reference, not rendered anywhere).
-// To bring back: swap <ShippingInfoBanner /> for <PromoBanner /> in the
-// main component, and re-add ".promo-banner" styles if removed.
-// ─────────────────────────────────────────────────────────────────────────
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function PromoBanner() {
-  return (
-    <div className="promo-banner">
-      <div className="promo-row">
-        <span className="promo-row-tier">2 FOR 1</span>
-        <span className="promo-row-divider" />
-        <span className="promo-row-title">Buy 2, get 1 free</span>
-      </div>
-      <div className="promo-row">
-        <span className="promo-row-tier">3 FOR 2</span>
-        <span className="promo-row-divider" />
-        <span className="promo-row-title">Buy 3, get 2 free</span>
-      </div>
-      <span className="promo-row-sub">Mix any colors & sizes · applied automatically at checkout</span>
     </div>
   )
 }
