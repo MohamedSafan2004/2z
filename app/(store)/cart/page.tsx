@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/lib/store/cart"
+import { getEligibleGiftTier } from "@/lib/giftTiers"
 
 const ACCENT = "#c8f04f"
 
@@ -33,7 +34,11 @@ export default function CartPage() {
   // نفس الحماية اللي في صفحة المنتج — لو الكمية اتغيرت هنا (زيادة/نقصان/حذف)
   // وبقى عدد الهدايا المحفوظة أكتر من المستحق، امسحهم فورًا.
   const paidQty = useMemo(() => items.reduce((sum, i) => sum + i.quantity, 0), [items])
-  const expectedFreeQty = paidQty >= 3 ? 2 : paidQty >= 2 ? 1 : 0
+  // بتستخدم نفس GIFT_TIERS الموجودة في lib/giftTiers.ts (مصدر مشترك مع صفحة المنتج) —
+  // قبل كده كان فيه صيغة منفصلة قديمة هنا (Buy 2 Get 1 / Buy 3 Get 2) مش متطابقة مع
+  // العرض الحقيقي (Buy 2 Get 3 / Buy 3 Get 5)، فكانت بتمسح هدايا العميل كلها لحظة
+  // ما يوصل الـ Cart.
+  const expectedFreeQty = getEligibleGiftTier(paidQty)?.freeQuantity ?? 0
   const validGifts = useMemo(() => gifts.filter((g) => g && g.variantId).slice(0, expectedFreeQty), [gifts, expectedFreeQty])
 
   useEffect(() => {
@@ -139,35 +144,37 @@ export default function CartPage() {
 
             {validGifts.length > 0 && (
               <div style={{ marginTop: "8px" }}>
-                <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: ACCENT, margin: "20px 0 12px" }}>
-                  🎁 Free Gifts
+                <p style={{ fontSize: "9px", letterSpacing: "0.2em", textTransform: "uppercase", color: ACCENT, margin: "20px 0 12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
+                  <span style={{ fontSize: "13px" }}>🎁</span> Free Gifts — {validGifts.length}x
                 </p>
-                {validGifts.map((g, idx) => (
-                  <div
-                    key={`gift-${idx}`}
-                    style={{
-                      display: "flex", gap: "16px", padding: "14px 0",
-                      borderBottom: "1px solid rgba(240,237,230,0.08)",
-                      opacity: 0.9,
-                    }}
-                  >
-                    <div style={{ width: "80px", height: "100px", flexShrink: 0, background: "#111", overflow: "hidden" }}>
-                      <img
-                        src={resolveImage(g.color, g.imageUrl || g.image)}
-                        alt={g.productName}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }}
-                      />
+                <div style={{ border: `1px solid rgba(200,240,79,0.3)`, background: "rgba(200,240,79,0.03)", padding: "4px 14px" }}>
+                  {validGifts.map((g, idx) => (
+                    <div
+                      key={`gift-${idx}`}
+                      style={{
+                        display: "flex", gap: "16px", padding: "14px 0",
+                        borderBottom: idx === validGifts.length - 1 ? "none" : "1px solid rgba(200,240,79,0.12)",
+                      }}
+                    >
+                      <div style={{ width: "80px", height: "100px", flexShrink: 0, background: "#111", overflow: "hidden", position: "relative" }}>
+                        <img
+                          src={resolveImage(g.color, g.imageUrl || g.image)}
+                          alt={g.productName}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.75 }}
+                        />
+                        <span style={{ position: "absolute", top: "5px", left: "5px", background: ACCENT, color: "#080808", fontSize: "6.5px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "2px 5px" }}>Free</span>
+                      </div>
+                      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
+                        <p style={{ fontSize: "14px", fontFamily: "Cormorant Garamond, serif", color: "#f0ede6", margin: "0 0 4px" }}>
+                          {g.productName}
+                        </p>
+                        <p style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: ACCENT, margin: 0 }}>
+                          {g.color} / {g.size} — Free
+                        </p>
+                      </div>
                     </div>
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
-                      <p style={{ fontSize: "14px", fontFamily: "Cormorant Garamond, serif", color: "#f0ede6", margin: "0 0 4px" }}>
-                        {g.productName}
-                      </p>
-                      <p style={{ fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: ACCENT, margin: 0 }}>
-                        {g.color} / {g.size} — Free
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>

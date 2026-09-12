@@ -24,6 +24,7 @@ export async function GET() {
       color: v.color,
       size: v.size,
       productName: v.product.name,
+      stockQuantity: v.stockQuantity,
     }))
 
     return NextResponse.json({ variants: available })

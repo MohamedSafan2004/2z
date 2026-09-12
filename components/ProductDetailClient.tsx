@@ -7,6 +7,7 @@ import { useCart } from "@/lib/store/cart"
 import { trackViewContent, trackAddToCart } from "@/lib/meta-pixel"
 import ActiveOfferBanner from "@/components/ActiveOfferBanner"
 import SizeRecommendationModal from "@/components/Sizerecommendationmodal"
+import { GIFT_TIERS as TIERS, getEligibleGiftTier as getEligibleTier, getNextGiftTier as getNextTier } from "@/lib/giftTiers"
 
 
 const colorImages: Record<string, string[]> = {
@@ -52,20 +53,10 @@ const colorsList = ["BLACK", "WHITE", "GREY", "BEIGE"]
 const LOW_STOCK_THRESHOLD = 3
 const ACCENT = "#c8f04f"
 
-// عتبة العرض — لازم تتطابق مع الـ Promotion rows الفعّالة في الداتابيز (isActive: true).
-// شوف prisma/seed-promotions.ts. تيرين حاليًا: Buy 2 Get 3 Free و Buy 3 Get 5 Free — تيرد
-// (tiered) مش تراكمية، يعني العميل بياخد أعلى تير مستحق بس (مش الاتنين مع بعض).
-const TIERS = [
-  { triggerQuantity: 2, freeQuantity: 3 },
-  { triggerQuantity: 3, freeQuantity: 5 },
-].sort((a, b) => b.triggerQuantity - a.triggerQuantity)
-
-function getEligibleTier(paidQuantity: number) {
-  return TIERS.find((t) => paidQuantity >= t.triggerQuantity) ?? null
-}
-function getNextTier(paidQuantity: number) {
-  return TIERS.slice().sort((a, b) => a.triggerQuantity - b.triggerQuantity).find((t) => t.triggerQuantity > paidQuantity) ?? null
-}
+// عتبة العرض — TIERS جايين دلوقتي من lib/giftTiers.ts (مصدر مشترك مع صفحة
+// الكارت) بدل ما يتعرفوا هنا بس — عشان الباج القديم (الكارت شايلة صيغة
+// عرض قديمة) ميتكررش تاني. لازم يتطابقوا مع الـ Promotion rows الفعّالة في
+// الداتابيز (isActive: true). شوف prisma/seed-promotions.ts.
 
 interface Variant {
   id: string
@@ -98,6 +89,7 @@ interface AvailableGiftVariant {
   color: string
   size: string
   productName: string
+  stockQuantity: number
 }
 
 export default function ProductDetailClient({
@@ -510,6 +502,20 @@ export default function ProductDetailClient({
           cursor: pointer; position: relative; flex-shrink: 0;
           transition: all 0.2s;
         }
+        .gift-swatch-oos {
+          position: relative;
+        }
+        .gift-swatch-oos::after {
+          content: "";
+          position: absolute;
+          left: -2px;
+          right: -2px;
+          top: 50%;
+          height: 1.5px;
+          background: rgba(240,237,230,0.7);
+          transform: translateY(-50%) rotate(-45deg);
+          pointer-events: none;
+        }
         .gift-size-btn {
           min-width: 36px; height: 32px; padding: 0 8px; font-size: 10px;
           font-family: 'Space Mono', monospace; letter-spacing: 0.05em;
@@ -856,6 +862,7 @@ export default function ProductDetailClient({
               setGift={setGift}
               availableGiftVariants={availableGiftVariants}
               loadingGiftVariants={loadingGiftVariants}
+              paidItems={items}
             />
 
             <button
@@ -981,6 +988,7 @@ function BundleSection({
   setGift,
   availableGiftVariants,
   loadingGiftVariants,
+  paidItems,
 }: {
   currentCartQuantity: number
   eligibleNow: { triggerQuantity: number; freeQuantity: number } | null
@@ -989,6 +997,7 @@ function BundleSection({
   setGift: (index: number, gift: { variantId: string; productName: string; color: string; size: string; imageUrl?: string }) => void
   availableGiftVariants: AvailableGiftVariant[]
   loadingGiftVariants: boolean
+  paidItems: { variantId: string; quantity: number }[]
 }) {
   // أول slot مفتوح افتراضيًا (أول حاجة يشوفها اليوزر لما يستاهل عرض)، والباقي مقفول
   const [openSlot, setOpenSlot] = useState<number | null>(0)
@@ -1004,20 +1013,43 @@ function BundleSection({
   const completedGifts = gifts.filter((g) => g?.variantId).length
   const totalGiftSlots = eligibleNow?.freeQuantity ?? 0
 
+  // ─── Stock-aware gift picker ─────────────────────────────────────────
+  // availableGiftVariants.stockQuantity هو المخزون الخام (سنابشوت وقت الـ fetch) —
+  // مش كافي لوحده لأن نفس الـ variant ممكن يبقى محجوز جزئيًا من:
+  //   1) القطعة المدفوعة اللي في الكارت أصلاً (paidItems)
+  //   2) أي slot هدية تاني مختار نفس الـ variant ده (مثلاً العميل اختار Black/L
+  //      للهدية 1 والهدية 2 مع بعض)
+  // getRemainingStock بتحسب المتبقي الفعلي لـ slot معين (باستثناء حجز الـ slot
+  // نفسه عشان لو العميل بيعدّل اختياره لنفس الـ slot ده، مايتحجزش ضد نفسه).
+  const getRemainingStock = (variantId: string, excludeSlotIdx: number) => {
+    const variant = availableGiftVariants.find((v) => v.variantId === variantId)
+    if (!variant) return 0
+    const reservedByCart = paidItems.find((i) => i.variantId === variantId)?.quantity ?? 0
+    const reservedByOtherGiftSlots = gifts.reduce(
+      (count, g, i) => (i !== excludeSlotIdx && g?.variantId === variantId ? count + 1 : count),
+      0
+    )
+    return variant.stockQuantity - reservedByCart - reservedByOtherGiftSlots
+  }
+
   const handleQuickFill = () => {
     const first = gifts[0]
     if (!first?.color) return
+    const variant = availableGiftVariants.find((v) => v.color === first.color && v.size === first.size)
+    if (!variant) return
+    // كام قطعة متبقية فعلاً من نفس الـ variant ده بعد ما نطرح القطعة اللي الهدية
+    // الأولى أصلاً حاجزاها (excludeSlotIdx: 0 عشان منحسبشش حجزها ضد نفسها)
+    let remaining = getRemainingStock(variant.variantId, 0)
     for (let i = 1; i < totalGiftSlots; i++) {
-      const variant = availableGiftVariants.find((v) => v.color === first.color && v.size === first.size)
-      if (variant) {
-        setGift(i, {
-          variantId: variant.variantId,
-          productName: variant.productName,
-          color: first.color,
-          size: first.size,
-          imageUrl: gifts[0]?.imageUrl,
-        })
-      }
+      if (remaining <= 0) break
+      setGift(i, {
+        variantId: variant.variantId,
+        productName: variant.productName,
+        color: first.color,
+        size: first.size,
+        imageUrl: gifts[0]?.imageUrl,
+      })
+      remaining -= 1
     }
   }
 
@@ -1094,9 +1126,15 @@ function BundleSection({
             Array.from({ length: totalGiftSlots }).map((_, idx) => {
               const currentGift = gifts[idx]
               const colorOptions = colorsList.filter((c) => availableGiftVariants.some((v) => v.color === c))
+              // مقاسات متاحة فعلاً للـ slot ده دلوقتي — مش سنابشوت ثابت زي قبل كده، دلوقتي
+              // بتطرح المحجوز من الكارت + باقي slots الهدايا التانية
               const sizeOptionsForColor = currentGift?.color
-                ? availableGiftVariants.filter((v) => v.color === currentGift.color).map((v) => v.size)
+                ? availableGiftVariants
+                    .filter((v) => v.color === currentGift.color && getRemainingStock(v.variantId, idx) > 0)
+                    .map((v) => v.size)
                 : []
+              const colorHasRemainingStock = (c: string) =>
+                availableGiftVariants.some((v) => v.color === c && getRemainingStock(v.variantId, idx) > 0)
               const isDone = !!currentGift?.variantId
               const isOpen = openSlot === idx
               const summaryLabel = isDone
@@ -1132,12 +1170,16 @@ function BundleSection({
                           <div style={{ display: "flex", gap: "8px" }}>
                             {colorOptions.map((c) => {
                               const isSelected = currentGift?.color === c
+                              const isOutOfStockForSlot = !isSelected && !colorHasRemainingStock(c)
                               return (
                                 <button
                                   key={c}
-                                  className="gift-swatch"
+                                  className={`gift-swatch ${isOutOfStockForSlot ? "gift-swatch-oos" : ""}`}
+                                  disabled={isOutOfStockForSlot}
+                                  title={isOutOfStockForSlot ? "Out of stock" : c.charAt(0) + c.slice(1).toLowerCase()}
                                   onClick={() => {
-                                    const firstAvailable = availableGiftVariants.find((v) => v.color === c)
+                                    if (isOutOfStockForSlot) return
+                                    const firstAvailable = availableGiftVariants.find((v) => v.color === c && getRemainingStock(v.variantId, idx) > 0)
                                     const giftImages = colorImages[c] || colorImages.BLACK
                                     setGift(idx, {
                                       variantId: firstAvailable?.variantId || "",
@@ -1148,11 +1190,12 @@ function BundleSection({
                                     })
                                   }}
                                   aria-label={c}
-                                  title={c.charAt(0) + c.slice(1).toLowerCase()}
                                   style={{
                                     background: SWATCH_COLORS[c],
                                     border: isSelected ? `2px solid ${ACCENT}` : "1px solid rgba(240,237,230,0.2)",
                                     boxShadow: isSelected ? "0 0 0 3px rgba(200,240,79,0.15)" : "none",
+                                    cursor: isOutOfStockForSlot ? "not-allowed" : "pointer",
+                                    opacity: isOutOfStockForSlot ? 0.35 : 1,
                                   }}
                                 >
                                   {isSelected && (

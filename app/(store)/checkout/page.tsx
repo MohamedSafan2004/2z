@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { SHIPPING_RATES, SHIPPING_LABELS, getFinalShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping"
 import { getTierDiscountPercent } from "@/lib/pricing"
+import { getEligibleGiftTier } from "@/lib/giftTiers"
 import { BOSTA_CITIES } from "@/lib/cities"
 import { saveGuestOrderToken } from "@/lib/store/orderTracking"
 import { trackInitiateCheckout, trackPurchase, tagClarityOrder, generateEventId } from "@/lib/meta-pixel"
@@ -104,8 +105,13 @@ export default function CheckoutPage() {
     }
   }, [promoError])
 
-  // الهدايا خلاص اتختارت في صفحة المنتج — هنا بس عرض
-  const validGifts = useMemo(() => gifts.filter((g) => g && g.variantId), [gifts])
+  // الهدايا خلاص اتختارت في صفحة المنتج — هنا بس عرض. بنحد العدد بنفس الـ GIFT_TIERS
+  // الموجودة في lib/giftTiers.ts (مصدر مشترك مع صفحة الكارت) — دفاع إضافي
+  // لو المقاس اتغير بعد ما الهدايا اتختارت، مش مستنيين السيرفر يرفض الأوردر
+  // لو حصل تعارض (calculatePromotion في lib/promotions.ts هي المصدر النهائي).
+  const paidQuantityForGifts = items.reduce((sum, i) => sum + i.quantity, 0)
+  const expectedGiftQty = getEligibleGiftTier(paidQuantityForGifts)?.freeQuantity ?? 0
+  const validGifts = useMemo(() => gifts.filter((g) => g && g.variantId).slice(0, expectedGiftQty), [gifts, expectedGiftQty])
 
   const subtotal      = total()
   // قيمة الهدية للعرض بس (كام العميل وفر) — مش بتتطرح من subtotal لأنها أصلاً مش داخلة فيه
