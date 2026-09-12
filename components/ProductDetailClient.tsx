@@ -7,7 +7,7 @@ import { useCart } from "@/lib/store/cart"
 import { trackViewContent, trackAddToCart } from "@/lib/meta-pixel"
 import ActiveOfferBanner from "@/components/ActiveOfferBanner"
 import SizeRecommendationModal from "@/components/Sizerecommendationmodal"
-import { GIFT_TIERS as TIERS, getEligibleGiftTier as getEligibleTier, getNextGiftTier as getNextTier } from "@/lib/giftTiers"
+import { GIFT_TIERS as TIERS, getEligibleGiftTier as getEligibleTier, getNextGiftTier as getNextTier, areGiftsComplete } from "@/lib/giftTiers"
 
 
 const colorImages: Record<string, string[]> = {
@@ -109,6 +109,10 @@ export default function ProductDetailClient({
   const [imgIndex, setImgIndex] = useState(0)
   const [sizeGuideTab, setSizeGuideTab] = useState<"CHART" | "FINDER" | null>(null)
   const [buying, setBuying] = useState(false)
+  // بيتفعل لما العميل يحاول يكمل (Buy It Now) وهو لسه مستحق هدية ومختارهاش —
+  // بيتلغى تلقائي أول ما يختار كل الهدايا المطلوبة (شوف الـ effect تحت)
+  const [showGiftNudge, setShowGiftNudge] = useState(false)
+  const bundleSectionRef = React.useRef<HTMLDivElement>(null)
   const { addItem, items, gifts, setGift, clearGifts, paidQuantity } = useCart()
   const router = useRouter()
 
@@ -163,6 +167,15 @@ export default function ProductDetailClient({
       clearGifts()
     }
   }, [eligibleNow, gifts.length, clearGifts])
+
+  // ─── Auto-dismiss gift nudge ──────────────────────────────────────────────
+  // لو الرسالة ظاهرة والعميل اختار كل الهدايا المطلوبة، اقفلها لوحدها من غير
+  // ما يحتاج يضغط Buy It Now تاني
+  useEffect(() => {
+    if (showGiftNudge && areGiftsComplete(currentCartQuantity, gifts)) {
+      setShowGiftNudge(false)
+    }
+  }, [showGiftNudge, currentCartQuantity, gifts])
 
   React.useEffect(() => {
     const preloadRest = () => {
@@ -303,6 +316,18 @@ export default function ProductDetailClient({
       })
     }
 
+    // ─── Gift-selection gate ────────────────────────────────────────────
+    // بعد ما ضفنا القطعة الجديدة للكارت، الكمية النهائية بالذاتي هي إجمالي
+    // الكارت بعد الإضافة (مش currentCartQuantity القديمة اللي محسوبة قبل الإضافة) —
+    // لو مستحق هدية ولسه مختارهاش، منروحشش للـ checkout — نظهرله رسالة لطيفة
+    // ونسكرول لمكان اختيار الهدية بدل ما نروحله checkout وهية مش متحسبة له.
+    const finalQuantity = alreadyInCart + Math.max(toAdd, 0)
+    if (!areGiftsComplete(finalQuantity, gifts)) {
+      setShowGiftNudge(true)
+      bundleSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      return
+    }
+
     setBuying(true)
     router.push("/checkout")
   }
@@ -315,6 +340,7 @@ export default function ProductDetailClient({
         @keyframes giftGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(200,240,79,0.15); } 50% { box-shadow: 0 0 0 6px rgba(200,240,79,0); } }
         @keyframes slideDown { from { opacity: 0; max-height: 0; transform: translateY(-6px); } to { opacity: 1; max-height: 1200px; transform: translateY(0); } }
         @keyframes checkPop { 0% { transform: scale(0); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        @keyframes nudgeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
         .img-nav-btn {
           position: absolute; top: 50%; transform: translateY(-50%);
@@ -461,6 +487,23 @@ export default function ProductDetailClient({
         }
         .gift-quick-fill-btn:hover { border-color: rgba(240,237,230,0.4); color: #f0ede6; }
         .gift-quick-fill-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* ── Gift nudge ── تنبيه لطيف لما العميل يحاول يكمل (Buy It Now) ولسه مختارش الهدية —
+           لون عنبري/دافئ مش أحمر عشان ميحسسش إنه غلط أو error، دي خطوة ناقصة مش مشكلة ── */
+        .gift-nudge {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          margin-top: 14px;
+          padding: 11px 13px;
+          background: rgba(224,160,82,0.08);
+          border: 1px solid rgba(224,160,82,0.35);
+          font-size: 10px;
+          letter-spacing: 0.02em;
+          line-height: 1.5;
+          color: rgba(240,237,230,0.9);
+          animation: nudgeIn 0.3s ease both;
+        }
 
         /* Compact rows once there are multiple gift slots — each row is one line
            with an inline color+size picker that expands only when tapped, instead
@@ -854,16 +897,19 @@ export default function ProductDetailClient({
               </div>
             </div>
 
-            <BundleSection
-              currentCartQuantity={currentCartQuantity}
-              eligibleNow={eligibleNow}
-              nextTier={nextTier}
-              gifts={gifts}
-              setGift={setGift}
-              availableGiftVariants={availableGiftVariants}
-              loadingGiftVariants={loadingGiftVariants}
-              paidItems={items}
-            />
+            <div ref={bundleSectionRef}>
+              <BundleSection
+                currentCartQuantity={currentCartQuantity}
+                eligibleNow={eligibleNow}
+                nextTier={nextTier}
+                gifts={gifts}
+                setGift={setGift}
+                availableGiftVariants={availableGiftVariants}
+                loadingGiftVariants={loadingGiftVariants}
+                paidItems={items}
+                showGiftNudge={showGiftNudge}
+              />
+            </div>
 
             <button
               onClick={handleAdd}
@@ -989,6 +1035,7 @@ function BundleSection({
   availableGiftVariants,
   loadingGiftVariants,
   paidItems,
+  showGiftNudge = false,
 }: {
   currentCartQuantity: number
   eligibleNow: { triggerQuantity: number; freeQuantity: number } | null
@@ -998,6 +1045,7 @@ function BundleSection({
   availableGiftVariants: AvailableGiftVariant[]
   loadingGiftVariants: boolean
   paidItems: { variantId: string; quantity: number }[]
+  showGiftNudge?: boolean
 }) {
   // أول slot مفتوح افتراضيًا (أول حاجة يشوفها اليوزر لما يستاهل عرض)، والباقي مقفول
   const [openSlot, setOpenSlot] = useState<number | null>(0)
@@ -1053,6 +1101,16 @@ function BundleSection({
     }
   }
 
+  // لو رسالة التنبيه ظاهرة، افتح أول slot لسه مختارش تلقائيًا — عشان العميل
+  // يشوف فورًا فين يضغط بدل ما يدور يلاقيه
+  React.useEffect(() => {
+    if (!showGiftNudge) return
+    const firstIncomplete = gifts.findIndex((g, i) => i < totalGiftSlots && !g?.variantId)
+    const idx = firstIncomplete === -1 ? 0 : firstIncomplete
+    setOpenSlot(idx)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showGiftNudge])
+
   return (
     <div className={`bundle-box ${eligibleNow ? "eligible" : ""}`}>
       {/* ── Tier pills — كل العروض المتاحة تظهر مرة واحدة، والمستحق/المتحقق منهم يتميّز ── */}
@@ -1100,6 +1158,15 @@ function BundleSection({
           })}
         </div>
       </div>
+
+      {eligibleNow && showGiftNudge && completedGifts < totalGiftSlots && (
+        <div className="gift-nudge" role="status">
+          <span style={{ fontSize: "13px", lineHeight: 1 }}>🎁</span>
+          <span>
+            Almost there — pick your free gift{totalGiftSlots > 1 ? "s" : ""} below to continue
+          </span>
+        </div>
+      )}
 
       {eligibleNow && (
         <div className="gift-picker" style={{ marginTop: "22px" }}>

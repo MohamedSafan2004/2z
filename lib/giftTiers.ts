@@ -17,8 +17,8 @@ export interface GiftTier {
 }
 
 export const GIFT_TIERS: GiftTier[] = [
-  { triggerQuantity: 2, freeQuantity: 3 },
-  { triggerQuantity: 3, freeQuantity: 5 },
+  { triggerQuantity: 2, freeQuantity: 1 },
+  { triggerQuantity: 3, freeQuantity: 2 },
 ].sort((a, b) => b.triggerQuantity - a.triggerQuantity)
 
 /** أعلى تير مستحق حاليًا (تيرد مش تراكمي — الأعلى بس اللي العميل وصله) */
@@ -31,4 +31,17 @@ export function getNextGiftTier(paidQuantity: number): GiftTier | null {
   return GIFT_TIERS.slice()
     .sort((a, b) => a.triggerQuantity - b.triggerQuantity)
     .find((t) => t.triggerQuantity > paidQuantity) ?? null
+}
+
+/**
+ * بيتحقق إن العميل اختار كل الهدايا المستحقة له فعلاً (كل الـ slots معبأة
+ * بـ variantId حقيقي) قبل ما نسمحله يكمل لأي checkout flow (Buy It Now،
+ * Proceed to Checkout، إلخ). بيرجع true لو مفيش عرض مستحق أصلاً (مفيش حاجة
+ * تتمنع بسببها)، أو لو العرض مستحق والهدايا كلها متختارة.
+ */
+export function areGiftsComplete(paidQuantity: number, gifts: { variantId?: string }[]): boolean {
+  const tier = getEligibleGiftTier(paidQuantity)
+  if (!tier) return true
+  const completed = gifts.filter((g) => g?.variantId).length
+  return completed >= tier.freeQuantity
 }
