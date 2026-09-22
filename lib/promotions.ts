@@ -29,7 +29,7 @@ export type PromotionResult =
  * ملحوظة: العروض متدرجة (tiered) مش تراكمية — يعني 4 قطع بتاخد نفس عرض الـ 3 قطع، مش أكتر.
  */
 export async function getEligiblePromotion(paidQuantity: number) {
-  if (paidQuantity < 2) return null
+  if (paidQuantity < 1) return null
 
   const promotions = await db.promotion.findMany({
     where: { isActive: true, triggerQuantity: { lte: paidQuantity } },

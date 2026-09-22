@@ -9,39 +9,26 @@ const adapter = new PrismaPg({ connectionString })
 const db = new PrismaClient({ adapter })
 
 async function main() {
-  // buy 2 get 3 free — القديمة (promo-buy2get1) بتتقفل هنا بدل ما تتمسح، عشان
+  // buy 1 get 1 free — القديمة (buy2get3, buy3get5) بتتقفل هنا بدل ما تتمسح، عشان
   // أي أوردر قديم لسه مرتبط بيها (لو موجود) يفضل صالح تاريخيًا في الداتابيز
   await db.promotion.updateMany({
-    where: { id: { in: ["promo-buy2get1", "promo-buy3get2"] } },
+    where: { id: { in: ["promo-buy2get1", "promo-buy3get2", "promo-buy2get3", "promo-buy3get5"] } },
     data: { isActive: false },
   })
 
   await db.promotion.upsert({
-    where: { id: "promo-buy2get3" },
-    update: { triggerQuantity: 2, freeQuantity: 3, isActive: true },
+    where: { id: "promo-buy1get1" },
+    update: { triggerQuantity: 1, freeQuantity: 1, isActive: true },
     create: {
-      id: "promo-buy2get3",
+      id: "promo-buy1get1",
       type: "BUY_X_GET_Y_FREE",
-      triggerQuantity: 2,
-      freeQuantity: 3,
+      triggerQuantity: 1,
+      freeQuantity: 1,
       isActive: true,
     },
   })
 
-  // buy 3 get 5 free
-  await db.promotion.upsert({
-    where: { id: "promo-buy3get5" },
-    update: { triggerQuantity: 3, freeQuantity: 5, isActive: true },
-    create: {
-      id: "promo-buy3get5",
-      type: "BUY_X_GET_Y_FREE",
-      triggerQuantity: 3,
-      freeQuantity: 5,
-      isActive: true,
-    },
-  })
-
-  console.log("✅ Promotions seeded: buy2get3, buy3get5 (القديمة buy2get1/buy3get2 اتقفلوا)")
+  console.log("✅ Promotion seeded: buy1get1 (القديمة buy2get1/buy3get2/buy2get3/buy3get5 اتقفلوا)")
 }
 
 main()

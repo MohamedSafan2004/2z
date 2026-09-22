@@ -16,8 +16,8 @@ const STOCK_ADD: Record<string, Record<string, number>> = {
   BEIGE: { M: 0, L: 0, XL: 0 },
 }
 
-const NEW_PRICE: number | null = 550
-// Sale اتلغت بالكامل بطلب محمد — رجعنا للسعر العادي 550 من غير originalPrice خالص.
+const NEW_PRICE: number | null = 599
+// لسه مفيش Sale — سعر عادي 599 من غير originalPrice.
 // CLEAR_ORIGINAL_PRICE = true بيبعت null صراحةً لعمود originalPrice (updateMany بيتجاهل
 // undefined لكن مش null، فلازم نبعتها صريحة عشان تتمسح فعليًا من الداتابيز)
 const NEW_ORIGINAL_PRICE: number | null = null

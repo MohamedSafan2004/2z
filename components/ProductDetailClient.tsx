@@ -110,7 +110,8 @@ export default function ProductDetailClient({
   const [sizeGuideTab, setSizeGuideTab] = useState<"CHART" | "FINDER" | null>(null)
   const [buying, setBuying] = useState(false)
   // بيتفعل لما العميل يحاول يكمل (Buy It Now) وهو لسه مستحق هدية ومختارهاش —
-  // بيتلغى تلقائي أول ما يختار كل الهدايا المطلوبة (شوف الـ effect تحت)
+  // بيختفي تلقائي أول ما يختار كل الهدايا المطلوبة (مشتق وقت الـ render عن طريق
+  // giftsComplete تحت، مش effect منفصل)
   const [showGiftNudge, setShowGiftNudge] = useState(false)
   const bundleSectionRef = React.useRef<HTMLDivElement>(null)
   const { addItem, items, gifts, setGift, clearGifts, paidQuantity } = useCart()
@@ -168,14 +169,15 @@ export default function ProductDetailClient({
     }
   }, [eligibleNow, gifts.length, clearGifts])
 
-  // ─── Auto-dismiss gift nudge ──────────────────────────────────────────────
-  // لو الرسالة ظاهرة والعميل اختار كل الهدايا المطلوبة، اقفلها لوحدها من غير
-  // ما يحتاج يضغط Buy It Now تاني
-  useEffect(() => {
-    if (showGiftNudge && areGiftsComplete(currentCartQuantity, gifts)) {
-      setShowGiftNudge(false)
-    }
-  }, [showGiftNudge, currentCartQuantity, gifts])
+  // ─── Gift nudge visibility ────────────────────────────────────────────
+  // showGiftNudge لوحدها معناها "العميل حاول يكمل وكان لسه ناقص هدية" — مش
+  // لازم تتقفل يدويًا أول ما يختار الهدايا، لأن ده derived state (نتيجة
+  // currentCartQuantity + gifts) مش حالة مستقلة. كان فيه useEffect بينادي
+  // setShowGiftNudge(false) كل مرة الشرط يتحقق، وده بالظبط الـ anti-pattern
+  // اللي React بيحذر منه ("setState synchronously within an effect") —
+  // اتشال، والقفل بيحصل تلقائي وقت الـ render نفسه عن طريق giftsComplete
+  // تحت (لو الهدايا كملت، النودج مش هيتعرض خالص، من غير أي setState زيادة).
+  const giftsComplete = areGiftsComplete(currentCartQuantity, gifts)
 
   React.useEffect(() => {
     const preloadRest = () => {
@@ -907,7 +909,7 @@ export default function ProductDetailClient({
                 availableGiftVariants={availableGiftVariants}
                 loadingGiftVariants={loadingGiftVariants}
                 paidItems={items}
-                showGiftNudge={showGiftNudge}
+                showGiftNudge={showGiftNudge && !giftsComplete}
               />
             </div>
 
@@ -1008,15 +1010,11 @@ export default function ProductDetailClient({
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Bundle section — Buy 2 Get 3 Free / Buy 3 Get 5 Free
+// Bundle section — Buy 1 Get 1 Free
 //
-// تصميم جديد (مش نفس كود الـ Buy 2 Get 1 القديم): بدل ما كل هدية تتعرض كبلوك
-// كامل (لون + مقاس) مفتوح على طول، كل هدية دلوقتي صف واحد قابل للطي
-// (accordion-style row) — مهم جدًا لما العدد يوصل 5 هدايا مع بعض، عشان الشاشة
-// متتقلبش بـ 5 بلوكات مفتوحة كلها في نفس الوقت. الصف المقفول بيوري ملخص سريع
-// ("BLACK / L" أو "Choose gift 2") والمستخدم يفتحه بس لما يحب يغيّر اختياره.
-// فيه كمان زرار "Fill all same as gift 1" لما يبقى فيه أكتر من هدية، عشان
-// اليوزر ميضطرش يختار نفس اللون/المقاس يدويًا لكل قطعة لو عايز نفس الحاجة.
+// كل هدية بتتعرض كصف قابل للطي (accordion-style row) بدل بلوك كامل مفتوح
+// على طول — مهم لما العدد يوصل لأكتر من هدية مع بعض. الصف المقفول بيوري
+// ملخص سريع ("BLACK / L") والمستخدم يفتحه بس لما يحب يغيّر اختياره.
 // ─────────────────────────────────────────────────────────────────────────
 
 const SWATCH_COLORS: Record<string, string> = {
@@ -1049,8 +1047,13 @@ function BundleSection({
 }) {
   // أول slot مفتوح افتراضيًا (أول حاجة يشوفها اليوزر لما يستاهل عرض)، والباقي مقفول
   const [openSlot, setOpenSlot] = useState<number | null>(0)
+  // بيتبع آخر قيمة اتعاملنا معاها لـ showGiftNudge — بنستخدمها عشان نفتح أول
+  // slot ناقص بس أول لحظة النودج يتفعل (مش كل render لسه هو true). لازم
+  // يتعرف هنا (فوق أي return مبكر) عشان يفضل ثابت الترتيب مع باقي الـ hooks.
+  const lastHandledNudge = React.useRef(false)
 
-  // لو مفيش أي تير خالص متعرف في النظام، منعرضش حاجة
+  // لو مفيش أي تير خالص متعرف في النظام، منعرضش حاجة — لازم يجي بعد كل الـ
+  // hooks فوق (useState، useRef) عشان عدد وترتيب الـ hooks يفضل ثابت في كل render
   if (TIERS.length === 0) return null
 
   // كل التيرز مرتبة تصاعدي عشان نرسم البار من الأصغر للأكبر
@@ -1060,6 +1063,23 @@ function BundleSection({
 
   const completedGifts = gifts.filter((g) => g?.variantId).length
   const totalGiftSlots = eligibleNow?.freeQuantity ?? 0
+
+  // ─── Auto-open first incomplete slot on nudge ──────────────────────────
+  // بدل useEffect + setState (كان بيعمل cascading render وكمان بيتنادى بعد
+  // return مبكر فوق، وده بيكسر قاعدة "نفس عدد وترتيب الـ hooks في كل render")،
+  // بنحسب الفتح ده مباشرة وقت الـ render نفسه: أول مرة showGiftNudge بتتحول
+  // لـ true (مش كل مرة الكومبوننت بيعمل render والقيمة لسه true)، نغيّر
+  // openSlot من جوه الـ render مباشرة. ده مسموح بيه في React (calling
+  // setState during render) طالما بيحصل مرة واحدة وشرطي — وبيبقى أرخص
+  // وأوضح من effect منفصل.
+  if (showGiftNudge && !lastHandledNudge.current) {
+    lastHandledNudge.current = true
+    const firstIncomplete = gifts.findIndex((g, i) => i < totalGiftSlots && !g?.variantId)
+    const idx = firstIncomplete === -1 ? 0 : firstIncomplete
+    if (openSlot !== idx) setOpenSlot(idx)
+  } else if (!showGiftNudge && lastHandledNudge.current) {
+    lastHandledNudge.current = false
+  }
 
   // ─── Stock-aware gift picker ─────────────────────────────────────────
   // availableGiftVariants.stockQuantity هو المخزون الخام (سنابشوت وقت الـ fetch) —
@@ -1101,43 +1121,39 @@ function BundleSection({
     }
   }
 
-  // لو رسالة التنبيه ظاهرة، افتح أول slot لسه مختارش تلقائيًا — عشان العميل
-  // يشوف فورًا فين يضغط بدل ما يدور يلاقيه
-  React.useEffect(() => {
-    if (!showGiftNudge) return
-    const firstIncomplete = gifts.findIndex((g, i) => i < totalGiftSlots && !g?.variantId)
-    const idx = firstIncomplete === -1 ? 0 : firstIncomplete
-    setOpenSlot(idx)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showGiftNudge])
-
   return (
     <div className={`bundle-box ${eligibleNow ? "eligible" : ""}`}>
-      {/* ── Tier pills — كل العروض المتاحة تظهر مرة واحدة، والمستحق/المتحقق منهم يتميّز ── */}
-      <div className="bundle-tier-pills">
-        {sortedTiers.map((t) => {
-          const reached = currentCartQuantity >= t.triggerQuantity
-          const isCurrentBest = eligibleNow?.triggerQuantity === t.triggerQuantity
-          return (
-            <span key={t.triggerQuantity} className={`bundle-tier-pill ${isCurrentBest ? "active" : reached ? "reached" : ""}`}>
-              {reached ? "✓ " : ""}Buy {t.triggerQuantity} Get {t.freeQuantity} Free
-            </span>
-          )
-        })}
-      </div>
+      {/* ── عرض واحد (Buy 1 Get 1): رسالة واضحة بدل pills/progress bar متصممين لعرضين ── */}
+      {sortedTiers.length === 1 ? (
+        <p style={{ fontSize: "11px", letterSpacing: "0.05em", color: eligibleNow ? ACCENT : "rgba(240,237,230,0.75)", margin: "0 0 4px", fontWeight: eligibleNow ? 700 : 400 }}>
+          🎁 Buy 1, Get 1 Free — any color, any size
+        </p>
+      ) : (
+        <div className="bundle-tier-pills">
+          {sortedTiers.map((t) => {
+            const reached = currentCartQuantity >= t.triggerQuantity
+            const isCurrentBest = eligibleNow?.triggerQuantity === t.triggerQuantity
+            return (
+              <span key={t.triggerQuantity} className={`bundle-tier-pill ${isCurrentBest ? "active" : reached ? "reached" : ""}`}>
+                {reached ? "✓ " : ""}Buy {t.triggerQuantity} Get {t.freeQuantity} Free
+              </span>
+            )
+          })}
+        </div>
+      )}
 
-      {/* رسالة الحالة الحالية — دايمًا واضحة سواء لسه مفيش عرض اتحقق أو خد الهدايا */}
-      {nextTier ? (
+      {/* رسالة الحالة الحالية — بتتخفي مع عرض واحد لأن الرسالة الفوقانية (Buy 1 Get 1 Free) كفاية، ومنعرضش تكرار */}
+      {sortedTiers.length > 1 && nextTier ? (
         <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: "rgba(240,237,230,0.6)", margin: 0 }}>
           🎁 Add <span style={{ color: ACCENT, fontWeight: 700 }}>{nextTier.triggerQuantity - currentCartQuantity}</span> more piece{nextTier.triggerQuantity - currentCartQuantity > 1 ? "s" : ""} to unlock <span style={{ color: ACCENT }}>Buy {nextTier.triggerQuantity} Get {nextTier.freeQuantity} Free</span>
         </p>
-      ) : eligibleNow ? (
+      ) : sortedTiers.length > 1 && eligibleNow ? (
         <p style={{ fontSize: "10px", letterSpacing: "0.05em", color: ACCENT, margin: 0 }}>
           🎉 Unlocked — pick your {eligibleNow.freeQuantity} free piece{eligibleNow.freeQuantity > 1 ? "s" : ""} below
         </p>
       ) : null}
 
-      {/* بار موحّد بيوري كل المراحل مع بعض */}
+      {/* بار موحّد — لعرض واحد بيبان خط تقدم بسيط لحد أول (وبس) marker، بدل بار متعدد المراحل */}
       <div className="tier-progress">
         <div className="tier-progress-track">
           <div className="tier-progress-fill" style={{ width: `${fillPercent}%` }} />
@@ -1150,9 +1166,11 @@ function BundleSection({
                   className={`tier-progress-marker ${reached ? "reached" : ""}`}
                   style={{ left: `${leftPct}%` }}
                 />
-                <span className={`tier-progress-marker-label ${reached ? "reached" : ""}`} style={{ left: `${leftPct}%` }}>
-                  {t.triggerQuantity}pc
-                </span>
+                {sortedTiers.length > 1 && (
+                  <span className={`tier-progress-marker-label ${reached ? "reached" : ""}`} style={{ left: `${leftPct}%` }}>
+                    {t.triggerQuantity}pc
+                  </span>
+                )}
               </div>
             )
           })}

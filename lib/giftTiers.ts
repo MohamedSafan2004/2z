@@ -17,8 +17,7 @@ export interface GiftTier {
 }
 
 export const GIFT_TIERS: GiftTier[] = [
-  { triggerQuantity: 2, freeQuantity: 1 },
-  { triggerQuantity: 3, freeQuantity: 2 },
+  { triggerQuantity: 1, freeQuantity: 1 },
 ].sort((a, b) => b.triggerQuantity - a.triggerQuantity)
 
 /** أعلى تير مستحق حاليًا (تيرد مش تراكمي — الأعلى بس اللي العميل وصله) */
