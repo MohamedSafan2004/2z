@@ -2,7 +2,7 @@
 export type ShippingZone = "egypt"
 
 export const SHIPPING_RATES: Record<ShippingZone, number> = {
-  egypt: 80,
+  egypt: 100,
 }
 
 export const SHIPPING_LABELS: Record<ShippingZone, string> = {

@@ -1050,7 +1050,7 @@ function BundleSection({
   // بيتبع آخر قيمة اتعاملنا معاها لـ showGiftNudge — بنستخدمها عشان نفتح أول
   // slot ناقص بس أول لحظة النودج يتفعل (مش كل render لسه هو true). لازم
   // يتعرف هنا (فوق أي return مبكر) عشان يفضل ثابت الترتيب مع باقي الـ hooks.
-  const lastHandledNudge = React.useRef(false)
+  const [prevShowGiftNudge, setPrevShowGiftNudge] = useState(false)
 
   // لو مفيش أي تير خالص متعرف في النظام، منعرضش حاجة — لازم يجي بعد كل الـ
   // hooks فوق (useState، useRef) عشان عدد وترتيب الـ hooks يفضل ثابت في كل render
@@ -1072,13 +1072,13 @@ function BundleSection({
   // openSlot من جوه الـ render مباشرة. ده مسموح بيه في React (calling
   // setState during render) طالما بيحصل مرة واحدة وشرطي — وبيبقى أرخص
   // وأوضح من effect منفصل.
-  if (showGiftNudge && !lastHandledNudge.current) {
-    lastHandledNudge.current = true
-    const firstIncomplete = gifts.findIndex((g, i) => i < totalGiftSlots && !g?.variantId)
-    const idx = firstIncomplete === -1 ? 0 : firstIncomplete
-    if (openSlot !== idx) setOpenSlot(idx)
-  } else if (!showGiftNudge && lastHandledNudge.current) {
-    lastHandledNudge.current = false
+  if (showGiftNudge !== prevShowGiftNudge) {
+    setPrevShowGiftNudge(showGiftNudge)
+    if (showGiftNudge) {
+      const firstIncomplete = gifts.findIndex((g, i) => i < totalGiftSlots && !g?.variantId)
+      const idx = firstIncomplete === -1 ? 0 : firstIncomplete
+      if (openSlot !== idx) setOpenSlot(idx)
+    }
   }
 
   // ─── Stock-aware gift picker ─────────────────────────────────────────
