@@ -3,46 +3,8 @@
 import { useEffect, useState, useCallback } from "react"
 import { useAuth } from "@/lib/store/auth"
 import { useRouter } from "next/navigation"
-import OrderCard from "@/components/admin/OrderCard"
-
-type OrderItem = {
-  id: string
-  productNameSnapshot: string
-  colorSnapshot: string
-  sizeSnapshot: string
-  quantity: number
-  priceSnapshot: number | string
-}
-
-type OrderUser = {
-  name?: string
-  phone?: string
-  email?: string
-}
-
-type Order = {
-  id: string
-  status: string
-  paymentStatus: string
-  paymentMethod: string
-  totalAmount: number | string
-  discountAmount?: number | string
-  promoCode?: string | null
-  shippingZone: string | null
-  shippingCost: number | string
-  createdAt: string
-  address: string | null
-  city?: string | null
-  phone?: string | null
-  guestEmail?: string | null
-  guestName?: string | null
-  invoiceNumber?: number | null
-  instapayRef?: string | null
-  bostaTrackingNumber?: string | null
-  bostaState?: string | null
-  items: OrderItem[]
-  user?: OrderUser
-}
+import OrderCard, { type Order, type OrderItem } from "@/components/admin/OrderCard"
+import EditOrderModal from "@/components/admin/EditOrderModal"
 
 function printPackingSlip(order: Order) {
   const invoiceNum = order.invoiceNumber
@@ -173,6 +135,7 @@ export default function AdminPage() {
   const [bostaSendingId, setBostaSendingId] = useState<string | null>(null)
   const [bostaError, setBostaError] = useState<{ orderId: string; message: string } | null>(null)
   const [bostaSuccessId, setBostaSuccessId] = useState<string | null>(null)
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null)
 
   useEffect(() => {
     queueMicrotask(() => setHydrated(true))
@@ -335,6 +298,12 @@ export default function AdminPage() {
     } finally {
       setBostaSendingId(null)
     }
+  }
+
+  const handleOrderSaved = (updated: Order) => {
+    setOrders((prev) => prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o)))
+    setEditingOrder(null)
+    fetchStats()
   }
 
   const syncInventory = async () => {
@@ -524,6 +493,7 @@ export default function AdminPage() {
                   statusBorder={statusBorder}
                   paymentStatusColor={paymentStatusColor}
                   onPrint={printPackingSlip}
+                  onEdit={setEditingOrder}
                   onUpdateStatus={updateStatus}
                   onConfirmInstapay={confirmInstapay}
                   confirmingId={confirmingId}
@@ -560,6 +530,17 @@ export default function AdminPage() {
         })()}
 
       </div>
+
+      {editingOrder && (
+        <EditOrderModal
+          key={editingOrder.id}
+          order={editingOrder}
+          token={token}
+          onClose={() => setEditingOrder(null)}
+          onSaved={handleOrderSaved}
+          onUnauthorized={() => { logout(); router.push("/login?expired=1") }}
+        />
+      )}
     </div>
   )
 }

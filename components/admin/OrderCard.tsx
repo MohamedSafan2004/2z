@@ -4,6 +4,8 @@ import { memo } from "react"
 
 export type OrderItem = {
   id: string
+  variantId: string
+  isGift?: boolean
   productNameSnapshot: string
   colorSnapshot: string
   sizeSnapshot: string
@@ -48,6 +50,7 @@ type OrderCardProps = {
   statusBorder: Record<string, string>
   paymentStatusColor: Record<string, string>
   onPrint: (order: Order) => void
+  onEdit: (order: Order) => void
   onUpdateStatus: (orderId: string, status: string) => void
   onConfirmInstapay: (orderId: string) => void
   confirmingId: string | null
@@ -89,6 +92,7 @@ function OrderCardComponent({
   statusBorder,
   paymentStatusColor,
   onPrint,
+  onEdit,
   onUpdateStatus,
   onConfirmInstapay,
   confirmingId,
@@ -194,6 +198,15 @@ function OrderCardComponent({
           >
             🖨 Print
           </button>
+
+          {order.status !== "CANCELLED" && (
+            <button
+              onClick={() => onEdit(order)}
+              style={{ padding: "9px 14px", fontSize: FONT.meta, letterSpacing: "0.05em", fontFamily: "Space Mono, monospace", cursor: "pointer", background: "transparent", color: TXT.secondary, border: "1px solid rgba(240,237,230,0.2)", borderRadius: "2px" }}
+            >
+              ✎ Edit
+            </button>
+          )}
 
           {order.paymentMethod === "INSTAPAY" && order.paymentStatus !== "PAID" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-start" }}>
