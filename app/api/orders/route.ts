@@ -10,6 +10,7 @@ import { calculatePromotion, type GiftSelection } from "@/lib/promotions"
 import { sendPurchaseCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 import { normalizeEgyptianPhone } from "@/lib/phone"
 import crypto from "crypto"
+import { ORDERS_PAUSED, ORDERS_PAUSED_MESSAGE } from "@/lib/store-status"
 
 // الكود المرتبط بالـ flash offer popup — لازم يطابق اللي في app/api/leads/subscribe وapp/api/promo/validate
 const EMAIL_LINKED_PROMO_CODE = "2ZSAVE10"
@@ -18,6 +19,11 @@ type CartItem = { variantId: string; quantity: number }
 
 export async function POST(req: NextRequest) {
   try {
+    // وقف مؤقت للأوردرات (الجرد) — الحماية الحقيقية هنا في السيرفر، مش بس في الواجهة
+    if (ORDERS_PAUSED) {
+      return NextResponse.json({ error: ORDERS_PAUSED_MESSAGE }, { status: 503 })
+    }
+
     const auth = optionalAuth(req)
 
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"

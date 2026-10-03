@@ -11,6 +11,7 @@ import { getEligibleGiftTier } from "@/lib/giftTiers"
 import { BOSTA_CITIES } from "@/lib/cities"
 import { saveGuestOrderToken } from "@/lib/store/orderTracking"
 import { trackInitiateCheckout, trackPurchase, tagClarityOrder, generateEventId } from "@/lib/meta-pixel"
+import { ORDERS_PAUSED, ORDERS_PAUSED_MESSAGE } from "@/lib/store-status"
 
 import CheckoutCard from "./components/Checkoutcard "
 import InputField from "./components/Inputfield"
@@ -195,6 +196,7 @@ export default function CheckoutPage() {
   const trackedCheckoutRef = useRef(false)
   useEffect(() => {
     if (trackedCheckoutRef.current) return
+    if (ORDERS_PAUSED) return
     if (items.length === 0) return
     trackedCheckoutRef.current = true
     trackInitiateCheckout({
@@ -204,6 +206,15 @@ export default function CheckoutPage() {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // وقف مؤقت للأوردرات — متتحكم من lib/store-status.ts
+  if (ORDERS_PAUSED) return (
+    <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace", padding: "24px", textAlign: "center" }}>
+      <p style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "#c8f04f", marginBottom: "16px" }}>Orders paused</p>
+      <p style={{ fontSize: "13px", color: "rgba(240,237,230,0.75)", lineHeight: 1.7, maxWidth: "380px", marginBottom: "28px" }}>{ORDERS_PAUSED_MESSAGE}</p>
+      <Link href="/products" style={{ fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#f0ede6", border: "1px solid rgba(240,237,230,0.3)", padding: "12px 24px" }}>Back to shop</Link>
+    </div>
+  )
 
   if (items.length === 0) return (
     <div style={{ background: "#080808", color: "#f0ede6", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono, monospace" }}>
