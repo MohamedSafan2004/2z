@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse, after } from "next/server"
 import { db } from "@/lib/db"
 import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email"
 import { sensitiveRatelimit } from "@/lib/ratelimit"
 import { sendCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 import crypto from "crypto"
+import { sendOrderToWebhook } from "@/lib/order-webhook"
 
 // بديل submit-instapay-ref: العميل معدش بيدخل رقم حوالة — دوسة زرار
 // الواتساب هي دلوقتي أول وآخر إشارة نية دفع عندنا. الراوت ده بيغيّر
@@ -124,6 +125,11 @@ export async function POST(
     } catch (error) {
       console.error("Meta CAPI Purchase failed:", error)
     }
+
+    // ─── n8n: تفاصيل الأوردر للينك ──────────────────────────────────────────
+    // InstaPay: أول مرة بس الأوردر يتحوّل من PENDING_PAYMENT لـ PENDING (فالـ guard فوق
+    // بيمنع التكرار لو العميل دوس تاني).
+    after(() => sendOrderToWebhook(order.id))
 
     return NextResponse.json(updated)
   } catch (error) {

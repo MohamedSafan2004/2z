@@ -30,8 +30,7 @@ export function HeroSection() {
             <div>
               <div className={styles["hero-divider"]} />
               <p className={styles["hero-desc"]}>
-                Oversized T-Shirts<br />
-                Black · White · Grey · Beige
+                Style That Fits You<br />
               </p>
             </div>
 

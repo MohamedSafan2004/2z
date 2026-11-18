@@ -407,7 +407,8 @@ export const ModelName = {
   PromoCode: 'PromoCode',
   PromoCodeUsage: 'PromoCodeUsage',
   Promotion: 'Promotion',
-  EmailLead: 'EmailLead'
+  EmailLead: 'EmailLead',
+  AbandonedCheckout: 'AbandonedCheckout'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -423,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "category" | "product" | "productVariant" | "order" | "orderItem" | "invoiceCounter" | "promoCode" | "promoCodeUsage" | "promotion" | "emailLead"
+    modelProps: "user" | "category" | "product" | "productVariant" | "order" | "orderItem" | "invoiceCounter" | "promoCode" | "promoCodeUsage" | "promotion" | "emailLead" | "abandonedCheckout"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1241,6 +1242,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AbandonedCheckout: {
+      payload: Prisma.$AbandonedCheckoutPayload<ExtArgs>
+      fields: Prisma.AbandonedCheckoutFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AbandonedCheckoutFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AbandonedCheckoutPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AbandonedCheckoutFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AbandonedCheckoutPayload>
+        }
+        findFirst: {
+          args: Prisma.AbandonedCheckoutFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AbandonedCheckoutPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AbandonedCheckoutFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AbandonedCheckoutPayload>
+        }
+        findMany: {
+          args: Prisma.AbandonedCheckoutFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AbandonedCheckoutPayload>[]
+        }
+        create: {
+          args: Prisma.AbandonedCheckoutCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AbandonedCheckoutPayload>
+        }
+        createMany: {
+          args: Prisma.AbandonedCheckoutCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AbandonedCheckoutCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AbandonedCheckoutPayload>[]
+        }
+        delete: {
+          args: Prisma.AbandonedCheckoutDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AbandonedCheckoutPayload>
+        }
+        update: {
+          args: Prisma.AbandonedCheckoutUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AbandonedCheckoutPayload>
+        }
+        deleteMany: {
+          args: Prisma.AbandonedCheckoutDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AbandonedCheckoutUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AbandonedCheckoutUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AbandonedCheckoutPayload>[]
+        }
+        upsert: {
+          args: Prisma.AbandonedCheckoutUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AbandonedCheckoutPayload>
+        }
+        aggregate: {
+          args: Prisma.AbandonedCheckoutAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAbandonedCheckout>
+        }
+        groupBy: {
+          args: Prisma.AbandonedCheckoutGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AbandonedCheckoutGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AbandonedCheckoutCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AbandonedCheckoutCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1406,7 +1481,9 @@ export const PromoCodeScalarFieldEnum = {
   code: 'code',
   discount: 'discount',
   isActive: 'isActive',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  maxUses: 'maxUses',
+  usedCount: 'usedCount'
 } as const
 
 export type PromoCodeScalarFieldEnum = (typeof PromoCodeScalarFieldEnum)[keyof typeof PromoCodeScalarFieldEnum]
@@ -1447,12 +1524,34 @@ export const EmailLeadScalarFieldEnum = {
 export type EmailLeadScalarFieldEnum = (typeof EmailLeadScalarFieldEnum)[keyof typeof EmailLeadScalarFieldEnum]
 
 
+export const AbandonedCheckoutScalarFieldEnum = {
+  id: 'id',
+  phone: 'phone',
+  name: 'name',
+  cartItems: 'cartItems',
+  notified: 'notified',
+  converted: 'converted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AbandonedCheckoutScalarFieldEnum = (typeof AbandonedCheckoutScalarFieldEnum)[keyof typeof AbandonedCheckoutScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1469,6 +1568,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -1635,6 +1743,20 @@ export type EnumPromotionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'PromotionType[]'
  */
 export type ListEnumPromotionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PromotionType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -1813,6 +1935,7 @@ export type GlobalOmitConfig = {
   promoCodeUsage?: Prisma.PromoCodeUsageOmit
   promotion?: Prisma.PromotionOmit
   emailLead?: Prisma.EmailLeadOmit
+  abandonedCheckout?: Prisma.AbandonedCheckoutOmit
 }
 
 /* Types for Logging */

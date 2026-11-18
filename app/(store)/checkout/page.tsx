@@ -12,6 +12,7 @@ import { BOSTA_CITIES } from "@/lib/cities"
 import { saveGuestOrderToken } from "@/lib/store/orderTracking"
 import { trackInitiateCheckout, trackPurchase, tagClarityOrder, generateEventId } from "@/lib/meta-pixel"
 import { ORDERS_PAUSED, ORDERS_PAUSED_MESSAGE } from "@/lib/store-status"
+import { captureCheckout } from "@/lib/captureCheckout"
 
 import CheckoutCard from "./components/Checkoutcard "
 import InputField from "./components/Inputfield"
@@ -195,6 +196,7 @@ export default function CheckoutPage() {
   // بيتبعت مرة واحدة لما العميل يوصل لصفحة الـ checkout ومعاه حاجة في الكارت
   const trackedCheckoutRef = useRef(false)
   useEffect(() => {
+    
     if (trackedCheckoutRef.current) return
     if (ORDERS_PAUSED) return
     if (items.length === 0) return
@@ -206,6 +208,29 @@ export default function CheckoutPage() {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // ─── Abandoned checkout capture ─────────────────────────────────────────
+  // بيستنى 1.5 ثانية بعد آخر تعديل في الرقم/الاسم، وبعدين يبعت للسيرفر.
+  // captureCheckout بتتأكد إن الرقم صح ومبتبعتش نفس الرقم مرتين.
+  useEffect(() => {
+    if (ORDERS_PAUSED) return
+    if (items.length === 0) return
+
+    const timer = setTimeout(() => {
+      captureCheckout(
+        phone,
+        name.trim(),
+        items.map((i) => ({
+          name: i.productName,
+          color: i.color,
+          size: i.size,
+          quantity: i.quantity,
+        }))
+      )
+    }, 1500)
+
+    return () => clearTimeout(timer)
+  }, [phone, name, items])
 
   // وقف مؤقت للأوردرات — متتحكم من lib/store-status.ts
   if (ORDERS_PAUSED) return (

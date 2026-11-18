@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse, after } from "next/server"
 import { db } from "@/lib/db"
 import { requireAuth, optionalAuth } from "@/lib/middleware"
 import { orderRatelimit } from "@/lib/ratelimit"
@@ -10,10 +10,16 @@ import { calculatePromotion, type GiftSelection } from "@/lib/promotions"
 import { sendPurchaseCapiEvent, getRequestMeta } from "@/lib/meta-capi"
 import { normalizeEgyptianPhone } from "@/lib/phone"
 import crypto from "crypto"
+import { sendToWebhook } from "@/lib/webhook"
+import { sendOrderToWebhook } from "@/lib/order-webhook"
 import { ORDERS_PAUSED, ORDERS_PAUSED_MESSAGE } from "@/lib/store-status"
 
 // الكود المرتبط بالـ flash offer popup — لازم يطابق اللي في app/api/leads/subscribe وapp/api/promo/validate
 const EMAIL_LINKED_PROMO_CODE = "2ZSAVE10"
+
+// بيترمي جوه الـ transaction لو الكود اتستهلك (maxUses خلص) بين وقت الفحص ووقت حفظ الأوردر —
+// الـ transaction كله (بما فيه خصم الستوك) بيتلغي، والـ catch تحت بيرجّع 409 واضح للعميل
+class PromoUnavailableError extends Error {}
 
 type CartItem = { variantId: string; quantity: number } 
 
@@ -123,6 +129,7 @@ export async function POST(req: NextRequest) {
     let promoDiscountAmount = 0
     let validatedPromoCode: string | null = null
     let promoId: string | null = null
+    let promoMaxUses: number | null = null
 
     if (promoCode && typeof promoCode === "string") {
       const code = promoCode.trim().toUpperCase()
@@ -146,7 +153,10 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      if (promo && promo.isActive && !promoBlockedByExpiry) {
+      // كود لمرة واحدة (أو عدد محدود): لو خلصت استخداماته نتجاهله زي باقي حالات الكود غير الصالح
+      const promoExhausted = !!promo && promo.maxUses !== null && promo.usedCount >= promo.maxUses
+
+      if (promo && promo.isActive && !promoBlockedByExpiry && !promoExhausted) {
         // لازم نطبّع الرقم قبل الفحص والحفظ عشان محدش يقدر يستخدم الكود
         // مرتين بصيغتين مختلفتين لنفس الرقم (زي في promo/validate)
         const normalizedPhone = normalizeEgyptianPhone(phone) ?? phone
@@ -163,6 +173,7 @@ export async function POST(req: NextRequest) {
           promoDiscountAmount = Math.round((afterTierDiscount * promo.discount) / 100)
           validatedPromoCode = promo.code
           promoId = promo.id
+          promoMaxUses = promo.maxUses
         }
       }
     }
@@ -282,6 +293,19 @@ export async function POST(req: NextRequest) {
       })
 
       if (promoId && validatedPromoCode) {
+        // حجز استخدام الكود بشكل atomic: الشرط (isActive + usedCount < maxUses) والزيادة في نفس أمر
+        // الـ SQL، فلو اتنين استخدموا نفس الكود في نفس اللحظة واحد بس هينجح والتاني يتلغي أوردره.
+        // الكود غير المحدود (maxUses = null) بيتزود عداده بس من غير شرط.
+        const claim = await tx.promoCode.updateMany({
+          where: {
+            id: promoId,
+            isActive: true,
+            ...(promoMaxUses !== null && { usedCount: { lt: promoMaxUses } }),
+          },
+          data: { usedCount: { increment: 1 } },
+        })
+        if (claim.count === 0) throw new PromoUnavailableError()
+
         await tx.promoCodeUsage.create({
           data: {
             promoCodeId: promoId,
@@ -293,6 +317,38 @@ export async function POST(req: NextRequest) {
 
       return newOrder
     })
+
+    // ─── Abandoned checkout: علّم إن العميل اشترى ──────────────────────────────────
+    // لو الرقم ده كان متسجّل كـ abandoned ولسه مش converted، نعلّمه ونبعت للينك
+    // إنه اشترى، عشان محمد ميكلّمش حد اشترى فعلاً. في try/catch مستقل عشان
+    // أي مشكلة هنا متأثّرش على الأوردر نفسه (اتسجّل خلاص).
+    try {
+      const cleanPhone = typeof phone === "string" ? phone.replace(/\s+/g, "") : ""
+      if (cleanPhone) {
+        const marked = await db.abandonedCheckout.updateMany({
+          where: { phone: cleanPhone, converted: false },
+          data: { converted: true },
+        })
+
+        if (marked.count > 0) {
+          // after(): الإرسال بيشتغل بعد ما الرد يتبعت للعميل، فمبيستناش n8n
+          after(async () => {
+            await sendToWebhook({
+              event: "checkout_converted",
+              data: {
+                phone: cleanPhone,
+                orderId: order.id,
+                invoiceNumber: `INV-${String(order.invoiceNumber).padStart(4, "0")}`,
+                total: totalAmount,
+                paymentMethod: method,
+              },
+            })
+          })
+        }
+      }
+    } catch (error) {
+      console.error("Abandoned checkout convert failed:", error instanceof Error ? error.message : error)
+    }
 
     // لو InstaPay: مفيش إيميلات أو تأكيد لسه — هيتبعتوا بعد ما يبعت الـ ref
     // لو COD: الإيميلات تتبعت فورًا زي العادي
@@ -367,10 +423,17 @@ export async function POST(req: NextRequest) {
       } catch (error) {
         console.error("Meta CAPI Purchase failed:", error instanceof Error ? error.message : error)
       }
+
+      // ─── n8n: تفاصيل الأوردر للينك ──────────────────────────────────────────
+      // COD: الأوردر اتأكد خلاص، فنبعت فوراً. (InstaPay بيتبعت من notify-whatsapp)
+      after(() => sendOrderToWebhook(order.id))
     }
 
     return NextResponse.json({ ...order, verifyToken }, { status: 201 })
   } catch (error) {
+    if (error instanceof PromoUnavailableError) {
+      return NextResponse.json({ error: "This promo code has already been used" }, { status: 409 })
+    }
     console.error("Order creation error:", error instanceof Error ? error.message : error)
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }

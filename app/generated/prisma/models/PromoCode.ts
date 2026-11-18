@@ -28,10 +28,14 @@ export type AggregatePromoCode = {
 
 export type PromoCodeAvgAggregateOutputType = {
   discount: number | null
+  maxUses: number | null
+  usedCount: number | null
 }
 
 export type PromoCodeSumAggregateOutputType = {
   discount: number | null
+  maxUses: number | null
+  usedCount: number | null
 }
 
 export type PromoCodeMinAggregateOutputType = {
@@ -40,6 +44,8 @@ export type PromoCodeMinAggregateOutputType = {
   discount: number | null
   isActive: boolean | null
   createdAt: Date | null
+  maxUses: number | null
+  usedCount: number | null
 }
 
 export type PromoCodeMaxAggregateOutputType = {
@@ -48,6 +54,8 @@ export type PromoCodeMaxAggregateOutputType = {
   discount: number | null
   isActive: boolean | null
   createdAt: Date | null
+  maxUses: number | null
+  usedCount: number | null
 }
 
 export type PromoCodeCountAggregateOutputType = {
@@ -56,16 +64,22 @@ export type PromoCodeCountAggregateOutputType = {
   discount: number
   isActive: number
   createdAt: number
+  maxUses: number
+  usedCount: number
   _all: number
 }
 
 
 export type PromoCodeAvgAggregateInputType = {
   discount?: true
+  maxUses?: true
+  usedCount?: true
 }
 
 export type PromoCodeSumAggregateInputType = {
   discount?: true
+  maxUses?: true
+  usedCount?: true
 }
 
 export type PromoCodeMinAggregateInputType = {
@@ -74,6 +88,8 @@ export type PromoCodeMinAggregateInputType = {
   discount?: true
   isActive?: true
   createdAt?: true
+  maxUses?: true
+  usedCount?: true
 }
 
 export type PromoCodeMaxAggregateInputType = {
@@ -82,6 +98,8 @@ export type PromoCodeMaxAggregateInputType = {
   discount?: true
   isActive?: true
   createdAt?: true
+  maxUses?: true
+  usedCount?: true
 }
 
 export type PromoCodeCountAggregateInputType = {
@@ -90,6 +108,8 @@ export type PromoCodeCountAggregateInputType = {
   discount?: true
   isActive?: true
   createdAt?: true
+  maxUses?: true
+  usedCount?: true
   _all?: true
 }
 
@@ -185,6 +205,8 @@ export type PromoCodeGroupByOutputType = {
   discount: number
   isActive: boolean
   createdAt: Date
+  maxUses: number | null
+  usedCount: number
   _count: PromoCodeCountAggregateOutputType | null
   _avg: PromoCodeAvgAggregateOutputType | null
   _sum: PromoCodeSumAggregateOutputType | null
@@ -216,6 +238,8 @@ export type PromoCodeWhereInput = {
   discount?: Prisma.IntFilter<"PromoCode"> | number
   isActive?: Prisma.BoolFilter<"PromoCode"> | boolean
   createdAt?: Prisma.DateTimeFilter<"PromoCode"> | Date | string
+  maxUses?: Prisma.IntNullableFilter<"PromoCode"> | number | null
+  usedCount?: Prisma.IntFilter<"PromoCode"> | number
   usages?: Prisma.PromoCodeUsageListRelationFilter
 }
 
@@ -225,6 +249,8 @@ export type PromoCodeOrderByWithRelationInput = {
   discount?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  maxUses?: Prisma.SortOrderInput | Prisma.SortOrder
+  usedCount?: Prisma.SortOrder
   usages?: Prisma.PromoCodeUsageOrderByRelationAggregateInput
 }
 
@@ -237,6 +263,8 @@ export type PromoCodeWhereUniqueInput = Prisma.AtLeast<{
   discount?: Prisma.IntFilter<"PromoCode"> | number
   isActive?: Prisma.BoolFilter<"PromoCode"> | boolean
   createdAt?: Prisma.DateTimeFilter<"PromoCode"> | Date | string
+  maxUses?: Prisma.IntNullableFilter<"PromoCode"> | number | null
+  usedCount?: Prisma.IntFilter<"PromoCode"> | number
   usages?: Prisma.PromoCodeUsageListRelationFilter
 }, "id" | "code">
 
@@ -246,6 +274,8 @@ export type PromoCodeOrderByWithAggregationInput = {
   discount?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  maxUses?: Prisma.SortOrderInput | Prisma.SortOrder
+  usedCount?: Prisma.SortOrder
   _count?: Prisma.PromoCodeCountOrderByAggregateInput
   _avg?: Prisma.PromoCodeAvgOrderByAggregateInput
   _max?: Prisma.PromoCodeMaxOrderByAggregateInput
@@ -262,6 +292,8 @@ export type PromoCodeScalarWhereWithAggregatesInput = {
   discount?: Prisma.IntWithAggregatesFilter<"PromoCode"> | number
   isActive?: Prisma.BoolWithAggregatesFilter<"PromoCode"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PromoCode"> | Date | string
+  maxUses?: Prisma.IntNullableWithAggregatesFilter<"PromoCode"> | number | null
+  usedCount?: Prisma.IntWithAggregatesFilter<"PromoCode"> | number
 }
 
 export type PromoCodeCreateInput = {
@@ -270,6 +302,8 @@ export type PromoCodeCreateInput = {
   discount: number
   isActive?: boolean
   createdAt?: Date | string
+  maxUses?: number | null
+  usedCount?: number
   usages?: Prisma.PromoCodeUsageCreateNestedManyWithoutPromoCodeInput
 }
 
@@ -279,6 +313,8 @@ export type PromoCodeUncheckedCreateInput = {
   discount: number
   isActive?: boolean
   createdAt?: Date | string
+  maxUses?: number | null
+  usedCount?: number
   usages?: Prisma.PromoCodeUsageUncheckedCreateNestedManyWithoutPromoCodeInput
 }
 
@@ -288,6 +324,8 @@ export type PromoCodeUpdateInput = {
   discount?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  maxUses?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  usedCount?: Prisma.IntFieldUpdateOperationsInput | number
   usages?: Prisma.PromoCodeUsageUpdateManyWithoutPromoCodeNestedInput
 }
 
@@ -297,6 +335,8 @@ export type PromoCodeUncheckedUpdateInput = {
   discount?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  maxUses?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  usedCount?: Prisma.IntFieldUpdateOperationsInput | number
   usages?: Prisma.PromoCodeUsageUncheckedUpdateManyWithoutPromoCodeNestedInput
 }
 
@@ -306,6 +346,8 @@ export type PromoCodeCreateManyInput = {
   discount: number
   isActive?: boolean
   createdAt?: Date | string
+  maxUses?: number | null
+  usedCount?: number
 }
 
 export type PromoCodeUpdateManyMutationInput = {
@@ -314,6 +356,8 @@ export type PromoCodeUpdateManyMutationInput = {
   discount?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  maxUses?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  usedCount?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type PromoCodeUncheckedUpdateManyInput = {
@@ -322,6 +366,8 @@ export type PromoCodeUncheckedUpdateManyInput = {
   discount?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  maxUses?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  usedCount?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type PromoCodeCountOrderByAggregateInput = {
@@ -330,10 +376,14 @@ export type PromoCodeCountOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  maxUses?: Prisma.SortOrder
+  usedCount?: Prisma.SortOrder
 }
 
 export type PromoCodeAvgOrderByAggregateInput = {
   discount?: Prisma.SortOrder
+  maxUses?: Prisma.SortOrder
+  usedCount?: Prisma.SortOrder
 }
 
 export type PromoCodeMaxOrderByAggregateInput = {
@@ -342,6 +392,8 @@ export type PromoCodeMaxOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  maxUses?: Prisma.SortOrder
+  usedCount?: Prisma.SortOrder
 }
 
 export type PromoCodeMinOrderByAggregateInput = {
@@ -350,10 +402,14 @@ export type PromoCodeMinOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  maxUses?: Prisma.SortOrder
+  usedCount?: Prisma.SortOrder
 }
 
 export type PromoCodeSumOrderByAggregateInput = {
   discount?: Prisma.SortOrder
+  maxUses?: Prisma.SortOrder
+  usedCount?: Prisma.SortOrder
 }
 
 export type PromoCodeScalarRelationFilter = {
@@ -381,6 +437,8 @@ export type PromoCodeCreateWithoutUsagesInput = {
   discount: number
   isActive?: boolean
   createdAt?: Date | string
+  maxUses?: number | null
+  usedCount?: number
 }
 
 export type PromoCodeUncheckedCreateWithoutUsagesInput = {
@@ -389,6 +447,8 @@ export type PromoCodeUncheckedCreateWithoutUsagesInput = {
   discount: number
   isActive?: boolean
   createdAt?: Date | string
+  maxUses?: number | null
+  usedCount?: number
 }
 
 export type PromoCodeCreateOrConnectWithoutUsagesInput = {
@@ -413,6 +473,8 @@ export type PromoCodeUpdateWithoutUsagesInput = {
   discount?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  maxUses?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  usedCount?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type PromoCodeUncheckedUpdateWithoutUsagesInput = {
@@ -421,6 +483,8 @@ export type PromoCodeUncheckedUpdateWithoutUsagesInput = {
   discount?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  maxUses?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  usedCount?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 
@@ -460,6 +524,8 @@ export type PromoCodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   discount?: boolean
   isActive?: boolean
   createdAt?: boolean
+  maxUses?: boolean
+  usedCount?: boolean
   usages?: boolean | Prisma.PromoCode$usagesArgs<ExtArgs>
   _count?: boolean | Prisma.PromoCodeCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["promoCode"]>
@@ -470,6 +536,8 @@ export type PromoCodeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   discount?: boolean
   isActive?: boolean
   createdAt?: boolean
+  maxUses?: boolean
+  usedCount?: boolean
 }, ExtArgs["result"]["promoCode"]>
 
 export type PromoCodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -478,6 +546,8 @@ export type PromoCodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   discount?: boolean
   isActive?: boolean
   createdAt?: boolean
+  maxUses?: boolean
+  usedCount?: boolean
 }, ExtArgs["result"]["promoCode"]>
 
 export type PromoCodeSelectScalar = {
@@ -486,9 +556,11 @@ export type PromoCodeSelectScalar = {
   discount?: boolean
   isActive?: boolean
   createdAt?: boolean
+  maxUses?: boolean
+  usedCount?: boolean
 }
 
-export type PromoCodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "discount" | "isActive" | "createdAt", ExtArgs["result"]["promoCode"]>
+export type PromoCodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "discount" | "isActive" | "createdAt" | "maxUses" | "usedCount", ExtArgs["result"]["promoCode"]>
 export type PromoCodeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usages?: boolean | Prisma.PromoCode$usagesArgs<ExtArgs>
   _count?: boolean | Prisma.PromoCodeCountOutputTypeDefaultArgs<ExtArgs>
@@ -507,6 +579,8 @@ export type $PromoCodePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     discount: number
     isActive: boolean
     createdAt: Date
+    maxUses: number | null
+    usedCount: number
   }, ExtArgs["result"]["promoCode"]>
   composites: {}
 }
@@ -936,6 +1010,8 @@ export interface PromoCodeFieldRefs {
   readonly discount: Prisma.FieldRef<"PromoCode", 'Int'>
   readonly isActive: Prisma.FieldRef<"PromoCode", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"PromoCode", 'DateTime'>
+  readonly maxUses: Prisma.FieldRef<"PromoCode", 'Int'>
+  readonly usedCount: Prisma.FieldRef<"PromoCode", 'Int'>
 }
     
 

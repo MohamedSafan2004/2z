@@ -72,3 +72,8 @@ export type Promotion = Prisma.PromotionModel
  * 
  */
 export type EmailLead = Prisma.EmailLeadModel
+/**
+ * Model AbandonedCheckout
+ * 
+ */
+export type AbandonedCheckout = Prisma.AbandonedCheckoutModel

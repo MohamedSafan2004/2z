@@ -39,7 +39,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // Fetch only the fields we need — avoids pulling createdAt and other unused columns
     const promo = await db.promoCode.findUnique({
       where: { code },
-      select: { id: true, code: true, discount: true, isActive: true },
+      select: { id: true, code: true, discount: true, isActive: true, maxUses: true, usedCount: true },
     })
 
     // 404 leaks whether the code exists — use 422 to give a uniform "invalid" signal
@@ -65,6 +65,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (lead.codeExpiresAt.getTime() < Date.now()) {
         return NextResponse.json({ error: "This code has expired" }, { status: 422 })
       }
+    }
+
+    // كود لمرة واحدة (أو عدد محدود): لو استخداماته خلصت نرفضه هنا قبل ما العميل يكمّل.
+    // الفحص الحقيقي والـ atomic في orders/route.ts جوه الـ transaction.
+    if (promo.maxUses !== null && promo.usedCount >= promo.maxUses) {
+      return NextResponse.json({ error: "This promo code has already been used" }, { status: 409 })
     }
 
     // RACE CONDITION NOTE:

@@ -61,7 +61,8 @@ export const ModelName = {
   PromoCode: 'PromoCode',
   PromoCodeUsage: 'PromoCodeUsage',
   Promotion: 'Promotion',
-  EmailLead: 'EmailLead'
+  EmailLead: 'EmailLead',
+  AbandonedCheckout: 'AbandonedCheckout'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -206,7 +207,9 @@ export const PromoCodeScalarFieldEnum = {
   code: 'code',
   discount: 'discount',
   isActive: 'isActive',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  maxUses: 'maxUses',
+  usedCount: 'usedCount'
 } as const
 
 export type PromoCodeScalarFieldEnum = (typeof PromoCodeScalarFieldEnum)[keyof typeof PromoCodeScalarFieldEnum]
@@ -247,12 +250,34 @@ export const EmailLeadScalarFieldEnum = {
 export type EmailLeadScalarFieldEnum = (typeof EmailLeadScalarFieldEnum)[keyof typeof EmailLeadScalarFieldEnum]
 
 
+export const AbandonedCheckoutScalarFieldEnum = {
+  id: 'id',
+  phone: 'phone',
+  name: 'name',
+  cartItems: 'cartItems',
+  notified: 'notified',
+  converted: 'converted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AbandonedCheckoutScalarFieldEnum = (typeof AbandonedCheckoutScalarFieldEnum)[keyof typeof AbandonedCheckoutScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -269,4 +294,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

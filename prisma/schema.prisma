@@ -8,24 +8,24 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(cuid())
-  name             String
-  email            String   @unique
-  password         String
-  phone            String?
-  address          String?
-  role             Role     @default(CUSTOMER)
-  createdAt        DateTime @default(now())
-  emailVerified    Boolean  @default(false)
-  verificationCode String?
-  orders           Order[]
-  resetCode         String?
-  resetCodeExpiry   DateTime?
-  resetAttempts    Int       @default(0)
-  resetLockedUntil DateTime?
+  id                     String           @id @default(cuid())
+  name                   String
+  email                  String           @unique
+  password               String
+  phone                  String?
+  address                String?
+  role                   Role             @default(CUSTOMER)
+  createdAt              DateTime         @default(now())
+  emailVerified          Boolean          @default(false)
+  verificationCode       String?
+  orders                 Order[]
+  resetCode              String?
+  resetCodeExpiry        DateTime?
+  resetAttempts          Int              @default(0)
+  resetLockedUntil       DateTime?
   verificationCodeExpiry DateTime?
-  tokenVersion     Int       @default(0)
-  promoUsages      PromoCodeUsage[]
+  tokenVersion           Int              @default(0)
+  promoUsages            PromoCodeUsage[]
 }
 
 model Category {
@@ -61,44 +61,44 @@ model ProductVariant {
 }
 
 model Order {
-  id                    String        @id @default(cuid())
-  invoiceNumber         Int?          @unique
-  userId                String?
-  totalAmount           Decimal
-  discountAmount        Decimal       @default(0)
-  tierDiscountPercent   Int           @default(0) // خصم الكمية المتدرج الفعلي المطبق (0/10/20/30/40) — لو البرومو كود أعلى منه، discountAmount بيعكس قيمة البرومو والحقل ده بيفضل 0
-  promotionDiscount     Decimal       @default(0)
-  shippingCost          Decimal       @default(0)
-  shippingZone          String?
-  promoCode             String?
-  status                OrderStatus   @default(PENDING)
-  paymentMethod         PaymentMethod @default(COD)
-  paymentId             String?
-  paymentStatus         PaymentStatus @default(PENDING)
-  instapayRef           String?
-  createdAt             DateTime      @default(now())
-  guestEmail            String?
-  guestName             String?
-  user                  User?         @relation(fields: [userId], references: [id])
-  items                 OrderItem[]
-  address               String?
-  city                  String?
-  phone                 String?
-  clientOrderId         String?       @unique
-  verifyToken           String?       @unique
-  lastPaymentCheckAt    DateTime?
-  paymobTransactionId   String?
-  confirmationEmailSent Boolean       @default(false)
-  adminEmailSent        Boolean       @default(false)
-  sheetSynced           Boolean       @default(false)
-  abandonedCartEmailSentAt DateTime?  // وقت إرسال ريمايندر الـ InstaPay المتروك بدون دفع — null لحد ما يتبعت
+  id                       String        @id @default(cuid())
+  invoiceNumber            Int?          @unique
+  userId                   String?
+  totalAmount              Decimal
+  discountAmount           Decimal       @default(0)
+  tierDiscountPercent      Int           @default(0) // خصم الكمية المتدرج الفعلي المطبق (0/10/20/30/40) — لو البرومو كود أعلى منه، discountAmount بيعكس قيمة البرومو والحقل ده بيفضل 0
+  promotionDiscount        Decimal       @default(0)
+  shippingCost             Decimal       @default(0)
+  shippingZone             String?
+  promoCode                String?
+  status                   OrderStatus   @default(PENDING)
+  paymentMethod            PaymentMethod @default(COD)
+  paymentId                String?
+  paymentStatus            PaymentStatus @default(PENDING)
+  instapayRef              String?
+  createdAt                DateTime      @default(now())
+  guestEmail               String?
+  guestName                String?
+  user                     User?         @relation(fields: [userId], references: [id])
+  items                    OrderItem[]
+  address                  String?
+  city                     String?
+  phone                    String?
+  clientOrderId            String?       @unique
+  verifyToken              String?       @unique
+  lastPaymentCheckAt       DateTime?
+  paymobTransactionId      String?
+  confirmationEmailSent    Boolean       @default(false)
+  adminEmailSent           Boolean       @default(false)
+  sheetSynced              Boolean       @default(false)
+  abandonedCartEmailSentAt DateTime? // وقت إرسال ريمايندر الـ InstaPay المتروك بدون دفع — null لحد ما يتبعت
 
   // ─── Bosta — متفعّلة بالكامل (lib/bosta.ts + lib/bosta-sync.ts + زرار "Send to Bosta" في الأدمن) ───
-  bostaDeliveryId       String?       @unique // معرف الشحنة عند Bosta
-  bostaTrackingNumber   String?       // رقم التتبع اللي بيظهر للعميل
-  bostaState            String?       // آخر حالة معروفة من Bosta (created, pickedUp, inTransit, delivered, إلخ...)
-  bostaCreatedAt        DateTime?     // وقت إنشاء الشحنة عند Bosta
-  bostaLastSyncAt       DateTime?     // آخر مرة اتحدثت فيها حالة الشحنة من Bosta
+  bostaDeliveryId     String?   @unique // معرف الشحنة عند Bosta
+  bostaTrackingNumber String? // رقم التتبع اللي بيظهر للعميل
+  bostaState          String? // آخر حالة معروفة من Bosta (created, pickedUp, inTransit, delivered, إلخ...)
+  bostaCreatedAt      DateTime? // وقت إنشاء الشحنة عند Bosta
+  bostaLastSyncAt     DateTime? // آخر مرة اتحدثت فيها حالة الشحنة من Bosta
 
   @@index([paymentStatus])
   @@index([createdAt])
@@ -127,12 +127,14 @@ model InvoiceCounter {
 }
 
 model PromoCode {
-  id         String           @id @default(cuid())
-  code       String           @unique
-  discount   Int
-  isActive   Boolean          @default(true)
-  createdAt  DateTime         @default(now())
-  usages     PromoCodeUsage[]
+  id        String           @id @default(cuid())
+  code      String           @unique
+  discount  Int
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  maxUses   Int? // أقصى عدد استخدامات للكود كله (عبر كل العملاء). null = مفيش حد (الكود بيتقيّد بس مرة لكل رقم/أكونت زي الأول). 1 = كود لمرة واحدة بس
+  usedCount Int       @default(0) // عدد مرات الاستخدام الفعلية — بيتزود atomic وقت إنشاء الأوردر
+  usages    PromoCodeUsage[]
 }
 
 model PromoCodeUsage {
@@ -162,15 +164,28 @@ model Promotion {
 }
 
 model EmailLead {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  promoCode      String
-  source         String   @default("popup_10off")
-  createdAt      DateTime @default(now())
-  codeExpiresAt  DateTime // صلاحية الكود للإيميل ده بالذات — 48 ساعة من وقت التسجيل
+  id            String   @id @default(cuid())
+  email         String   @unique
+  promoCode     String
+  source        String   @default("popup_10off")
+  createdAt     DateTime @default(now())
+  codeExpiresAt DateTime // صلاحية الكود للإيميل ده بالذات — 48 ساعة من وقت التسجيل
 
   @@index([createdAt])
   @@index([email, codeExpiresAt])
+}
+
+model AbandonedCheckout {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  name      String?
+  cartItems Json?
+  notified  Boolean  @default(false)
+  converted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([converted])
 }
 
 enum Role {

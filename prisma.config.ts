@@ -1,4 +1,5 @@
-import { defineConfig } from "prisma/config";
+import "dotenv/config";
+import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -6,6 +7,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: "postgresql://postgres.cendgesqtycjnubipjey:MyStoreAdmin2026@aws-1-eu-west-1.pooler.supabase.com:5432/postgres",
+    url: env("DIRECT_URL"),
   },
 });
